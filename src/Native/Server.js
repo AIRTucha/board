@@ -1,4 +1,5 @@
 var _airtucha$board$Native_Server = function() {
+    var http = require('http');
     return {
         serve: function (port){
             return function(hostname) {
@@ -7,7 +8,6 @@ var _airtucha$board$Native_Server = function() {
 
                         var http = require('http');
                         var fs = require('fs');
-                        var path = require('path');
             
                         http.createServer(function (request, response) {
                             console.log( request.url );
@@ -37,6 +37,13 @@ var _airtucha$board$Native_Server = function() {
             
                         }).listen(port, hostname);
                     }
+                }
+            }
+        },
+        http: function(port) {
+            return function(hostname) {
+                return function(handler){
+                    return http.createServer(function(req, res) { handler(req)(res) }).listen(port, hostname)
                 }
             }
         }

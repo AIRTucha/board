@@ -6,6 +6,10 @@ import Basics exposing (sqrt, pi)
 import Platform exposing (program)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
+import Debug exposing(log)
+import Task exposing(..)
+
+import File exposing(..)
 
 run _ = program
         { init = ( (), Cmd.none )
@@ -65,9 +69,14 @@ typeParser path =
             "application/octet-stream'"
 
 
-main = run <| Native.Server.serve 8080 "localhost" urlParser typeParser
+-- main = run <| Native.Server.serve 8080 "localhost" urlParser typeParser
      
-        
+-- main = run <| Native.Console.println Native.Server.a
+-- main = read "./public/index1.html"
+--     |> map Native.Console.println
+--     |> run
+handler _ r = r.end("hollow")
+main = run <| (handler |> Native.Server.http 8000 "localhost")
 
                     
 
