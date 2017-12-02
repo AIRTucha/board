@@ -1,4 +1,4 @@
-var _user$project$Native_Console = function() {
+var _airtucha$board$Native_Console = function() {
     return {
         println: function (value){
             console.log(value)

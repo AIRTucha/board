@@ -6,7 +6,7 @@
   "scripts": {
     "serve": "nodemon --exec \"elm make src/main.elm --output dist/main.js && node local.js\"",
     "build": "elm make src/main.elm --output=dist/main.js",
-    "install": "elm package install",
+    "install": "elm-package install",
     "elm": "elm",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

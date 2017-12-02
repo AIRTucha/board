@@ -4,5 +4,5 @@
         "dist",
         "public"
     ],
-    "ext": "json ts css html elm"
+    "ext": "json js ts css html elm"
 }
