@@ -8,6 +8,7 @@ import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing(log)
 import Task exposing(..)
+import Native.File
 
 import File exposing(..)
 
@@ -75,10 +76,37 @@ typeParser path =
 -- main = read "./public/index1.html"
 --     |> map Native.Console.println
 --     |> run
-handler _ r = r.end("hollow")
-main = run <| (handler |> Native.Server.http 8000 "localhost")
+--
+type alias Body =
+    { url : String
+    }
+    
+type Request
+    = Get Body
+    | Post Body
+    | Put Body
+    | Delete Body
 
+type Response 
+    = Response
+
+handler : Request -> Response -> Task a ()
+handler req res =
+    case req of 
+        Get body ->
+        let 
+            filePath = urlParser(body.url)
+            contentType = typeParser(body.url)
+            url = Native.Console.println body.url
+        in
+            Native.File.read filePath  (\ data -> send data res)
+        _ -> succeed ()
+
+send = Native.Server.send
+
+main = run <| (handler |> Native.Server.http 8000 "localhost")
                     
+-- main = run <| (Native.Console.println { x = 1, y= 2} )
 
 {-
  Log data to console
