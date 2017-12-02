@@ -1,16 +1,14 @@
 module App exposing (..)
 
-import Native.Console
-import Native.Server
 import Basics exposing (sqrt, pi)
 import Platform exposing (program)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
-import Debug exposing(log)
-import Task exposing(..)
-import Native.File
 
-import File exposing(..)
+import File exposing(read)
+import Future exposing(apply, Future)
+import Server exposing(..)
+import Console exposing(..)
 
 run _ = program
         { init = ( (), Cmd.none )
@@ -72,68 +70,21 @@ typeParser path =
 
 -- main = run <| Native.Server.serve 8080 "localhost" urlParser typeParser
      
--- main = run <| Native.Console.println Native.Server.a
--- main = read "./public/index1.html"
---     |> map Native.Console.println
---     |> run
---
-type alias Body =
-    { url : String
-    }
-    
-type Request
-    = Get Body
-    | Post Body
-    | Put Body
-    | Delete Body
-
-type Response 
-    = Response
-
-handler : Request -> Response -> Task a ()
+handler : Request -> Response -> ()
 handler req res =
     case req of 
         Get body ->
             let 
                 filePath = urlParser(body.url)
+                    |> read
+                    |> apply ( \ data -> send data res ) 
                 contentType = typeParser(body.url)
-                url = Native.Console.println body.url
+                url = println body.url
             in
-                filePath 
-                    |> Native.File.read
-                    |> Native.File.bind ( \ data -> send data res )
-        _ -> succeed ()
+                ()
+                    
+        _ -> ()
 
-send = Native.Server.send
 
-main = run <| (handler |> Native.Server.http 8000 "localhost")
 
-           
--- main = run <| (Native.Console.println { x = 1, y= 2} )
-
-{-
- Log data to console
--}
--- log value = Native.Console.println value
-
--- type Shape
---     = Rect Float Float
---     | Circle Float
---     | Triangle Float Float Float
-
--- space : Shape -> Float
--- space shape = 
---     case shape of 
---         Rect x y ->
---             x * y
-        
---         Circle radius ->
---             radius * pi * pi
-        
---         Triangle a b c ->
---             let 
---                 p = (a + b + c) /2
---             in 
---                 sqrt p * (p - a) * (p - b) * (p - c) 
-
--- main = run <| log << space <| Circle 2
+main = run <| (handler |> http 8000 "localhost")

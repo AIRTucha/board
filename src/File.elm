@@ -1,5 +1,7 @@
 module File exposing (..)
+
 import Native.File
+import Future exposing( Future )
 
 type Error 
     = Error String
@@ -7,5 +9,5 @@ type Error
 type File a
     = Buffer a 
 
--- read : String -> Task Error File
+read : String -> Future File String
 read path = Native.File.read path
