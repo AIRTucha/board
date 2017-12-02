@@ -1,0 +1,12 @@
+node_modules
+*.log*
+*.*~
+*.swp
+*.swo
+dist
+.serverless
+.DS_Store
+.aws
+.idea
+elm-stuff
+public/*.js

@@ -1,0 +1,21 @@
+{
+  "name": "board",
+  "version": "0.0.1",
+  "description": "Elm Back-end framework",
+  "main": "main.elm",
+  "scripts": {
+    "serve": "nodemon --exec \"elm make src/main.elm --output dist/main.js && node local.js\"",
+    "build": "elm make src/main.elm --output=dist/main.js",
+    "install": "elm package install",
+    "elm": "elm",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "airtucha",
+  "license": "ISC",
+  "dependencies": {
+    "elm": "^0.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}
