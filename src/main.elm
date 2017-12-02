@@ -94,18 +94,21 @@ handler : Request -> Response -> Task a ()
 handler req res =
     case req of 
         Get body ->
-        let 
-            filePath = urlParser(body.url)
-            contentType = typeParser(body.url)
-            url = Native.Console.println body.url
-        in
-            Native.File.read filePath  (\ data -> send data res)
+            let 
+                filePath = urlParser(body.url)
+                contentType = typeParser(body.url)
+                url = Native.Console.println body.url
+            in
+                filePath 
+                    |> Native.File.read
+                    |> Native.File.bind ( \ data -> send data res )
         _ -> succeed ()
 
 send = Native.Server.send
 
 main = run <| (handler |> Native.Server.http 8000 "localhost")
-                    
+
+           
 -- main = run <| (Native.Console.println { x = 1, y= 2} )
 
 {-
