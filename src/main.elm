@@ -1,6 +1,5 @@
 module App exposing (..)
 
-import Basics exposing (sqrt, pi)
 import Platform exposing (program)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
@@ -81,10 +80,11 @@ handler req res =
                 contentType = typeParser(body.url)
                 url = println body.url
             in
-                ()
-                    
+                ()       
         _ -> ()
 
 
 
-main = run <| (handler |> http 8000 "localhost")
+main = handler 
+    |> http 8000 "localhost"
+    |> run
