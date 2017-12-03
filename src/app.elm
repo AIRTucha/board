@@ -63,7 +63,7 @@
 module App exposing (..)
 
 import Platform exposing (..)
-import Time  exposing (Time, second) 
+import Timer  exposing (Time, second) 
 import Debug exposing (log)
 
 type alias Model = 
@@ -72,17 +72,17 @@ type alias Model =
 
 type Msg = Tick Time
 
-update msg {tick} =
+update msg model =
     case msg of 
         Tick _ -> 
             ( 
-              Model <| log "time" (tick + 1)
+              { model | tick = log "time" (model.tick + 1) }
             , Cmd.none
             )
     
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every second Tick 
+    Timer.every second Tick 
     
 main =
     program 
