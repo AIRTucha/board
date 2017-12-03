@@ -1,61 +1,93 @@
-module Http exposing (..)
+-- module Http exposing (..)
 
-import Process
-import Task
+-- import Process
+-- import Task
 
-import File exposing(read)
-import Future exposing(apply, Future)
-import Server exposing(..)
-import Console exposing(..)
+-- import File exposing(read)
+-- import Future exposing(apply, Future)
+-- import Server exposing(..)
+-- import Console exposing(..)
 
-{- REMOVE WHEN COMPILER BUG IS FIXED -}
+-- {- REMOVE WHEN COMPILER BUG IS FIXED -}
 
-import Json.Decode
+-- import Json.Decode
 
-main : Program Never Model Msg
-main =
-    Platform.program
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-type alias Model =
-    {}
+-- main : Program Never Model Msg
+-- main =
+--     Platform.program
+--         { init = init
+--         , update = update
+--         , subscriptions = subscriptions
+--         }
 
 
-type Msg
-    = Stop
-    | Abort
+-- type alias Model =
+--     {}
 
 
-init : ( Model, Cmd Msg )
-init =
-    {}
-        ! [ delayMsg 3000 <| Stop ]
+-- type Msg
+--     = Stop
+--     | Abort
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        Stop ->
-            model ! [ exitApp 0 ]
-
-        Abort ->
-            model ! [ exitApp -1 ]
+-- init : ( Model, Cmd Msg )
+-- init =
+--     {}
+--         ! [ delayMsg 3000 <| Stop ]
 
 
+-- update : Msg -> Model -> ( Model, Cmd Msg )
+-- update msg model =
+--     case msg of
+--         Stop ->
+--             model ! [ exitApp 0 ]
+
+--         Abort ->
+--             model ! [ exitApp -1 ]
+
+
+-- subscriptions : Model -> Sub Msg
+-- subscriptions model =
+--     externalStop <| always Abort
+
+
+
+-- -- UTILITIES
+
+
+-- delayMsg : Time -> Msg -> Cmd Msg
+-- delayMsg time msg =
+--     Process.sleep time
+--         |> Task.perform (\_ -> msg)
+
+module App exposing (..)
+
+import Platform exposing (..)
+import Time  exposing (Time, second) 
+import Debug exposing (log)
+
+type alias Model = 
+    { tick : Time 
+    }
+
+type Msg = Tick Time
+
+update msg {tick} =
+    case msg of 
+        Tick _ -> 
+            ( 
+              Model <| log "time" (tick + 1)
+            , Cmd.none
+            )
+    
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    externalStop <| always Abort
-
-
-
--- UTILITIES
-
-
-delayMsg : Time -> Msg -> Cmd Msg
-delayMsg time msg =
-    Process.sleep time
-        |> Task.perform (\_ -> msg)
+    Time.every second Tick 
+    
+main =
+    program 
+    { init = (Model 0, Cmd.none)
+    , update = update
+    , subscriptions = subscriptions
+    }
+    

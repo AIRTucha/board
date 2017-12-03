@@ -4,7 +4,7 @@
   "description": "Elm Back-end framework",
   "main": "main.elm",
   "scripts": {
-    "serve": "nodemon --exec \"elm make src/main.elm --output dist/main.js && node local.js\"",
+    "serve": "nodemon --exec \"elm make src/app.elm --output dist/main.js && node local.js\"",
     "build": "elm make src/main.elm --output=dist/main.js",
     "install": "elm-package install",
     "elm": "elm",

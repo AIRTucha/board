@@ -3,6 +3,7 @@ module App exposing (..)
 import Platform exposing (program)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
+import Debug exposing (log)
 
 import File exposing(read)
 import Future exposing(apply, Future)
