@@ -1,8 +1,6 @@
 effect module Timer where { subscription = MySub } exposing
   ( Time
-  , now, every
-  , millisecond, second, minute, hour
-  , inMilliseconds, inSeconds, inMinutes, inHours
+  , now, every, second
   )
 
 {-| Library for working with time.
@@ -23,99 +21,22 @@ import Native.Timer
 import Platform
 import Platform.Sub exposing (Sub)
 import Task exposing (Task)
+import Debug exposing(log)
 
-
-
--- TIMES
-
-
-{-| Type alias to make it clearer when you are working with time values.
-Using the `Time` helpers like `second` and `inSeconds` instead of raw numbers
-is very highly recommended.
--}
 type alias Time = Float
 
-
-{-| Get the `Time` at the moment when this task is run.
--}
 now : Task x Time
 now =
   Native.Timer.now
 
-
-{-| Subscribe to the current time. First you provide an interval describing how
-frequently you want updates. Second, you give a tagger that turns a time into a
-message for your `update` function. So if you want to hear about the current
-time every second, you would say something like this:
-    type Msg = Tick Time | ...
-    subscriptions model =
-      every second Tick
-Check out the [Elm Architecture Tutorial][arch] for more info on how
-subscriptions work.
-[arch]: https://github.com/evancz/elm-architecture-tutorial/
-**Note:** this function is not for animation! You need to use something based
-on `requestAnimationFrame` to get smooth animations. This is based on
-`setInterval` which is better for recurring tasks like “check on something
-every 30 seconds”.
--}
 every : Time -> (Time -> msg) -> Sub msg
 every interval tagger =
   subscription (Every interval tagger)
 
 
-
--- UNITS
-
-
-{-| Units of time, making it easier to specify things like a half-second
-`(500 * millisecond)` without remembering Elm&rsquo;s underlying units of time.
--}
-millisecond : Time
-millisecond =
-  1
-
-
-{-|-}
 second : Time
 second =
-  1000 * millisecond
-
-
-{-|-}
-minute : Time
-minute =
-  60 * second
-
-
-{-|-}
-hour : Time
-hour =
-  60 * minute
-
-
-{-|-}
-inMilliseconds : Time -> Float
-inMilliseconds t =
-  t
-
-
-{-|-}
-inSeconds : Time -> Float
-inSeconds t =
-  t / second
-
-
-{-|-}
-inMinutes : Time -> Float
-inMinutes t =
-  t / minute
-
-
-{-|-}
-inHours : Time -> Float
-inHours t =
-  t / hour
-
+  1000
 
 
 -- SUBSCRIPTIONS
@@ -185,7 +106,7 @@ onEffects router subs {processes} =
       |> Task.andThen (\_ -> spawnHelp router spawnList existingDict)
       |> Task.andThen (\newProcesses -> Task.succeed (State newTaggers newProcesses))
 
-
+-- add sub
 addMySub : MySub msg -> Taggers msg -> Taggers msg
 addMySub (Every interval tagger) state =
   case Dict.get interval state of
@@ -193,7 +114,7 @@ addMySub (Every interval tagger) state =
       Dict.insert interval [tagger] state
 
     Just taggers ->
-      Dict.insert interval (tagger :: taggers) state
+      Dict.insert interval [tagger] state
 
 
 spawnHelp : Platform.Router msg Time -> List Time -> Processes -> Task.Task x Processes

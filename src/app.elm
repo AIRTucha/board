@@ -1,93 +1,100 @@
--- module Http exposing (..)
-
--- import Process
--- import Task
-
--- import File exposing(read)
--- import Future exposing(apply, Future)
--- import Server exposing(..)
--- import Console exposing(..)
-
--- {- REMOVE WHEN COMPILER BUG IS FIXED -}
-
--- import Json.Decode
-
--- main : Program Never Model Msg
--- main =
---     Platform.program
---         { init = init
---         , update = update
---         , subscriptions = subscriptions
---         }
-
-
--- type alias Model =
---     {}
-
-
--- type Msg
---     = Stop
---     | Abort
-
-
--- init : ( Model, Cmd Msg )
--- init =
---     {}
---         ! [ delayMsg 3000 <| Stop ]
-
-
--- update : Msg -> Model -> ( Model, Cmd Msg )
--- update msg model =
---     case msg of
---         Stop ->
---             model ! [ exitApp 0 ]
-
---         Abort ->
---             model ! [ exitApp -1 ]
-
-
--- subscriptions : Model -> Sub Msg
--- subscriptions model =
---     externalStop <| always Abort
-
-
-
--- -- UTILITIES
-
-
--- delayMsg : Time -> Msg -> Cmd Msg
--- delayMsg time msg =
---     Process.sleep time
---         |> Task.perform (\_ -> msg)
-
 module App exposing (..)
 
-import Platform exposing (..)
-import Timer  exposing (Time, second) 
-import Debug exposing (log)
+import Platform
+import Server
+import Task
+import Console exposing(println)
+import File exposing(read)
+import Future exposing(apply, Future)
+import Path.Generic exposing (takeExtension)
+import String exposing (toLower)
 
-type alias Model = 
-    { tick : Time 
-    }
 
-type Msg = Tick Time
+urlParser url =
+    if url == "/" then 
+        "./public/index.html" 
+    else 
+        "./public" ++ url
 
-update msg model =
-    case msg of 
-        Tick _ -> 
-            ( 
-              { model | tick = log "time" (model.tick + 1) }
-            , Cmd.none
+main : Program Never Model Msg
+main =
+    Platform.program
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+typeParser : String -> String
+typeParser path =
+    case toLower << takeExtension <| path of
+        ".html" ->
+            "text/html"
+
+        ".js" ->
+            "text/javascript"
+        
+        ".css" ->
+            "application/json"
+
+        ".png" ->
+            "image/png"
+        
+        ".jpg" ->
+            "image/jpg"
+
+        ".gif" ->
+            "image/gif"
+
+        ".wav" ->
+            "audio/wav'"
+        
+        ".mp4" ->
+            "video/mp4"
+        
+        ".woff" ->
+            "application/font-woff"
+        
+        ".ttf" ->
+            "application/font-ttf"
+        
+        ".eot" ->
+            "application/vnd.ms-fontobject"
+
+        ".otf" ->
+            "application/font-otf"
+        
+        ".svg" ->
+            "application/image/svg+xml"
+        
+        _  ->
+            "application/octet-stream'"
+
+
+type alias Model =
+    Int
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( 0, Cmd.none )
+
+
+type Msg
+    = Request Server.Req
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update message model =
+    case message of
+        Request request ->
+            ( model + 1
+            , 
+                urlParser(Server.url request)
+                    |> read
+                    |> apply ( \ data -> Server.send request data ) 
+                    |> (\ _ -> Cmd.none )
             )
-    
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Timer.every second Tick 
-    
-main =
-    program 
-    { init = (Model 0, Cmd.none)
-    , update = update
-    , subscriptions = subscriptions
-    }
+    Server.listen 8080 Request
     

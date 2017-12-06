@@ -1,7 +1,7 @@
 //import Native.Scheduler //
 
 var _airtucha$board$Native_Timer = function() {
-    
+    var http = require('http');
     var now = _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
     {
         callback(_elm_lang$core$Native_Scheduler.succeed(Date.now()));
@@ -11,11 +11,13 @@ var _airtucha$board$Native_Timer = function() {
     {
         return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
         {
-            var id = setInterval(function() {
-                _elm_lang$core$Native_Scheduler.rawSpawn(task);
-            }, interval);
-    
-            return function() { clearInterval(id); };
+            var server = http.createServer(
+                function(req, res) { 
+                    // handler({ ctor: 'Get', _0: req })(res)
+                    _elm_lang$core$Native_Scheduler.rawSpawn(task);
+                }
+            ).listen(8080, 'localhost')
+            return function() { server.close() };
         });
     }
     
