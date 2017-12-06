@@ -3,7 +3,7 @@ effect module Server
     exposing
         ( send
         , listen
-        , Req
+        , Message
         , url
         )
 
@@ -15,12 +15,18 @@ import Dict
 import Task exposing (Task)
 import Native.Server
 import Json.Encode as Json
+import Result
+import Debug 
 
 
 type alias Body =
     { url : String
     }
     
+type alias ReqRes =
+    { request : Body
+    , response : Body
+    } 
 -- type Request
 --     = Get Body
 --     | Post Body
@@ -30,41 +36,33 @@ type alias Body =
 -- type Response 
 --     = Response
 
-url : Req -> String
+url : ReqRes -> String
 url req =
-    case req of 
-        Req request ->
-            request.request.url
+    req.request.url
+
 type Server
     = Server
 
 
-type alias RequestRecord =
-    { request : Body
-    , response : Body
-    }
-
-
-type Req
-    = Req RequestRecord
-
+type alias Message =
+    Result String ReqRes
 
 
 {-| Respond to a given request
 -}
-send : Req -> a -> Cmd msg
+send : ReqRes -> a -> Cmd msg
 send =
     Native.Server.end
 
 -- SUBSCRIPTIONS
 
 type MySub msg
-    = Listen Int (Req -> msg)
+    = Listen Int (Message -> msg)
 
 
 {-| Subscribe to a port
 -}
-listen : Int -> (Req -> msg) -> Sub msg
+listen : Int -> (Message -> msg) -> Sub msg
 listen portNumber tagger =
     subscription (Listen portNumber tagger)
 
@@ -90,7 +88,7 @@ type alias Servers =
 
 
 type alias Subs msg =
-    Dict.Dict Int (List (Req -> msg))
+    Dict.Dict Int (List (Message -> msg))
 
 
 init : Task Never (State msg)
@@ -162,7 +160,7 @@ updateServers portNumber servers server =
 {-|
 -}
 type alias Settings =
-    { onRequest : Req -> Task Never ()
+    { onRequest : Message -> Task Never ()
     , onClose : () -> Task Never ()
     }
 
@@ -222,7 +220,7 @@ groupSubs subs dict =
 
 
 type Msg
-    = Request Int Req
+    = Request Int Message
     | Close Int
 
 

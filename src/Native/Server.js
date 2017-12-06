@@ -6,7 +6,7 @@ var _airtucha$board$Native_Server = function(){
                   return http.createServer(function (req, res) {
                     _elm_lang$core$Native_Scheduler.rawSpawn(settings.onRequest(
                         {
-                            ctor: "Req",
+                            ctor: "Ok",
                             _0: { 
                                 request: req,
                                 response: res
@@ -20,7 +20,7 @@ var _airtucha$board$Native_Server = function(){
         },
         end: function (request){
             return function( value ) {
-                request._0.response.end(value);
+                request.response.end(value);
                 return { type: 'node', branches: { ctor: '[]' } }
             }
         },

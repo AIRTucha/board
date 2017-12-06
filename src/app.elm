@@ -81,19 +81,22 @@ init =
 
 
 type Msg
-    = Request Server.Req
-
+    = Request Server.Message
+ 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
         Request request ->
-            ( model + 1
-            , 
-                urlParser(Server.url request)
-                    |> read
-                    |> apply ( \ data -> Server.send request data ) 
-                    |> (\ _ -> Cmd.none )
-            )
+            case request of 
+                Ok req ->
+                    ( model + 1
+                    , urlParser(Server.url req)
+                        |> read
+                        |> apply ( \ data -> Server.send req data ) 
+                        |> (\ _ -> Cmd.none )
+                    )
+                Err err ->
+                    ( model, Cmd.none)
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Server.listen 8080 Request
