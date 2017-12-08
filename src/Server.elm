@@ -4,6 +4,7 @@ effect module Server
         ( send
         , listen
         , Message
+        , Pack(..)
         , url
         )
 
@@ -27,11 +28,16 @@ type alias ReqRes =
     { request : Body
     , response : Body
     } 
--- type Request
---     = Get Body
---     | Post Body
---     | Put Body
---     | Delete Body
+
+type Pack
+    = Get ReqRes
+    | Post ReqRes
+    | Put ReqRes
+    | Delete ReqRes
+
+
+type alias Message =
+    Result String Pack
 
 -- type Response 
 --     = Response
@@ -42,11 +48,6 @@ url req =
 
 type Server
     = Server
-
-
-type alias Message =
-    Result String ReqRes
-
 
 {-| Respond to a given request
 -}
@@ -160,14 +161,14 @@ updateServers portNumber servers server =
 {-|
 -}
 type alias Settings =
-    { onRequest : Message -> Task Never ()
+    { onRequest : Pack -> Task Never ()
     , onClose : () -> Task Never ()
     }
 
 
 setting : Platform.Router msg Msg -> Int -> Settings
 setting router portNumber =
-    { onRequest = \request -> Platform.sendToSelf router (Request portNumber request)
+    { onRequest = \request -> Platform.sendToSelf router (Request portNumber (Ok request))
     , onClose = \_ -> Platform.sendToSelf router (Close portNumber)
     }
     
@@ -212,8 +213,6 @@ groupSubs subs dict =
 
         [] ->
             dict
-
-
 
 
 -- HANDLE SELF MESSAGES

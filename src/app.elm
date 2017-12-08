@@ -89,13 +89,19 @@ update message model =
         Request request ->
             case request of 
                 Ok req ->
-                    ( model + 1
-                    , urlParser(Server.url req)
-                        |> read
-                        |> apply ( \ data -> Server.send req data ) 
-                        |> (\ _ -> Cmd.none )
-                    )
-                Err err ->
+                    case req of
+                        Server.Get pack ->
+                            ( model + 1
+                            , urlParser(Server.url pack)
+                                |> read
+                                |> apply ( \ data -> Server.send pack data ) 
+                                |> (\ _ -> Cmd.none )
+                            )
+                        
+                        _ -> 
+                            ( model, Cmd.none)
+
+                _ ->
                     ( model, Cmd.none)
 subscriptions : Model -> Sub Msg
 subscriptions model =
