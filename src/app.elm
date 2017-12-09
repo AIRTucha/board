@@ -103,6 +103,8 @@ update message model =
 
                 Err msg ->
                     log msg ( model, Cmd.none)
+
+                    
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch[
