@@ -1,9 +1,9 @@
 module App exposing (..)
 
-import Basics exposing (sqrt, pi)
 import Platform exposing (program)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
+import Debug exposing (log)
 
 import File exposing(read)
 import Future exposing(apply, Future)
@@ -81,10 +81,11 @@ handler req res =
                 contentType = typeParser(body.url)
                 url = println body.url
             in
-                ()
-                    
+                ()       
         _ -> ()
 
 
 
-main = run <| (handler |> http 8000 "localhost")
+main = handler 
+    |> http 8000 "localhost"
+    |> run

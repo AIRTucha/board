@@ -1,22 +1,34 @@
-var _airtucha$board$Native_Server = function() {
-    var http = require('http');
+var _airtucha$board$Native_Server = function(){
+    const http = require('http');
     return {
-        http: function(port) {
-            return function(hostname) {
-                return function(handler){
-                    return http.createServer(
-                        function(req, res) { 
-                            handler({ ctor: 'Get', _0: req })(res)
-                            // res.end()
+        open: function (port){
+            return function(settings) {
+                  return http.createServer(function (req, res) {
+                        res.writeHead
+                    _elm_lang$core$Native_Scheduler.rawSpawn(settings.onRequest(
+                        {
+                            ctor: "Get",
+                            _0: { 
+                                request: req,
+                                response: res
+                            }
                         }
-                ).listen(port, hostname)
+                    ));
+                  }).on('close', function () {
+                    _elm_lang$core$Native_Scheduler.rawSpawn(settings.onClose());
+                  }).listen(port);
                 }
+        },
+        end: function (request){
+            return function( value ) {
+                request.response.end(value);
+                return { type: 'node', branches: { ctor: '[]' } }
             }
         },
-        send: function(value) {
-            return function(response) {
-                response.end(value)
-            }
+        close: function (server) {
+            server.close();
+            return { ctor: '_Tuple0' }
         }
-    }
-}() 
+    };
+}();
+
