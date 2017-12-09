@@ -8,7 +8,7 @@ import File exposing(read)
 import Future exposing(apply, Future)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
-
+import Debug exposing (log)
 
 urlParser url =
     if url == "/" then 
@@ -101,9 +101,12 @@ update message model =
                         _ -> 
                             ( model, Cmd.none)
 
-                _ ->
-                    ( model, Cmd.none)
+                Err msg ->
+                    log msg ( model, Cmd.none)
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Server.listen 8080 Request
+    Sub.batch[
+        Server.listen 8080 Request,
+        Server.listen 8080 Request
+    ]
     

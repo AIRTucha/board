@@ -168,7 +168,7 @@ type alias Settings =
 
 setting : Platform.Router msg Msg -> Int -> Settings
 setting router portNumber =
-    { onRequest = \request -> Platform.sendToSelf router (Request portNumber (Ok request))
+    { onRequest = \request -> Platform.sendToSelf router (Request portNumber request)
     , onClose = \_ -> Platform.sendToSelf router (Close portNumber)
     }
     
@@ -219,7 +219,7 @@ groupSubs subs dict =
 
 
 type Msg
-    = Request Int Message
+    = Request Int Pack
     | Close Int
 
 
@@ -231,11 +231,25 @@ onSelfMsg :
 onSelfMsg router selfMsg state =
     case selfMsg of
         Request portNumber request ->
-            Dict.get portNumber state.subs
-                |> Maybe.withDefault []
-                |> List.map (\tagger -> Platform.sendToApp router (tagger request))
-                |> Task.sequence
-                |> Task.andThen (\_ -> Task.succeed state) 
+            case Dict.get portNumber state.subs of 
+                Maybe.Just taggers ->
+                    case taggers of
+                        sub :: [] ->
+                            Platform.sendToApp router (sub (Ok request))
+                                |> Task.andThen (\_ -> Task.succeed state) 
+
+                        sub :: tail ->
+                            Platform.sendToApp router (sub (Ok request))
+                            :: List.map (\tagger -> Platform.sendToApp router (tagger (Err "Too many subscribers"))) tail
+                                |> Task.sequence
+                                |> Task.andThen (\_ -> Task.succeed state) 
+
+                        _ -> 
+                            Task.succeed state
+
+                _ ->
+                    Task.succeed state
+                
             
         Close portNumber ->
             case Dict.get portNumber state.servers of
