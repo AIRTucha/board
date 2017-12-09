@@ -5,7 +5,6 @@ import Server
 import Task
 import Console exposing(println)
 import File exposing(read)
-import Future exposing(apply, Future)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing (log)
@@ -82,6 +81,7 @@ init =
 
 type Msg
     = Request Server.Message
+    | File (Server.ReqRes, File.File)
  
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
@@ -94,8 +94,8 @@ update message model =
                             ( model + 1
                             , urlParser(Server.url pack)
                                 |> read
-                                |> apply ( \ data -> Server.send pack data ) 
-                                |> (\ _ -> Cmd.none )
+                                |> Task.andThen (\ file -> Task.succeed(pack, file) )
+                                |> Task.perform File 
                             )
                         
                         _ -> 
@@ -104,6 +104,10 @@ update message model =
                 Err msg ->
                     log msg ( model, Cmd.none)
 
+        File (pack, file) ->
+            Server.send pack file
+                |> (\ _ -> ( Debug.log "ok" model, Cmd.none) )
+            
                     
 subscriptions : Model -> Sub Msg
 subscriptions model =
