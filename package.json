@@ -8,7 +8,7 @@
     "build": "elm make src/main.elm --output=dist/main.js",
     "install": "elm-package install",
     "elm": "elm",
-    "test": "elm-test"
+    "test": "elm-test --watch"
   },
   "author": "airtucha",
   "license": "ISC",

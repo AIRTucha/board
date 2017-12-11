@@ -1,4 +1,5 @@
-module Example exposing (..)
+module ParserTest exposing (..)
+
 
 import Expect exposing (Expectation)
 import Test exposing (..)
@@ -13,3 +14,6 @@ suite =
                 \_ -> Expect.equal parse 1
             ]
         ]
+
+
+        
