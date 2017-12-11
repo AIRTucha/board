@@ -106,13 +106,11 @@ update message model =
 
         File (pack, file) ->
             Server.send pack file
-                |> (\ _ -> ( Debug.log "ok" model, Cmd.none) )
+                |> (\ _ -> ( model, Cmd.none) )
             
                     
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch[
-        Server.listen 8080 Request,
-        Server.listen 8080 Request
-    ]
+    Server.listen 8080 Request
+    
     
