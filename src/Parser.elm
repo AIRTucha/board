@@ -27,10 +27,12 @@ parser value =
         Flat value -> 
             value
         
-        Collection c ->
-             c
-                |> List.map parser
-                |> List.foldr (++) "" 
+        _ -> "col"
+        
+        -- Collection c ->
+        --      c
+        --         |> List.map parser
+        --         |> List.foldr (++) "" 
 
 
 (</>) : Template -> Template -> Template
@@ -39,12 +41,17 @@ parser value =
         Collection l1 ->
             case t2 of 
                 Collection l2 ->
-                    Collection (l1 ++ l2)
+                    Collection <| l1 ++ l2
             
                 v ->
-                    Collection (t1 :: t2 :: [])
+                    Collection <| v :: l1
 
-        v ->
-            t2 </> t1
+        v1 ->
+            case t2 of
+                Collection l2 ->
+                    Collection <| v1 :: l2
+                
+                v2 ->
+                    Collection <| v1 :: v2 :: []
 
 

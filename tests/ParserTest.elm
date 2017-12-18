@@ -11,7 +11,7 @@ suite =
     describe "The String module"
         [ describe "String.reverse"
             [ test "has no effect on a palindrome" <|
-                \_ -> Expect.equal (parser (f "params" </> p  "values"))  "params"
+                \_ -> Expect.equal (f "params" </> p  "values") (Collection ((Flat "params") :: (Param "values") :: []))
             ]
         ]
 
