@@ -2,30 +2,34 @@ module Parser exposing(..)
 
 
 type Template 
-    = Flat String
-    | Param String
+    = P String
+    | Integer
     | Collection (List Template)
 
 type Tree
     = Leaf Maybe 
     | Tree
 
-p : String -> Template
-p string =
-    Param string
+-- p : String -> Template
+-- p string =
+--     Param string
 
-f : String -> Template
-f string =
-    Flat string
+-- f : String -> Template
+-- f string =
+--     Flat string
+
+-- int : String -> Template
+-- int string =
+--     Integer string
 
 parser : Template -> String
 parser value =
     case value of
-        Param string -> 
-            "param" ++ string
+        P string -> 
+            string
 
-        Flat value -> 
-            value
+        Integer -> 
+            "int"
         
         _ -> "col"
         

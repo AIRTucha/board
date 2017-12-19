@@ -5,14 +5,16 @@ import Expect exposing (Expectation)
 import Test exposing (..)
 import Parser exposing (..)
 
+str = "string"
 
 suite : Test
 suite =
-    describe "The String module"
-        [ describe "String.reverse"
-            [ test "has no effect on a palindrome" <|
-                \_ -> Expect.equal (f "params" </> p  "values") (Collection ((Flat "params") :: (Param "values") :: []))
-            ]
+    describe "Parser"
+        [ describe "Slash"
+            [ test "wosk for flat and param" <|
+                \_ -> 
+                    P str </> Integer
+                        |> Expect.equal ( Collection <| (P str) :: Integer :: [] )
         ]
 
-
+        ]
