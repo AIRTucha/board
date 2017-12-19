@@ -1,0 +1,13 @@
+{
+  "name": "board",
+  "version": "0.0.1",
+  "description": "Test Suites",
+  "scripts": {
+    "install": "elm-package install"
+  },
+  "author": "airtucha",
+  "license": "ISC",
+  "dependencies": {
+    "elm": "^0.18.0"
+  }
+}

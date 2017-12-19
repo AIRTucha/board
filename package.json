@@ -8,7 +8,7 @@
     "build": "elm make src/main.elm --output=dist/main.js",
     "install": "elm-package install",
     "elm": "elm",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "elm-test --watch"
   },
   "author": "airtucha",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "elm": "^0.18.0"
   },
   "devDependencies": {
+    "elm-test": "^0.18.12",
     "nodemon": "^1.12.1"
   }
 }
