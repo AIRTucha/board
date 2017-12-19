@@ -1,37 +1,38 @@
 module Parser exposing(..)
 
 
-type Template 
-    = P String
-    | Integer
-    | Collection (List Template)
+type URL 
+    = ParsePath String
+    | ParseFloat
+    | ParseInt
+    | Collection (List URL)
 
 type Tree
     = Leaf Maybe 
     | Tree
 
--- p : String -> Template
--- p string =
---     Param string
+p : String -> URL
+p string =
+    ParsePath string
 
--- f : String -> Template
--- f string =
---     Flat string
+float : URL
+float =
+    ParseFloat
 
--- int : String -> Template
--- int string =
---     Integer string
+int : URL
+int =
+    ParseInt
 
-parser : Template -> String
-parser value =
-    case value of
-        P string -> 
-            string
+-- parser : URL -> String
+-- parser value =
+--     case value of
+--         P string -> 
+--             string
 
-        Integer -> 
-            "int"
+--         Integer -> 
+--             "int"
         
-        _ -> "col"
+--         _ -> "col"
         
         -- Collection c ->
         --      c
@@ -39,23 +40,23 @@ parser value =
         --         |> List.foldr (++) "" 
 
 
-(</>) : Template -> Template -> Template
+(</>) : URL -> URL -> URL
 (</>) t1 t2 =
     case t1 of
         Collection l1 ->
             case t2 of 
                 Collection l2 ->
-                    Collection <| l1 ++ l2
+                    Collection <| l1 ++ ParsePath "/" :: l2
             
                 v ->
-                    Collection <| v :: l1
+                    Collection <| v :: ParsePath "/" :: l1
 
         v1 ->
             case t2 of
                 Collection l2 ->
-                    Collection <| v1 :: l2
+                    Collection <| v1 :: ParsePath "/" :: l2
                 
                 v2 ->
-                    Collection <| v1 :: v2 :: []
+                    Collection <| v1 :: ParsePath "/" :: v2 :: []
 
 

@@ -10,11 +10,18 @@ str = "string"
 suite : Test
 suite =
     describe "Parser"
-        [ describe "Slash"
-            [ test "wosk for flat and param" <|
+        [ describe "Slash works for"
+            [ test "path and int" <|
                 \_ -> 
-                    P str </> Integer
-                        |> Expect.equal ( Collection <| (P str) :: Integer :: [] )
-        ]
-
+                    p str </> int
+                        |> Expect.equal ( Collection <| (ParsePath str) :: ParsePath "/" :: ParseInt :: [] )
+            , test "float and path" <|
+                \_ -> 
+                    float </> p str 
+                        |> Expect.equal ( Collection <| ParseFloat :: ParsePath "/" :: ParsePath str :: [] )
+            , test "float, int and path" <|
+                \_ -> 
+                    float </> int </> p str 
+                        |> Expect.equal ( Collection <| ParseFloat :: ParsePath "/" :: ParseInt :: ParsePath "/" :: ParsePath str :: [] )
+            ]
         ]
