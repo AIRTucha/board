@@ -1,61 +1,60 @@
 module Parser exposing(..)
 
 
-type Template 
-    = P String
-    | Integer
-    | Collection (List Template)
 
-type Tree
-    = Leaf Maybe 
-    | Tree
+type SubURL 
+    = ParsePath String
+    | ParseFloat
+    | ParseInt
 
--- p : String -> Template
--- p string =
---     Param string
+type URL
+    = URLNode SubURL 
+    | URLFork Char SubURL URL
 
--- f : String -> Template
--- f string =
---     Flat string
+p : String -> URL
+p string =
+    URLNode <| ParsePath string
 
--- int : String -> Template
--- int string =
---     Integer string
+float : URL
+float =
+    URLNode ParseFloat
 
-parser : Template -> String
-parser value =
-    case value of
-        P string -> 
-            string
+int : URL
+int =
+    URLNode ParseInt
 
-        Integer -> 
-            "int"
+-- parser : URL -> String
+-- parser value =
+--     case value of
+--         P string -> 
+--             string
+
+--         Integer -> 
+--             "int"
         
-        _ -> "col"
+--         _ -> "col"
         
         -- Collection c ->
         --      c
         --         |> List.map parser
         --         |> List.foldr (++) "" 
 
+(</>): URL -> URL -> URL
+(</>) = fork '/'
 
-(</>) : Template -> Template -> Template
-(</>) t1 t2 =
-    case t1 of
-        Collection l1 ->
-            case t2 of 
-                Collection l2 ->
-                    Collection <| l1 ++ l2
-            
-                v ->
-                    Collection <| v :: l1
+(<?>): URL -> URL -> URL
+(<?>) = fork '?'
 
-        v1 ->
-            case t2 of
-                Collection l2 ->
-                    Collection <| v1 :: l2
-                
-                v2 ->
-                    Collection <| v1 :: v2 :: []
+(<&>): URL -> URL -> URL
+(<&>) = fork '&'
+
+fork : Char -> URL -> URL -> URL
+fork char url1 url2 =
+    case url1 of
+        URLFork char1 sub1 nextURL1 ->
+            URLFork char1 sub1 <| fork char nextURL1 url2
+        
+        URLNode sub1 ->
+            URLFork char sub1 <| url2
 
 
