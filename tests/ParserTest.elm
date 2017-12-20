@@ -4,6 +4,7 @@ module ParserTest exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
 import Parser exposing (..)
+import Maybe
 
 str = "string"
 
@@ -48,14 +49,22 @@ suite =
             [ test "split string by /" <|
                 \_ ->
                     break '/' "some/value"
-                        |> Expect.equal ("some", "value")
+                        |> Expect.equal ( Just ("some", "value") )
+            , test "split string by multiple /" <|
+                \_ ->
+                    break '/' "some/value/someother"
+                        |> Expect.equal ( Just ("some", "value/someother") )
             , test "empty string" <|
                 \_ ->
                     break '/' ""
-                        |> Expect.equal ("", "")
+                        |> Expect.equal Nothing
             , test "no splitter" <|
                 \_ ->
                     break '/' "some.value"
-                        |> Expect.equal ("", "some.value")
+                        |> Expect.equal Nothing
+            , test "just splitter" <|
+                \_ ->
+                    break '/' "/"
+                        |> Expect.equal ( Just("","") )
             ]
         ]

@@ -58,18 +58,18 @@ fork char url1 url2 =
         URLNode sub1 ->
             URLFork char sub1 <| url2
 
-break: Char -> String -> ( String, String )
+break: Char -> String -> Maybe ( String, String )
 break char string =
     splitOnce char "" string
 
-splitOnce: Char -> String -> String -> ( String, String )
+splitOnce: Char -> String -> String -> Maybe ( String, String )
 splitOnce char head tail =
     case uncons tail of 
         Just (first, rest) ->
             if first == char then 
-                ( head, rest ) 
+                Just ( head, rest ) 
             else 
                 splitOnce char (head ++ fromChar first) rest
         
         Nothing ->
-            ( tail, head )
+            Nothing
