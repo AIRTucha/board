@@ -11,17 +11,17 @@ suite : Test
 suite =
     describe "Parser"
         [ describe "Slash works for"
-            [ test "path and int" <|
-                \_ -> 
-                    p str </> int
-                        |> Expect.equal ( Collection <| (ParsePath str) :: ParsePath "/" :: ParseInt :: [] )
-            , test "float and path" <|
-                \_ -> 
-                    float </> p str 
-                        |> Expect.equal ( Collection <| ParseFloat :: ParsePath "/" :: ParsePath str :: [] )
-            , test "float, int and path" <|
-                \_ -> 
-                    float </> int </> p str 
-                        |> Expect.equal ( Collection <| ParseFloat :: ParsePath "/" :: ParseInt :: ParsePath "/" :: ParsePath str :: [] )
-            ]
+            -- [ test "path and int" <|
+            --     \_ -> 
+            --         p str </> int
+            --             |> Expect.equal ( Collection <| (ParsePath str) :: ParsePath "/" :: ParseInt :: [] )
+            -- , test "float and path" <|
+            --     \_ -> 
+            --         float </> p str 
+            --             |> Expect.equal ( Collection <| ParseFloat :: ParsePath "/" :: ParsePath str :: [] )
+            -- , test "float, int and path" <|
+            --     \_ -> 
+            --         float </> int </> p str 
+            --             |> Expect.equal ( Collection <| ParseFloat :: ParsePath "/" :: ParseInt :: ParsePath "/" :: ParsePath str :: [] )
+            -- ]
         ]

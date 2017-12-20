@@ -1,27 +1,27 @@
 module Parser exposing(..)
 
 
-type URL 
+
+type SubURL 
     = ParsePath String
     | ParseFloat
     | ParseInt
-    | Collection (List URL)
 
-type Tree
-    = Leaf Maybe 
-    | Tree
+type URL
+    = URLNode SubURL 
+    | URLFork Char SubURL URL
 
 p : String -> URL
 p string =
-    ParsePath string
+    URLNode <| ParsePath string
 
 float : URL
 float =
-    ParseFloat
+    URLNode ParseFloat
 
 int : URL
 int =
-    ParseInt
+    URLNode ParseInt
 
 -- parser : URL -> String
 -- parser value =
@@ -40,23 +40,23 @@ int =
         --         |> List.foldr (++) "" 
 
 
-(</>) : URL -> URL -> URL
-(</>) t1 t2 =
-    case t1 of
-        Collection l1 ->
-            case t2 of 
-                Collection l2 ->
-                    Collection <| l1 ++ ParsePath "/" :: l2
+-- (</>) : URL -> URL -> URL
+-- (</>) t1 t2 =
+--     case t1 of
+--         Collection l1 ->
+--             case t2 of 
+--                 Collection l2 ->
+--                     Collection <| l1 ++ ParsePath "/" :: l2
             
-                v ->
-                    Collection <| v :: ParsePath "/" :: l1
+--                 v ->
+--                     Collection <| v :: ParsePath "/" :: l1
 
-        v1 ->
-            case t2 of
-                Collection l2 ->
-                    Collection <| v1 :: ParsePath "/" :: l2
+--         v1 ->
+--             case t2 of
+--                 Collection l2 ->
+--                     Collection <| v1 :: ParsePath "/" :: l2
                 
-                v2 ->
-                    Collection <| v1 :: ParsePath "/" :: v2 :: []
+--                 v2 ->
+--                     Collection <| v1 :: ParsePath "/" :: v2 :: []
 
 
