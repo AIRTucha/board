@@ -10,7 +10,7 @@ str = "string"
 suite : Test
 suite =
     describe "Parser"
-        [ describe "Slash works for"
+        [ describe "Build a tree"
             [ test "path and int" <|
                 \_ -> 
                     p str </> int
@@ -43,5 +43,19 @@ suite =
                                 URLFork '?' ParseInt <| 
                                     URLFork '&' ParseFloat <|
                                         URLNode (ParsePath str) )
+            ]
+        , describe "Split string once"
+            [ test "split string by /" <|
+                \_ ->
+                    break '/' "some/value"
+                        |> Expect.equal ("some", "value")
+            , test "empty string" <|
+                \_ ->
+                    break '/' ""
+                        |> Expect.equal ("", "")
+            , test "no splitter" <|
+                \_ ->
+                    break '/' "some.value"
+                        |> Expect.equal ("", "some.value")
             ]
         ]

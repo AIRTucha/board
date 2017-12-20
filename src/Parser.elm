@@ -1,6 +1,7 @@
 module Parser exposing(..)
 
-
+import String exposing(uncons, cons, fromChar)
+import Maybe
 
 type SubURL 
     = ParsePath String
@@ -34,10 +35,10 @@ int =
         
 --         _ -> "col"
         
-        -- Collection c ->
-        --      c
-        --         |> List.map parser
-        --         |> List.foldr (++) "" 
+--         Collection c ->
+--              c
+--                 |> List.map parser
+--                 |> List.foldr (++) "" 
 
 (</>): URL -> URL -> URL
 (</>) = fork '/'
@@ -57,4 +58,18 @@ fork char url1 url2 =
         URLNode sub1 ->
             URLFork char sub1 <| url2
 
+break: Char -> String -> ( String, String )
+break char string =
+    splitOnce char "" string
 
+splitOnce: Char -> String -> String -> ( String, String )
+splitOnce char head tail =
+    case uncons tail of 
+        Just (first, rest) ->
+            if first == char then 
+                ( head, rest ) 
+            else 
+                splitOnce char (head ++ fromChar first) rest
+        
+        Nothing ->
+            ( tail, head )
