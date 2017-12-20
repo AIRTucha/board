@@ -42,6 +42,12 @@ int =
 (</>): URL -> URL -> URL
 (</>) = fork '/'
 
+(<?>): URL -> URL -> URL
+(<?>) = fork '?'
+
+(<&>): URL -> URL -> URL
+(<&>) = fork '&'
+
 fork : Char -> URL -> URL -> URL
 fork char url1 url2 =
     case url1 of
@@ -50,23 +56,5 @@ fork char url1 url2 =
         
         URLNode sub1 ->
             URLFork char sub1 <| url2
-                
-                
-    -- case t1 of
-    --     URLFork f1 ->
-    --         case t2 of 
-    --             Collection l2 ->
-    --                 Collection <| l1 ++ ParsePath "/" :: l2
-            
-    --             v ->
-    --                 Collection <| v :: ParsePath "/" :: l1
-
-    --     v1 ->
-    --         case t2 of
-    --             Collection l2 ->
-    --                 Collection <| v1 :: ParsePath "/" :: l2
-                
-    --             v2 ->
-    --                 Collection <| v1 :: ParsePath "/" :: v2 :: []
 
 
