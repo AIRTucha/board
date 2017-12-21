@@ -1,7 +1,9 @@
 module Parser exposing(..)
 
-import String exposing(uncons, cons, fromChar)
+import List exposing (reverse)
+import String exposing(toFloat, toInt, dropLeft, left, length, uncons, cons, fromChar, startsWith)
 import Maybe
+import Result
 
 type SubURL 
     = ParsePath String
@@ -11,6 +13,13 @@ type SubURL
 type URL
     = URLNode SubURL 
     | URLFork Char SubURL URL
+
+type URLValue
+    = Interger Int
+    | Floating Float
+    | MultyValue (List URLValue)
+    | Failure String
+    | Succes
 
 p : String -> URL
 p string =
@@ -24,21 +33,102 @@ int : URL
 int =
     URLNode ParseInt
 
--- parser : URL -> String
--- parser value =
---     case value of
---         P string -> 
---             string
+parser : URL -> String -> URLValue
+parser value string =
+    parsingLoop value [] string
 
---         Integer -> 
---             "int"
+parsingLoop : URL -> (List URLValue) -> String -> URLValue
+parsingLoop url result string =
+    case url of
+        URLFork char sub nextURL ->
+            case sub of
+                ParsePath path ->
+                    let 
+                        fullPath = path ++ fromChar char
+                        lengthWithSplitter = (1 + length path)
+                    in
+                        if startsWith fullPath string then
+                            string
+                                |> dropLeft lengthWithSplitter
+                                |> parsingLoop nextURL result
+                        else 
+                            path ++ ( fromChar char ) ++ " is not " ++ ( left lengthWithSplitter string ) 
+                                |> reportError result
+
+                ParseFloat ->
+                    case (parseValue char String.toFloat string) of
+                        Ok ( tail, float ) ->
+                            parsingLoop nextURL ((Floating float) :: result) tail
+                        
+                        Err error ->
+                            reportError result error
+                           
+                ParseInt ->
+                    case parseValue char String.toInt string of
+                        Ok (tail, int) ->
+                           parsingLoop nextURL ((Interger int) :: result) tail
+                        
+                        Err error ->
+                            reportError result error
+
+        URLNode node ->
+            case node of
+                ParsePath path ->
+                    if string == path then
+                        makeValue result 
+                    else 
+                        path ++ " is not " ++ string
+                            |> reportError result 
+                
+                ParseFloat ->
+                    case String.toFloat string of
+                        Ok float ->
+                            (Floating float) :: result
+                                |> makeValue 
+                        
+                        Err error ->
+                            reportError result error
+                
+                ParseInt ->
+                    case String.toInt string of
+                        Ok int ->
+                            (Interger int) :: result
+                                |> makeValue 
+                        
+                        Err error ->
+                            reportError result error
+
         
---         _ -> "col"
+parseValue: Char -> (String -> Result String a) -> String -> Result String ( String, a )
+parseValue char parse string =
+    case (break char string) of
+        Just (head, tail) ->
+            parse head
+                |> Result.map ( \ value -> ( tail, value ))
         
---         Collection c ->
---              c
---                 |> List.map parser
---                 |> List.foldr (++) "" 
+        Nothing ->
+            Err <| string ++ " do not contain " ++ (fromChar char)
+
+
+makeValue: (List URLValue) -> URLValue
+makeValue list =
+    case list of
+        head :: [] ->
+            head 
+
+        head :: tail ->
+            MultyValue <| reverse list 
+        
+        [] ->
+            Succes
+
+
+reportError: (List URLValue) -> String -> URLValue
+reportError result error =
+    result 
+        |> (::) ( Failure error )
+        |> makeValue
+
 
 (</>): URL -> URL -> URL
 (</>) = fork '/'
