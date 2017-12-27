@@ -9,6 +9,9 @@ type SubURL
     = ParsePath String
     | ParseFloat
     | ParseInt
+-- Any
+-- Query
+-- Query Params
 
 type URL
     = URLNode SubURL 
