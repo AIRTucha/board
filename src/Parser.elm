@@ -9,6 +9,7 @@ type SubURL
     = ParsePath String
     | ParseFloat
     | ParseInt
+-- String
 -- Any
 -- Query
 -- Query Params
@@ -110,7 +111,7 @@ parseValue char parse string =
                 |> Result.map ( \ value -> ( tail, value ))
         
         Nothing ->
-            Err <| string ++ " do not contain " ++ (fromChar char)
+            Err <| string ++ " does not contain " ++ (fromChar char)
 
 
 makeValue: (List URLValue) -> URLValue
