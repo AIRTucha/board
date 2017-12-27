@@ -9,7 +9,7 @@ type SubURL
     = ParsePath String
     | ParseFloat
     | ParseInt
--- String
+-- String   
 -- Any
 -- Query
 -- Query Params
@@ -59,21 +59,16 @@ parsingLoop url result string =
                             path ++ ( fromChar char ) ++ " is not " ++ ( left lengthWithSplitter string ) 
                                 |> reportError result
 
+
                 ParseFloat ->
-                    case (parseValue char String.toFloat string) of
-                        Ok ( tail, float ) ->
-                            parsingLoop nextURL ((Floating float) :: result) tail
-                        
-                        Err error ->
-                            reportError result error
+                    parseValue char String.toFloat string
+                        |> parseNext result nextURL Floating
                            
+
                 ParseInt ->
-                    case parseValue char String.toInt string of
-                        Ok (tail, int) ->
-                           parsingLoop nextURL ((Interger int) :: result) tail
-                        
-                        Err error ->
-                            reportError result error
+                    parseValue char String.toInt string
+                        |> parseNext result nextURL Interger
+
 
         URLNode node ->
             case node of
@@ -84,23 +79,15 @@ parsingLoop url result string =
                         path ++ " is not " ++ string
                             |> reportError result 
                 
-                ParseFloat ->
-                    case String.toFloat string of
-                        Ok float ->
-                            (Floating float) :: result
-                                |> makeValue 
-                        
-                        Err error ->
-                            reportError result error
                 
+                ParseFloat ->
+                    string
+                        |> packValue result String.toFloat Floating
+                
+
                 ParseInt ->
-                    case String.toInt string of
-                        Ok int ->
-                            (Interger int) :: result
-                                |> makeValue 
-                        
-                        Err error ->
-                            reportError result error
+                    string
+                        |> packValue result String.toInt Interger
 
         
 parseValue: Char -> (String -> Result String a) -> String -> Result String ( String, a )
@@ -113,6 +100,34 @@ parseValue char parse string =
         Nothing ->
             Err <| string ++ " does not contain " ++ (fromChar char)
 
+parseNext
+    : List URLValue
+    -> URL
+    -> (a -> URLValue)
+    -> Result String ( String, a )
+    -> URLValue
+parseNext result url packer input =
+    case input of
+        Ok ( tail, value ) ->
+            parsingLoop url (packer value :: result) tail
+        
+        Err error ->
+            reportError result error
+
+packValue
+    : List URLValue
+    -> (a -> Result String b)
+    -> (b -> URLValue)
+    -> a
+    -> URLValue
+packValue result parser packer input =
+    case parser input of 
+        Ok value ->
+            packer value :: result
+                    |> makeValue 
+            
+        Err error ->
+            reportError result error
 
 makeValue: (List URLValue) -> URLValue
 makeValue list =
