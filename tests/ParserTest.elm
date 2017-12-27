@@ -90,6 +90,11 @@ suite =
                             testStr ++ "/3.1415"
                                 |> parser (p testStr </> float)
                                 |> Expect.equal ( Floating 3.1415 )
+                    , test "path and string" <|
+                        \_ ->
+                            testStr ++ "/" ++ testStr
+                                |> parser (p testStr </> str)
+                                |> Expect.equal ( Str testStr )
                     ]
                 , describe "Error" 
                     [ test "Incorrect path" <|
@@ -142,6 +147,11 @@ suite =
                                 "10/9.123"
                                     |> parser  (int </> float) 
                                     |> Expect.equal ( MultyValue <| Interger 10 :: Floating 9.123 :: [] )
+                        , test "int and string" <|
+                            \_ ->
+                                "10/" ++ testStr
+                                    |> parser  (int </> str) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Str testStr :: [] )
                         ]
                     , describe "Error"
                         [ test "Incorrect int" <|
@@ -183,6 +193,11 @@ suite =
                                 "10.435/9"
                                     |> parser  (float </> int) 
                                     |> Expect.equal ( MultyValue <| Floating 10.435 :: Interger 9 :: [] )
+                        , test "float and string" <|
+                            \_ ->
+                                "10.435/" ++ testStr
+                                    |> parser  (float </> str) 
+                                    |> Expect.equal ( MultyValue <| Floating 10.435 :: Str testStr :: [] )
                         ]
                     , describe "Error"
                         [ test "Incorrect float" <|
@@ -190,7 +205,7 @@ suite =
                                 "a9.43"
                                     |> parser float
                                     |> Expect.equal (Failure "could not convert string 'a9.43' to a Float")
-                        , test "Incorrect separator between ints" <|
+                        , test "Incorrect separator between floats" <|
                             \_ ->
                                 "10.5?43.4"
                                     |> parser (float </> float)
@@ -200,6 +215,45 @@ suite =
                                 "5.4&a3.9"
                                     |> parser (float <&> float)
                                     |> Expect.equal ( MultyValue <| Floating 5.4 :: Failure "could not convert string 'a3.9' to a Float" :: [] )
+                        ]
+                    , describe "Str"
+                        [ describe "Correct"
+                            [ test "single string" <|
+                                \_ ->
+                                    testStr
+                                        |> parser str
+                                        |> Expect.equal ( Str testStr) 
+                            , test "two strings" <|
+                                \_ ->
+                                    testStr ++ "/" ++ testStr
+                                        |> parser  (str </> str) 
+                                        |> Expect.equal ( MultyValue <| Str testStr :: Str testStr :: [] )
+                            , test "string and path" <|
+                                \_ ->
+                                    testStr ++ "/" ++ testStr
+                                        |> parser (str </> p testStr)
+                                        |> Expect.equal ( Str testStr )
+                            , test "string and int" <|
+                                \_ ->
+                                    testStr ++ "/9"
+                                        |> parser  (str </> int) 
+                                        |> Expect.equal ( MultyValue <| Str testStr :: Interger 9 :: [] )
+                            , test "string and float" <|
+                                \_ ->
+                                    testStr ++ "/9"
+                                        |> parser  (str </> float) 
+                                        |> Expect.equal ( MultyValue <| Str testStr :: Floating 9 :: [] )
+                            ]
+                        , describe "Error"
+                            [ test "Incorrect separator between strings" <|
+                                \_ ->
+                                    let
+                                        path = testStr ++ "&" ++ testStr
+                                    in   
+                                        path
+                                            |> parser (str </> str)
+                                            |> Expect.equal ( Failure <| path ++ " does not contain /")
+                            ]
                         ]
                     ]
             ]

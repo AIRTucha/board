@@ -9,7 +9,7 @@ type SubURL
     = ParsePath String
     | ParseFloat
     | ParseInt
--- String   
+    | ParseStr
 -- Any
 -- Query
 -- Query Params
@@ -21,6 +21,7 @@ type URL
 type URLValue
     = Interger Int
     | Floating Float
+    | Str String
     | MultyValue (List URLValue)
     | Failure String
     | Succes
@@ -36,6 +37,10 @@ float =
 int : URL
 int =
     URLNode ParseInt
+
+str: URL 
+str = 
+    URLNode ParseStr
 
 parser : URL -> String -> URLValue
 parser value string =
@@ -69,6 +74,12 @@ parsingLoop url result string =
                     parseValue char String.toInt string
                         |> parseNext result nextURL Interger
 
+                
+                ParseStr ->
+                    parseValue char Ok string
+                        |> parseNext result nextURL Str
+
+
 
         URLNode node ->
             case node of
@@ -79,7 +90,7 @@ parsingLoop url result string =
                         path ++ " is not " ++ string
                             |> reportError result 
                 
-                
+
                 ParseFloat ->
                     string
                         |> packValue result String.toFloat Floating
@@ -88,6 +99,11 @@ parsingLoop url result string =
                 ParseInt ->
                     string
                         |> packValue result String.toInt Interger
+
+                                
+                ParseStr ->
+                    string
+                        |> packValue result Ok Str
 
         
 parseValue: Char -> (String -> Result String a) -> String -> Result String ( String, a )
