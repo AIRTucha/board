@@ -10,7 +10,7 @@ type SubURL
     | ParseFloat
     | ParseInt
     | ParseStr
--- Any
+    | ParseAny
 -- Query
 -- Query Params
 
@@ -67,17 +67,24 @@ parsingLoop url result string =
 
                 ParseFloat ->
                     parseValue char String.toFloat string
-                        |> parseNext result nextURL Floating
+                        |> packValue Floating result
+                        |> parseNext nextURL
                            
 
                 ParseInt ->
                     parseValue char String.toInt string
-                        |> parseNext result nextURL Interger
-
+                        |> packValue Interger result
+                        |> parseNext nextURL
                 
                 ParseStr ->
                     parseValue char Ok string
-                        |> parseNext result nextURL Str
+                        |> packValue Str result
+                        |> parseNext nextURL
+                    
+                ParseAny ->
+                    parseValue char Ok string
+                        |> ignorValue result
+                        |> parseNext nextURL
 
 
 
@@ -93,22 +100,25 @@ parsingLoop url result string =
 
                 ParseFloat ->
                     string
-                        |> packValue result String.toFloat Floating
+                        |> packResult result String.toFloat Floating
                 
 
                 ParseInt ->
                     string
-                        |> packValue result String.toInt Interger
+                        |> packResult result String.toInt Interger
 
                                 
                 ParseStr ->
                     string
-                        |> packValue result Ok Str
+                        |> packResult result Ok Str
+
+                ParseAny ->
+                    makeValue result 
 
         
 parseValue: Char -> (String -> Result String a) -> String -> Result String ( String, a )
 parseValue char parse string =
-    case (break char string) of
+    case  break char string of
         Just (head, tail) ->
             parse head
                 |> Result.map ( \ value -> ( tail, value ))
@@ -116,31 +126,50 @@ parseValue char parse string =
         Nothing ->
             Err <| string ++ " does not contain " ++ (fromChar char)
 
-parseNext
-    : List URLValue
-    -> URL
-    -> (a -> URLValue)
-    -> Result String ( String, a )
-    -> URLValue
-parseNext result url packer input =
+
+packValue packer result input =
     case input of
         Ok ( tail, value ) ->
-            parsingLoop url (packer value :: result) tail
+            (tail, packer value :: result)
+                |> Ok
         
         Err error ->
-            reportError result error
+            result 
+                |> (::) ( Failure error )
+                |> Err
 
-packValue
+
+ignorValue result input =
+    case input of
+        Ok ( tail, _ ) ->
+            (tail, result)
+                |> Ok
+        
+        Err error ->
+            result 
+                |> (::) ( Failure error )
+                |> Err
+
+
+parseNext url result =
+    case result of
+        Ok ( tail, value ) ->
+            parsingLoop url value tail
+        
+        Err url ->
+            makeValue url
+
+packResult
     : List URLValue
     -> (a -> Result String b)
     -> (b -> URLValue)
     -> a
     -> URLValue
-packValue result parser packer input =
+packResult result parser packer input =
     case parser input of 
         Ok value ->
             packer value :: result
-                    |> makeValue 
+                |> makeValue 
             
         Err error ->
             reportError result error
