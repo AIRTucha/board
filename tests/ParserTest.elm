@@ -275,6 +275,52 @@ suite =
                                             |> Expect.equal ( Failure <| path ++ " does not contain /")
                             ]
                         ]
+                    , describe "Any"
+                        [ describe "Correct"
+                            [ test "just any" <|
+                                \_ ->
+                                    testStr   
+                                        |> parser any
+                                        |> Expect.equal Succes
+                            , test "two any" <|
+                                \_ ->
+                                    testStr ++ "/" ++ testStr
+                                        |> parser (any </> any)
+                                        |> Expect.equal Succes
+                            , test "any and int" <|
+                                \_ ->
+                                    testStr ++ "/10"
+                                        |> parser (any </> int)
+                                        |> Expect.equal ( Interger 10 ) 
+                            , test "any and float" <|
+                                \_ ->
+                                    testStr ++ "/3.1415"
+                                        |> parser (any </> float)
+                                        |> Expect.equal ( Floating 3.1415 )
+                            , test "any and string" <|
+                                \_ ->
+                                    testStr ++ "/" ++ testStr
+                                        |> parser (any </> str)
+                                        |> Expect.equal ( Str testStr )
+                            , test "any and path" <|
+                                \_ ->
+                                    testStr ++ "/" ++ testStr
+                                        |> parser (any </>  p testStr)
+                                        |> Expect.equal ( Succes )
+                            ]
+                        , describe "Error" 
+                            [ test "Incorrect devider between any" <|
+                                \_ ->
+                                    let
+                                        str1 = testStr ++ "1"
+                                        str2 = testStr ++ "2"
+                                        path = str1 ++ "/" ++ str2
+                                    in
+                                        path
+                                            |> parser ( any <&> any)
+                                            |> Expect.equal (Failure <| path ++ " does not contain &" )     
+                            ]
+                        ]
                     ]
             ]
         ]
