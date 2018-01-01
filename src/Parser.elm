@@ -42,6 +42,10 @@ str: URL
 str = 
     URLNode ParseStr
 
+any: URL
+any = 
+    URLNode ParseAny
+
 parser : URL -> String -> URLValue
 parser value string =
     parsingLoop value [] string
