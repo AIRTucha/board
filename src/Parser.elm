@@ -66,23 +66,29 @@ parsingLoop url result string =
 
 
                 ParseFloat ->
-                    parseValue char String.toFloat string
+                    string
+                        |> break char 
+                        |> Result.andThen (parseValue String.toFloat)
                         |> packValue Floating result
                         |> parseNext nextURL
                            
 
                 ParseInt ->
-                    parseValue char String.toInt string
+                    string  
+                        |> break char
+                        |> Result.andThen (parseValue String.toInt)
                         |> packValue Interger result
                         |> parseNext nextURL
                 
                 ParseStr ->
-                    parseValue char Ok string
+                    string
+                        |> break char
                         |> packValue Str result
                         |> parseNext nextURL
                     
                 ParseAny ->
-                    parseValue char Ok string
+                    string
+                        |> break char
                         |> ignorValue result
                         |> parseNext nextURL
 
@@ -116,21 +122,15 @@ parsingLoop url result string =
                     makeValue result 
 
         
-parseValue: Char -> (String -> Result String a) -> String -> Result String ( String, a )
-parseValue char parse string =
-    case  break char string of
-        Just (head, tail) ->
-            parse head
-                |> Result.map ( \ value -> ( tail, value ))
-        
-        Nothing ->
-            Err <| string ++ " does not contain " ++ (fromChar char)
+parseValue parse (head, tail) =
+    parse head
+        |> Result.map ( \ value -> ( value, tail ))
 
 
 packValue packer result input =
     case input of
-        Ok ( tail, value ) ->
-            (tail, packer value :: result)
+        Ok ( value, tail ) ->
+            ( packer value :: result, tail)
                 |> Ok
         
         Err error ->
@@ -141,8 +141,8 @@ packValue packer result input =
 
 ignorValue result input =
     case input of
-        Ok ( tail, _ ) ->
-            (tail, result)
+        Ok ( _, tail ) ->
+            (result, tail)
                 |> Ok
         
         Err error ->
@@ -153,18 +153,13 @@ ignorValue result input =
 
 parseNext url result =
     case result of
-        Ok ( tail, value ) ->
+        Ok ( value, tail ) ->
             parsingLoop url value tail
         
         Err url ->
             makeValue url
 
-packResult
-    : List URLValue
-    -> (a -> Result String b)
-    -> (b -> URLValue)
-    -> a
-    -> URLValue
+
 packResult result parser packer input =
     case parser input of 
         Ok value ->
@@ -212,9 +207,14 @@ fork char url1 url2 =
         URLNode sub1 ->
             URLFork char sub1 <| url2
 
-break: Char -> String -> Maybe ( String, String )
+break: Char -> String -> Result String ( String, String )
 break char string =
-    splitOnce char "" string
+    case splitOnce char "" string of
+        Just ( head, tail ) ->
+            Ok ( head, tail )
+
+        Nothing ->
+            Err <| string ++ " does not contain " ++ (fromChar char)
 
 splitOnce: Char -> String -> String -> Maybe ( String, String )
 splitOnce char head tail =

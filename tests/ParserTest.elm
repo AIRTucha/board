@@ -49,23 +49,23 @@ suite =
             [ test "split string by /" <|
                 \_ ->
                     break '/' "some/value"
-                        |> Expect.equal ( Just ("some", "value") )
+                        |> Expect.equal ( Ok ("some", "value") )
             , test "split string by multiple /" <|
                 \_ ->
                     break '/' "some/value/someother"
-                        |> Expect.equal ( Just ("some", "value/someother") )
+                        |> Expect.equal ( Ok ("some", "value/someother") )
             , test "empty string" <|
                 \_ ->
                     break '/' ""
-                        |> Expect.equal Nothing
+                        |> Expect.equal (Err " does not contain /")
             , test "no splitter" <|
                 \_ ->
                     break '/' "some.value"
-                        |> Expect.equal Nothing
+                        |> Expect.equal (Err "some.value does not contain /")
             , test "just splitter" <|
                 \_ ->
                     break '/' "/"
-                        |> Expect.equal ( Just("","") )
+                        |> Expect.equal ( Ok ("","") )
             ]
         , describe "Parse path"
             [ describe "Path"
