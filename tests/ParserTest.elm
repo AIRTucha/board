@@ -418,7 +418,7 @@ suite =
                                 \_ ->
                                     testStr
                                         |> parser ( query)
-                                        |> Expect.equal (Failure <| "Query contains incorrect value" )
+                                        |> Expect.equal (Failure <| "string does not contain =" )
                             , test "Incorrecy value in long query" <|
                                 \_ ->
                                     let
@@ -427,14 +427,14 @@ suite =
                                     in
                                         str1 ++ "=" ++ testStr ++ "&" ++ str2
                                             |> parser query
-                                            |> Expect.equal ( Failure "Query contains incorrect value")
+                                            |> Expect.equal ( Failure "string2 does not contain =")
                             , test "Incorrect second query" <|
                                 \_ ->
-                                    testStr ++ "=" ++ testStr ++ "&" ++ testStr
-                                        |> parser query
+                                    testStr ++ "=" ++ testStr ++ "/" ++ testStr 
+                                        |> parser (query </> query)
                                         |> Expect.equal ( MultyValue
                                             [ Query <| Dict.fromList [(testStr, testStr)]
-                                            , Failure "Query contains incorrect value"
+                                            , Failure "string does not contain ="
                                             ]
                                         )    
                             , test "Incorrect devider between query" <|

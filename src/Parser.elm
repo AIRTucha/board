@@ -103,7 +103,11 @@ parsingLoop url result string =
                         |> parseNext nextURL
 
                 ParseQuery ->
-                    Failure "unimplemented"
+                    string
+                        |> break char
+                        |> Result.andThen (parseValue parseQuery)
+                        |> packValue Query result
+                        |> parseNext nextURL
 
 
         URLNode node ->
@@ -130,15 +134,54 @@ parsingLoop url result string =
                     string
                         |> packResult result Ok Str
 
+
                 ParseAny ->
                     makeValue result 
 
+
                 ParseQuery ->
-                    Failure "unimplemented"
+                    string
+                        |> packResult result parseQuery Query
+        
         
 parseValue parse (head, tail) =
     parse head
         |> Result.map ( \ value -> ( value, tail ))
+
+
+parseQuery : String -> Result String (Dict String String)
+parseQuery string =
+    let 
+        eqTuples =
+            string
+                |> String.split "&"
+                |> List.map (break '=')
+        eqs = eqTuples
+            |> List.filterMap isOk 
+    in
+        if (List.length eqs) == (List.length eqTuples) then
+            eqs
+                |> Dict.fromList
+                |> Ok
+        else 
+            eqTuples
+                |> List.filterMap isErr
+                |> List.foldr (++) ""
+                |> Err
+
+
+isOk value =
+    case value of 
+        Ok v -> Just v 
+
+        Err _ -> Nothing
+
+isErr value = 
+    case value of
+        Ok _ -> Nothing 
+
+
+        Err e -> Just e
 
 
 packValue packer result input =
