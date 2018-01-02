@@ -4,6 +4,7 @@ module ParserTest exposing (..)
 import Expect exposing (Expectation)
 import Test exposing (..)
 import Parser exposing (..)
+import Dict exposing(..)
 import Maybe
 
 testStr = "string"
@@ -100,6 +101,11 @@ suite =
                             testStr ++ "/" ++ testStr
                                 |> parser (p testStr </> any)
                                 |> Expect.equal ( Succes )
+                    , test "path and query" <|
+                        \_ ->
+                            testStr ++ "/" ++ testStr ++ "=" ++ testStr
+                                |> parser (p testStr </> query)
+                                |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)])
                     ]
                 , describe "Error" 
                     [ test "Incorrect path" <|
@@ -162,6 +168,15 @@ suite =
                                 "10/" ++ testStr
                                     |> parser  (int </> any) 
                                     |> Expect.equal ( Interger 10 )
+                        , test "int and query" <|
+                            \_ ->
+                                "10/" ++ testStr ++ "=" ++ testStr
+                                    |> parser (int </> query)
+                                    |> Expect.equal ( MultyValue 
+                                        [ Interger 10
+                                        , Query <| Dict.fromList [(testStr, testStr)]
+                                        ]
+                                    )
                         ]
                     , describe "Error"
                         [ test "Incorrect int" <|
@@ -213,6 +228,15 @@ suite =
                                 "10.435/" ++ testStr
                                     |> parser  (float </> any) 
                                     |> Expect.equal ( Floating 10.435 )
+                        , test "float and query" <|
+                            \_ ->
+                                "3.1415/" ++ testStr ++ "=" ++ testStr
+                                    |> parser (float </> query)
+                                    |> Expect.equal ( MultyValue 
+                                        [ Floating 3.1415
+                                        , Query <| Dict.fromList [(testStr, testStr)]
+                                        ]
+                                    )
                         ]
                     , describe "Error"
                         [ test "Incorrect float" <|
@@ -307,6 +331,12 @@ suite =
                                     testStr ++ "/" ++ testStr
                                         |> parser (any </>  p testStr)
                                         |> Expect.equal ( Succes )
+
+                            , test "any and query" <|
+                                \_ ->
+                                    testStr ++ "/" ++ testStr ++ "=" ++ testStr
+                                        |> parser (any </> query)
+                                        |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)] )
                             ]
                         , describe "Error" 
                             [ test "Incorrect devider between any" <|
@@ -319,6 +349,104 @@ suite =
                                         path
                                             |> parser ( any <&> any)
                                             |> Expect.equal (Failure <| path ++ " does not contain &" )     
+                            ]
+                        ]
+                    , describe "Query"
+                        [ describe "Correct"
+                            [ test "just single short query" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr   
+                                        |> parser query
+                                        |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)] )
+                            , test "just single long query" <|
+                                \_ ->
+                                    let
+                                        str1 = testStr ++ "1"
+                                        str2 = testStr ++ "2"
+                                    in
+                                        str1 ++ "=" ++ testStr ++ "&" ++ str2 ++ "=" ++ testStr
+                                            |> parser query
+                                            |> Expect.equal ( Query <| Dict.fromList [(str1, testStr), (str2, testStr)] )
+                            , test "two query" <|
+                                \_ ->
+                                    let
+                                        str1 = testStr ++ "1"
+                                        str2 = testStr ++ "2"
+                                    in
+                                        str1 ++ "=" ++ testStr ++ "/" ++ str2 ++ "=" ++ testStr
+                                            |> parser ( query </> query )
+                                            |> Expect.equal ( MultyValue
+                                                [ Query <| Dict.fromList [(str1, testStr)] 
+                                                , Query <| Dict.fromList [(str2, testStr)] 
+                                                ]
+                                            )
+                            , test "query and int" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr ++ "/10"
+                                        |> parser (query </> int)
+                                        |> Expect.equal ( MultyValue
+                                            [ Query <| Dict.fromList [(testStr, testStr)]
+                                            , Interger 10
+                                            ]
+                                        ) 
+                            , test "query and float" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr ++"/3.1415"
+                                        |> parser (query </> float)
+                                        |> Expect.equal ( MultyValue
+                                            [ Query <| Dict.fromList [(testStr, testStr)]
+                                            , Floating 3.1415
+                                            ]
+                                        )
+                            , test "query and string" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr ++ "/" ++ testStr
+                                        |> parser (query </> str)
+                                        |> Expect.equal ( MultyValue
+                                            [ Query <| Dict.fromList [(testStr, testStr)]
+                                            , Str testStr
+                                            ]
+                                        )
+                            , test "query and path" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr ++ "/" ++ testStr
+                                        |> parser (query </>  p testStr)
+                                        |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)] )
+                            ]
+                        , describe "Error" 
+                            [ test "Incorrect query" <|
+                                \_ ->
+                                    testStr
+                                        |> parser ( query)
+                                        |> Expect.equal (Failure <| "Query contains incorrect value" )
+                            , test "Incorrecy value in long query" <|
+                                \_ ->
+                                    let
+                                        str1 = testStr ++ "1"
+                                        str2 = testStr ++ "2"
+                                    in
+                                        str1 ++ "=" ++ testStr ++ "&" ++ str2
+                                            |> parser query
+                                            |> Expect.equal ( Failure "Query contains incorrect value")
+                            , test "Incorrect second query" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr ++ "&" ++ testStr
+                                        |> parser query
+                                        |> Expect.equal ( MultyValue
+                                            [ Query <| Dict.fromList [(testStr, testStr)]
+                                            , Failure "Query contains incorrect value"
+                                            ]
+                                        )    
+                            , test "Incorrect devider between query" <|
+                                \_ ->
+                                    let
+                                        str1 = testStr ++ "1"
+                                        str2 = testStr ++ "2"
+                                        path = testStr ++ "=" ++ testStr ++ "?" ++ testStr ++ "=" ++ testStr
+                                    in
+                                        path
+                                            |> parser ( query </> query)
+                                            |> Expect.equal (Failure <| path ++ " does not contain /" )     
                             ]
                         ]
                     ]

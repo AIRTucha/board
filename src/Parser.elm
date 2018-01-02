@@ -2,6 +2,7 @@ module Parser exposing(..)
 
 import List exposing (reverse)
 import String exposing(toFloat, toInt, dropLeft, left, length, uncons, cons, fromChar, startsWith)
+import Dict exposing(..)
 import Maybe
 import Result
 
@@ -11,7 +12,7 @@ type SubURL
     | ParseInt
     | ParseStr
     | ParseAny
--- Query
+    | ParseQuery
 -- Query Params
 
 type URL
@@ -24,6 +25,7 @@ type URLValue
     | Str String
     | MultyValue (List URLValue)
     | Failure String
+    | Query (Dict String String)
     | Succes
 
 p : String -> URL
@@ -45,6 +47,10 @@ str =
 any: URL
 any = 
     URLNode ParseAny
+
+query : URL
+query =
+    URLNode ParseQuery
 
 parser : URL -> String -> URLValue
 parser value string =
@@ -96,6 +102,8 @@ parsingLoop url result string =
                         |> ignorValue result
                         |> parseNext nextURL
 
+                ParseQuery ->
+                    Failure "unimplemented"
 
 
         URLNode node ->
@@ -125,6 +133,8 @@ parsingLoop url result string =
                 ParseAny ->
                     makeValue result 
 
+                ParseQuery ->
+                    Failure "unimplemented"
         
 parseValue parse (head, tail) =
     parse head
@@ -210,6 +220,7 @@ fork char url1 url2 =
         
         URLNode sub1 ->
             URLFork char sub1 <| url2
+        
 
 break: Char -> String -> Result String ( String, String )
 break char string =
