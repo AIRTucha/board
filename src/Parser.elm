@@ -166,7 +166,8 @@ parseQuery string =
         else 
             eqTuples
                 |> List.filterMap isErr
-                |> List.foldr (++) ""
+                |> String.concat
+                |> String.append "Query is not correct: "
                 |> Err
 
 
