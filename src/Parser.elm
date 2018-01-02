@@ -152,23 +152,35 @@ parseValue parse (head, tail) =
 parseQuery : String -> Result String (Dict String String)
 parseQuery string =
     let 
-        eqTuples =
+        (oks, errs) =
             string
                 |> String.split "&"
                 |> List.map (break '=')
-        eqs = eqTuples
-            |> List.filterMap isOk 
+                |> partitionLift ( [], [] )
     in
-        if (List.length eqs) == (List.length eqTuples) then
-            eqs
-                |> Dict.fromList
-                |> Ok
-        else 
-            eqTuples
-                |> List.filterMap isErr
+        if (List.length errs) > 0 then
+            errs
                 |> String.concat
                 |> String.append "Query is not correct: "
                 |> Err
+        else
+            oks
+                |> Dict.fromList
+                |> Ok
+
+
+partitionLift (succes, failure) list =
+    case list of
+        [] ->
+            ( succes, failure )
+
+
+        (Ok head) :: tail ->
+            partitionLift ( head :: succes, failure ) tail
+        
+
+        (Err head) :: tail ->
+            partitionLift ( succes, head :: failure ) tail
 
 
 isOk value =
