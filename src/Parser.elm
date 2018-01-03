@@ -71,8 +71,9 @@ parsingLoop url result string =
                                 |> dropLeft lengthWithSplitter
                                 |> parsingLoop nextURL result
                         else 
-                            path ++ ( fromChar char ) ++ " is not " ++ ( left lengthWithSplitter string ) 
-                                |> reportError result
+                            result
+                                |> (::) (Failure <| path ++ ( fromChar char ) ++ " is not " ++ ( left lengthWithSplitter string ) )
+                                |> makeValue
 
 
                 ParseFloat ->
@@ -116,8 +117,9 @@ parsingLoop url result string =
                     if string == path then
                         makeValue result 
                     else 
-                        path ++ " is not " ++ string
-                            |> reportError result 
+                        result
+                            |> (::) ( Failure <| path ++ " is not " ++ string )
+                            |> makeValue
                 
 
                 ParseFloat ->
@@ -239,14 +241,7 @@ makeValue list =
         
         [] ->
             Succes
-
-
-reportError: (List URLValue) -> String -> URLValue
-reportError result error =
-    result 
-        |> (::) ( Failure error )
-        |> makeValue
-
+            
 
 (</>): URL -> URL -> URL
 (</>) = fork '/'
