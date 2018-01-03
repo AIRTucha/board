@@ -121,27 +121,30 @@ parsingLoop url result string =
                 
 
                 ParseFloat ->
-                    string
-                        |> packResult result String.toFloat Floating
+                    parseValue String.toFloat ( string, "" )
+                        |> packValue Floating result
+                        |> packResult2
                 
 
                 ParseInt ->
-                    string
-                        |> packResult result String.toInt Interger
+                    parseValue String.toInt ( string, "" )
+                        |> packValue Interger result
+                        |> packResult2
 
                                 
                 ParseStr ->
-                    string
-                        |> packResult result Ok Str
-
+                    parseValue Ok ( string, "" )
+                        |> packValue Str result
+                        |> packResult2 
 
                 ParseAny ->
                     makeValue result 
 
 
                 ParseQuery ->
-                    string
-                        |> packResult result parseQuery Query
+                    parseValue parseQuery ( string, "" )
+                        |> packValue Query result
+                        |> packResult2
         
         
 parseValue parse (head, tail) =
@@ -182,21 +185,6 @@ partitionLift (succes, failure) list =
         (Err head) :: tail ->
             partitionLift ( succes, head :: failure ) tail
 
-
-isOk value =
-    case value of 
-        Ok v -> Just v 
-
-        Err _ -> Nothing
-
-isErr value = 
-    case value of
-        Ok _ -> Nothing 
-
-
-        Err e -> Just e
-
-
 packValue packer result input =
     case input of
         Ok ( value, tail ) ->
@@ -228,16 +216,17 @@ parseNext url result =
         
         Err url ->
             makeValue url
+            
 
-
-packResult result parser packer input =
-    case parser input of 
-        Ok value ->
-            packer value :: result
+packResult2 result =
+    case result of 
+        Ok (value, _) ->
+            value
                 |> makeValue 
             
         Err error ->
-            reportError result error
+            error 
+                |> makeValue 
 
 makeValue: (List URLValue) -> URLValue
 makeValue list =
