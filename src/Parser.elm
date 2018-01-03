@@ -92,8 +92,16 @@ parsingLoop url result string =
                         |> Result.andThen (parseValue String.toInt)
                         |> packValue Interger result
                         |> parseNext nextURL
-                
 
+
+                ParseQuery ->
+                    string
+                        |> break char
+                        |> Result.andThen (parseValue parseQuery)
+                        |> packValue Query result
+                        |> parseNext nextURL
+
+                    
                 ParseStr ->
                     string
                         |> break char
@@ -109,38 +117,30 @@ parsingLoop url result string =
                         |> parseNext nextURL
 
 
-                ParseQuery ->
-                    string
-                        |> break char
-                        |> Result.andThen (parseValue parseQuery)
-                        |> packValue Query result
-                        |> parseNext nextURL
-
-
         URLNode node ->
             case node of
                 ParsePath path ->
                     checkEqual path ( string, "" )
                         |> ignorValue result
-                        |> packResult2
+                        |> packResult
                 
 
                 ParseFloat ->
                     parseValue String.toFloat ( string, "" )
                         |> packValue Floating result
-                        |> packResult2
+                        |> packResult
                 
 
                 ParseInt ->
                     parseValue String.toInt ( string, "" )
                         |> packValue Interger result
-                        |> packResult2
+                        |> packResult
 
                                 
                 ParseStr ->
                     parseValue Ok ( string, "" )
                         |> packValue Str result
-                        |> packResult2 
+                        |> packResult
 
 
                 ParseAny ->
@@ -150,7 +150,7 @@ parsingLoop url result string =
                 ParseQuery ->
                     parseValue parseQuery ( string, "" )
                         |> packValue Query result
-                        |> packResult2
+                        |> packResult
         
         
 parseValue parse (head, tail) =
@@ -232,7 +232,7 @@ parseNext url result =
             makeValue url
             
 
-packResult2 result =
+packResult result =
     case result of 
         Ok (value, _) ->
             value
