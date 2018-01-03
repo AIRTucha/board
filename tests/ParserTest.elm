@@ -130,10 +130,11 @@ suite =
                             let
                                 str1 = testStr ++ "1"
                                 str2 = testStr ++ "2"
+                                path = str1 ++ "/" ++ str2
                             in
-                                str1 ++ "/" ++ str2
+                                path
                                     |> parser (p str1 <&> p str2)
-                                    |> Expect.equal (Failure <| str1 ++ "& is not " ++ str1 ++ "/")     
+                                    |> Expect.equal (Failure <| path ++ " does not contain &" )     
                     ]
                 ]
                 , describe "Integer"

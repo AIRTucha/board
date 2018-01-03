@@ -13,11 +13,12 @@ type SubURL
     | ParseStr
     | ParseAny
     | ParseQuery
--- Query Params
+
 
 type URL
     = URLNode SubURL 
     | URLFork Char SubURL URL
+
 
 type URLValue
     = Interger Int
@@ -28,33 +29,41 @@ type URLValue
     | Query (Dict String String)
     | Succes
 
+
 p : String -> URL
 p string =
     URLNode <| ParsePath string
+
 
 float : URL
 float =
     URLNode ParseFloat
 
+
 int : URL
 int =
     URLNode ParseInt
+
 
 str: URL 
 str = 
     URLNode ParseStr
 
+
 any: URL
 any = 
     URLNode ParseAny
+
 
 query : URL
 query =
     URLNode ParseQuery
 
+
 parser : URL -> String -> URLValue
 parser value string =
     parsingLoop value [] string
+
 
 parsingLoop : URL -> (List URLValue) -> String -> URLValue
 parsingLoop url result string =
@@ -62,18 +71,11 @@ parsingLoop url result string =
         URLFork char sub nextURL ->
             case sub of
                 ParsePath path ->
-                    let 
-                        fullPath = path ++ fromChar char
-                        lengthWithSplitter = (1 + length path)
-                    in
-                        if startsWith fullPath string then
-                            string
-                                |> dropLeft lengthWithSplitter
-                                |> parsingLoop nextURL result
-                        else 
-                            result
-                                |> (::) (Failure <| path ++ ( fromChar char ) ++ " is not " ++ ( left lengthWithSplitter string ) )
-                                |> makeValue
+                    string 
+                        |> break char 
+                        |> Result.andThen (checkEqual path)
+                        |> ignorValue result
+                        |> parseNext nextURL
 
 
                 ParseFloat ->
@@ -91,17 +93,21 @@ parsingLoop url result string =
                         |> packValue Interger result
                         |> parseNext nextURL
                 
+
                 ParseStr ->
                     string
                         |> break char
                         |> packValue Str result
                         |> parseNext nextURL
                     
+
                 ParseAny ->
                     string
                         |> break char
+                        |> Result.map ( \(value, tail) -> tail )
                         |> ignorValue result
                         |> parseNext nextURL
+
 
                 ParseQuery ->
                     string
@@ -114,12 +120,9 @@ parsingLoop url result string =
         URLNode node ->
             case node of
                 ParsePath path ->
-                    if string == path then
-                        makeValue result 
-                    else 
-                        result
-                            |> (::) ( Failure <| path ++ " is not " ++ string )
-                            |> makeValue
+                    checkEqual path ( string, "" )
+                        |> ignorValue result
+                        |> packResult2
                 
 
                 ParseFloat ->
@@ -138,6 +141,7 @@ parsingLoop url result string =
                     parseValue Ok ( string, "" )
                         |> packValue Str result
                         |> packResult2 
+
 
                 ParseAny ->
                     makeValue result 
@@ -187,6 +191,7 @@ partitionLift (succes, failure) list =
         (Err head) :: tail ->
             partitionLift ( succes, head :: failure ) tail
 
+
 packValue packer result input =
     case input of
         Ok ( value, tail ) ->
@@ -199,9 +204,16 @@ packValue packer result input =
                 |> Err
 
 
+checkEqual path (string, tail) =
+    if path == string then
+        Ok tail
+    else 
+        Err ( path ++ " is not " ++ string)
+
+
 ignorValue result input =
     case input of
-        Ok ( _, tail ) ->
+        Ok tail ->
             (result, tail)
                 |> Ok
         
@@ -230,6 +242,7 @@ packResult2 result =
             error 
                 |> makeValue 
 
+
 makeValue: (List URLValue) -> URLValue
 makeValue list =
     case list of
@@ -241,16 +254,19 @@ makeValue list =
         
         [] ->
             Succes
-            
+
 
 (</>): URL -> URL -> URL
 (</>) = fork '/'
 
+
 (<?>): URL -> URL -> URL
 (<?>) = fork '?'
 
+
 (<&>): URL -> URL -> URL
 (<&>) = fork '&'
+
 
 fork : Char -> URL -> URL -> URL
 fork char url1 url2 =
@@ -270,6 +286,7 @@ break char string =
 
         Nothing ->
             Err <| string ++ " does not contain " ++ (fromChar char)
+
 
 splitOnce: Char -> String -> String -> Maybe ( String, String )
 splitOnce char head tail =
