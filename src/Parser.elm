@@ -257,26 +257,27 @@ makeValue list =
 
 
 (</>): URL -> URL -> URL
-(</>) = fork '/'
+(</>) = devider '/'
 
 
 (<?>): URL -> URL -> URL
-(<?>) = fork '?'
+(<?>) = devider '?'
 
 
 (<&>): URL -> URL -> URL
-(<&>) = fork '&'
+(<&>) = devider '&'
 
 
-fork : Char -> URL -> URL -> URL
-fork char url1 url2 =
+devider : Char -> URL -> URL -> URL
+devider char url1 url2 =
     case url1 of
         URLFork char1 sub1 nextURL1 ->
-            URLFork char1 sub1 <| fork char nextURL1 url2
+            URLFork char1 sub1 <| devider char nextURL1 url2
         
         URLNode sub1 ->
             URLFork char sub1 <| url2
         
+-- separator char url1 url2
 
 break: Char -> String -> Result String ( String, String )
 break char string =
