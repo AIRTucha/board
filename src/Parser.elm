@@ -265,7 +265,7 @@ makeValue list =
 
 
 (<&>): URL -> URL -> URL
-(<&>) = devider True '&'
+(<&>) = devider False '&'
 
 
 devider : Bool -> Char -> URL -> URL -> URL

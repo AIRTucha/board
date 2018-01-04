@@ -7,44 +7,73 @@ import Parser exposing (..)
 import Dict exposing(..)
 import Maybe
 import Debug 
+
 testStr = "string"
 
 suite : Test
 suite =
     describe "Parser"
         [ describe "Build a tree"
-            [ test "path and int" <|
+            [ test "int after path" <|
                 \_ -> 
                     p testStr </> int
                         |> Expect.equal ( URLFork '/' True (ParsePath testStr) (URLNode ParseInt) )
             , test "float and path" <|
                 \_ -> 
-                    float </> p testStr 
-                        |> Expect.equal ( URLFork '/' True ParseFloat (URLNode <| ParsePath testStr) )
-            , test "complex path with single divider" <|
+                    float <&> p testStr 
+                        |> Expect.equal ( URLFork '&' False ParseFloat (URLNode <| ParsePath testStr) )
+            , test "complex path with ordered dividers" <|
                 \_ -> 
-                    float </> int </> p testStr 
-                        |> Expect.equal ( URLFork '/' True ParseFloat <| URLFork '/' True ParseInt (URLNode <| ParsePath testStr) )
-            , test "complex path" <|
+                    float </> int <?> p testStr 
+                        |> Expect.equal ( URLFork '/' True ParseFloat <| URLFork '?' True ParseInt (URLNode <| ParsePath testStr) )
+            , test "complex path with unordered dividers" <|
                 \_ -> 
-                    float </> p testStr <?> int
-                        |> Expect.equal ( URLFork '/' True ParseFloat <| URLFork '?' True (ParsePath testStr) (URLNode <| ParseInt) )
-            , test "verty comple path" <|
+                    float <&> int <&> p testStr 
+                        |> Expect.equal ( URLFork '&' False ParseFloat <| URLFork '&' False ParseInt (URLNode <| ParsePath testStr) )
+            , test "complex path with ordered and unordered deviders" <|
+                \_ -> 
+                    float </> int <&> p testStr 
+                        |> Expect.equal ( URLFork '/' True ParseFloat <| URLFork '&' False ParseInt (URLNode <| ParsePath testStr) )
+            , test "complex path with unordered and ordered deviders" <|
+                \_ -> 
+                    float <&> int <?> p testStr 
+                        |> Expect.equal ( URLFork '&' False ParseFloat <| URLFork '?' True ParseInt (URLNode <| ParsePath testStr) )
+            , test "unordered devider between two ordered forks" <|
                 \_ ->
-                    (int </> int) <?> (float <&> p testStr)
+                    (int </> int) <&> (float <?> p testStr)
+                        |> Expect.equal 
+                            ( URLFork '/' True ParseInt <| 
+                                URLFork '&' False ParseInt <| 
+                                    URLFork '?' True ParseFloat <|
+                                        URLNode (ParsePath testStr) 
+                            )
+            , test "ordered devider between two ordered forks" <|
+                \_ ->
+                    (int </> int) <?> (str </> p testStr)
                         |> Expect.equal 
                             ( URLFork '/' True ParseInt <| 
                                 URLFork '?' True ParseInt <| 
-                                    URLFork '&' True ParseFloat <|
-                                        URLNode (ParsePath testStr) )
-            , test "path from two forks" <|
+                                    URLFork '/' True ParseStr <|
+                                        URLNode (ParsePath testStr) 
+                            )
+            , test "ordered devider between two unordered forks" <|
                 \_ ->
-                    (URLFork '/' True ParseInt <| URLNode ParseInt ) <?> (URLFork '&' True ParseFloat <| URLNode <| ParsePath testStr )
+                    (any <&> int) <?> (float <&> p testStr)
+                        |> Expect.equal 
+                            ( URLFork '&' False ParseAny <| 
+                                URLFork '?' True ParseInt <| 
+                                    URLFork '&' False ParseFloat <|
+                                        URLNode (ParsePath testStr) 
+                            )
+            , test "ordered devider between two mix forks" <|
+                \_ ->
+                    (int </> query) <?> (float <&> p testStr)
                         |> Expect.equal 
                             ( URLFork '/' True ParseInt <| 
-                                URLFork '?' True ParseInt <| 
-                                    URLFork '&' True ParseFloat <|
-                                        URLNode (ParsePath testStr) )
+                                URLFork '?' True ParseQuery <| 
+                                    URLFork '&' False ParseFloat <|
+                                        URLNode (ParsePath testStr) 
+                            )
             ]
         , describe "Split string once"
             [ test "split string by /" <|
