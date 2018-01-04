@@ -257,27 +257,26 @@ makeValue list =
             Succes
 
 (</>): URL -> URL -> URL
-(</>) = devider '/'
+(</>) = devider True '/'
 
 
 (<?>): URL -> URL -> URL
-(<?>) = devider '?'
+(<?>) = devider True '?'
 
 
 (<&>): URL -> URL -> URL
-(<&>) = devider '&'
+(<&>) = devider True '&'
 
 
-devider : Char -> URL -> URL -> URL
-devider char url1 url2 =
+devider : Bool -> Char -> URL -> URL -> URL
+devider persistOrder char url1 url2 =
     case url1 of
-        URLFork char1 a sub1 nextURL1 ->
-            URLFork char1 True sub1 <| devider char nextURL1 url2
+        URLFork char1 order sub1 nextURL1 ->
+            URLFork char1 order sub1 <| devider persistOrder char nextURL1 url2
         
         URLNode sub1 ->
-            URLFork char True sub1 <| url2
-        
--- separator char url1 url2
+            URLFork char persistOrder sub1 url2
+
 
 break: Char -> String -> Result String ( String, String )
 break char string =
