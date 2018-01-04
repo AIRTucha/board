@@ -5,6 +5,7 @@ import String exposing(toFloat, toInt, dropLeft, left, length, uncons, cons, fro
 import Dict exposing(..)
 import Maybe
 import Result
+import Tuple 
 
 type SubURL 
     = ParsePath String
@@ -17,7 +18,7 @@ type SubURL
 
 type URL
     = URLNode SubURL 
-    | URLFork Char SubURL URL
+    | URLFork Char Bool SubURL URL
 
 
 type URLValue
@@ -68,7 +69,7 @@ parser value string =
 parsingLoop : URL -> (List URLValue) -> String -> URLValue
 parsingLoop url result string =
     case url of
-        URLFork char sub nextURL ->
+        URLFork char _ sub nextURL ->
             case sub of
                 ParsePath path ->
                     string 
@@ -112,7 +113,7 @@ parsingLoop url result string =
                 ParseAny ->
                     string
                         |> break char
-                        |> Result.map ( \(value, tail) -> tail )
+                        |> Result.map Tuple.second
                         |> ignorValue result
                         |> parseNext nextURL
 
@@ -255,7 +256,6 @@ makeValue list =
         [] ->
             Succes
 
-
 (</>): URL -> URL -> URL
 (</>) = devider '/'
 
@@ -271,11 +271,11 @@ makeValue list =
 devider : Char -> URL -> URL -> URL
 devider char url1 url2 =
     case url1 of
-        URLFork char1 sub1 nextURL1 ->
-            URLFork char1 sub1 <| devider char nextURL1 url2
+        URLFork char1 a sub1 nextURL1 ->
+            URLFork char1 True sub1 <| devider char nextURL1 url2
         
         URLNode sub1 ->
-            URLFork char sub1 <| url2
+            URLFork char True sub1 <| url2
         
 -- separator char url1 url2
 

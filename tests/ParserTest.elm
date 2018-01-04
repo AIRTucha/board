@@ -6,7 +6,7 @@ import Test exposing (..)
 import Parser exposing (..)
 import Dict exposing(..)
 import Maybe
-
+import Debug 
 testStr = "string"
 
 suite : Test
@@ -16,34 +16,34 @@ suite =
             [ test "path and int" <|
                 \_ -> 
                     p testStr </> int
-                        |> Expect.equal ( URLFork '/' (ParsePath testStr) (URLNode ParseInt) )
+                        |> Expect.equal ( URLFork '/' True (ParsePath testStr) (URLNode ParseInt) )
             , test "float and path" <|
                 \_ -> 
                     float </> p testStr 
-                        |> Expect.equal ( URLFork '/' ParseFloat (URLNode <| ParsePath testStr) )
+                        |> Expect.equal ( URLFork '/' True ParseFloat (URLNode <| ParsePath testStr) )
             , test "complex path with single divider" <|
                 \_ -> 
                     float </> int </> p testStr 
-                        |> Expect.equal ( URLFork '/' ParseFloat <| URLFork '/' ParseInt (URLNode <| ParsePath testStr) )
+                        |> Expect.equal ( URLFork '/' True ParseFloat <| URLFork '/' True ParseInt (URLNode <| ParsePath testStr) )
             , test "complex path" <|
                 \_ -> 
                     float </> p testStr <?> int
-                        |> Expect.equal ( URLFork '/' ParseFloat <| URLFork '?' (ParsePath testStr) (URLNode <| ParseInt) )
+                        |> Expect.equal ( URLFork '/' True ParseFloat <| URLFork '?' True (ParsePath testStr) (URLNode <| ParseInt) )
             , test "verty comple path" <|
                 \_ ->
                     (int </> int) <?> (float <&> p testStr)
                         |> Expect.equal 
-                            ( URLFork '/' ParseInt <| 
-                                URLFork '?' ParseInt <| 
-                                    URLFork '&' ParseFloat <|
+                            ( URLFork '/' True ParseInt <| 
+                                URLFork '?' True ParseInt <| 
+                                    URLFork '&' True ParseFloat <|
                                         URLNode (ParsePath testStr) )
             , test "path from two forks" <|
                 \_ ->
-                    (URLFork '/' ParseInt <| URLNode ParseInt ) <?> (URLFork '&' ParseFloat <| URLNode <| ParsePath testStr )
+                    (URLFork '/' True ParseInt <| URLNode ParseInt ) <?> (URLFork '&' True ParseFloat <| URLNode <| ParsePath testStr )
                         |> Expect.equal 
-                            ( URLFork '/' ParseInt <| 
-                                URLFork '?' ParseInt <| 
-                                    URLFork '&' ParseFloat <|
+                            ( URLFork '/' True ParseInt <| 
+                                URLFork '?' True ParseInt <| 
+                                    URLFork '&' True ParseFloat <|
                                         URLNode (ParsePath testStr) )
             ]
         , describe "Split string once"
