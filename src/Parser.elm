@@ -18,7 +18,8 @@ type SubURL
 
 type URL
     = URLNode SubURL 
-    | URLFork Char Bool SubURL URL
+    | Ordered Char SubURL URL
+    | Unordered Char URL URL
 
 
 type URLValue
@@ -69,7 +70,7 @@ parser value string =
 parsingLoop : URL -> (List URLValue) -> String -> URLValue
 parsingLoop url result string =
     case url of
-        URLFork char _ sub nextURL ->
+        Ordered char sub nextURL ->
             case sub of
                 ParsePath path ->
                     string 
@@ -152,6 +153,10 @@ parsingLoop url result string =
                     parseValue parseQuery ( string, "" )
                         |> packValue Query result
                         |> packResult
+
+
+        Unordered _ _ _ ->
+            Failure "unimplemented"
         
         
 parseValue parse (head, tail) =
@@ -257,25 +262,35 @@ makeValue list =
             Succes
 
 (</>): URL -> URL -> URL
-(</>) = devider True '/'
+(</>) = devider packOrdered '/'
 
 
 (<?>): URL -> URL -> URL
-(<?>) = devider True '?'
+(<?>) = devider packOrdered '?'
 
 
 (<&>): URL -> URL -> URL
-(<&>) = devider False '&'
+(<&>) = devider packOrdered '&'
 
 
-devider : Bool -> Char -> URL -> URL -> URL
-devider persistOrder char url1 url2 =
+devider : ( Char -> SubURL -> URL -> URL ) -> Char -> URL -> URL -> URL
+devider packer char url1 url2 =
     case url1 of
-        URLFork char1 order sub1 nextURL1 ->
-            URLFork char1 order sub1 <| devider persistOrder char nextURL1 url2
+        Ordered char1 sub1 nextURL1 ->
+            Ordered char1 sub1 <| devider packer char nextURL1 url2
+
+        Unordered char currURL nextURL ->
+            Unordered char currURL <| devider packer char nextURL url2
         
         URLNode sub1 ->
-            URLFork char persistOrder sub1 url2
+            packer char sub1 url2
+
+
+packOrdered char sub url =
+    Ordered char sub url
+
+packUnordered char sub url =
+    Unordered char (URLNode sub) url
 
 
 break: Char -> String -> Result String ( String, String )
