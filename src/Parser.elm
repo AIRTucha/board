@@ -19,7 +19,7 @@ type SubURL
 type URL
     = URLNode SubURL 
     | OrderedURL Char SubURL URL
-    | UnorderedURL Char URL URL
+    | UnorderedURL Char SubURL URL
 
 
 type URLValue
@@ -274,11 +274,11 @@ makeValue list =
 
 
 orderedDevider = 
-    devider packOrderedURL
+    devider OrderedURL
 
 
 unorderedDevider = 
-    devider packUnorderedURL
+    devider UnorderedURL
 
 
 devider : ( Char -> SubURL -> URL -> URL ) -> Char -> URL -> URL -> URL
@@ -292,13 +292,6 @@ devider packer char url1 url2 =
         
         URLNode sub1 ->
             packer char sub1 url2
-
-
-packOrderedURL char sub url =
-    OrderedURL char sub url
-
-packUnorderedURL char sub url =
-    UnorderedURL char (URLNode sub) url
 
 
 break: Char -> String -> Result String ( String, String )
