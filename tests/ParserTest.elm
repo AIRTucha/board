@@ -17,61 +17,61 @@ suite =
             [ test "int after path" <|
                 \_ -> 
                     p testStr </> int
-                        |> Expect.equal ( Ordered '/' (ParsePath testStr) (URLNode ParseInt) )
+                        |> Expect.equal ( OrderedURL '/' (ParsePath testStr) (URLNode ParseInt) )
             , test "float and path" <|
                 \_ -> 
-                    float <&> p testStr 
-                        |> Expect.equal ( Ordered '&' ParseFloat (URLNode <| ParsePath testStr) )
+                    float <?> p testStr 
+                        |> Expect.equal ( OrderedURL '?' ParseFloat (URLNode <| ParsePath testStr) )
             , test "complex path with ordered dividers" <|
                 \_ -> 
                     float </> int <?> p testStr 
-                        |> Expect.equal ( Ordered '/' ParseFloat <| Ordered '?' ParseInt (URLNode <| ParsePath testStr) )
+                        |> Expect.equal ( OrderedURL '/' ParseFloat <| OrderedURL '?' ParseInt (URLNode <| ParsePath testStr) )
             , test "complex path with unordered dividers" <|
                 \_ -> 
-                    float <&> int <&> p testStr 
-                        |> Expect.equal ( Ordered '&' ParseFloat <| Ordered '&' ParseInt (URLNode <| ParsePath testStr) )
+                    float <?> int <?> p testStr 
+                        |> Expect.equal ( OrderedURL '?' ParseFloat <| OrderedURL '?' ParseInt (URLNode <| ParsePath testStr) )
             , test "complex path with ordered and unordered deviders" <|
                 \_ -> 
-                    float </> int <&> p testStr 
-                        |> Expect.equal ( Ordered '/' ParseFloat <| Ordered '&' ParseInt (URLNode <| ParsePath testStr) )
+                    float </> int <?> p testStr 
+                        |> Expect.equal ( OrderedURL '/' ParseFloat <| OrderedURL '?' ParseInt (URLNode <| ParsePath testStr) )
             , test "complex path with unordered and ordered deviders" <|
                 \_ -> 
-                    float <&> int <?> p testStr 
-                        |> Expect.equal ( Ordered '&' ParseFloat <| Ordered '?' ParseInt (URLNode <| ParsePath testStr) )
+                    float <?> int <?> p testStr 
+                        |> Expect.equal ( OrderedURL '?' ParseFloat <| OrderedURL '?' ParseInt (URLNode <| ParsePath testStr) )
             , test "unordered devider between two ordered forks" <|
                 \_ ->
-                    (int </> int) <&> (float <?> p testStr)
+                    (int </> int) <?> (float <?> p testStr)
                         |> Expect.equal 
-                            ( Ordered '/' ParseInt <| 
-                                Ordered '&' ParseInt <| 
-                                    Ordered '?' ParseFloat <|
+                            ( OrderedURL '/' ParseInt <| 
+                                OrderedURL '?' ParseInt <| 
+                                    OrderedURL '?' ParseFloat <|
                                         URLNode (ParsePath testStr) 
                             )
             , test "ordered devider between two ordered forks" <|
                 \_ ->
                     (int </> int) <?> (str </> p testStr)
                         |> Expect.equal 
-                            ( Ordered '/' ParseInt <| 
-                                Ordered '?' ParseInt <| 
-                                    Ordered '/' ParseStr <|
+                            ( OrderedURL '/' ParseInt <| 
+                                OrderedURL '?' ParseInt <| 
+                                    OrderedURL '/' ParseStr <|
                                         URLNode (ParsePath testStr) 
                             )
             , test "ordered devider between two unordered forks" <|
                 \_ ->
-                    (any <&> int) <?> (float <&> p testStr)
+                    (any <?> int) <?> (float <?> p testStr)
                         |> Expect.equal 
-                            ( Ordered '&' ParseAny <| 
-                                Ordered '?' ParseInt <| 
-                                    Ordered '&' ParseFloat <|
+                            ( OrderedURL '?' ParseAny <| 
+                                OrderedURL '?' ParseInt <| 
+                                    OrderedURL '?' ParseFloat <|
                                         URLNode (ParsePath testStr) 
                             )
             , test "ordered devider between two mix forks" <|
                 \_ ->
-                    (int </> query) <?> (float <&> p testStr)
+                    (int </> query) <?> (float <?> p testStr)
                         |> Expect.equal 
-                            ( Ordered '/' ParseInt <| 
-                                Ordered '?' ParseQuery <| 
-                                    Ordered '&' ParseFloat <|
+                            ( OrderedURL '/' ParseInt <| 
+                                OrderedURL '?' ParseQuery <| 
+                                    OrderedURL '?' ParseFloat <|
                                         URLNode (ParsePath testStr) 
                             )
             ]
@@ -162,8 +162,8 @@ suite =
                                 path = str1 ++ "/" ++ str2
                             in
                                 path
-                                    |> parser (p str1 <&> p str2)
-                                    |> Expect.equal (Failure <| path ++ " does not contain &" )     
+                                    |> parser (p str1 <?> p str2)
+                                    |> Expect.equal (Failure <| path ++ " does not contain ?" )     
                     ]
                 ]
                 , describe "Integer"
@@ -221,8 +221,8 @@ suite =
                                     |> Expect.equal ( Failure <| "10?43 does not contain /")
                         , test "Incorrect int after devider" <|
                             \_ ->
-                                "5&a3"
-                                    |> parser (int <&> int)
+                                "5?a3"
+                                    |> parser (int <?> int)
                                     |> Expect.equal ( MultyValue <| Interger 5 :: Failure "could not convert string 'a3' to an Int" :: [] )
                         ]
                     ]
@@ -281,8 +281,8 @@ suite =
                                     |> Expect.equal ( Failure <| "10.5?43.4 does not contain /")
                         , test "Incorrect float after devider" <|
                             \_ ->
-                                "5.4&a3.9"
-                                    |> parser (float <&> float)
+                                "5.4?a3.9"
+                                    |> parser (float <?> float)
                                     |> Expect.equal ( MultyValue <| Floating 5.4 :: Failure "could not convert string 'a3.9' to a Float" :: [] )
                         ]
                     , describe "Str"
@@ -322,7 +322,7 @@ suite =
                             [ test "Incorrect separator between strings" <|
                                 \_ ->
                                     let
-                                        path = testStr ++ "&" ++ testStr
+                                        path = testStr ++ "?" ++ testStr
                                     in   
                                         path
                                             |> parser (str </> str)
@@ -377,8 +377,8 @@ suite =
                                         path = str1 ++ "/" ++ str2
                                     in
                                         path
-                                            |> parser ( any <&> any)
-                                            |> Expect.equal (Failure <| path ++ " does not contain &" )     
+                                            |> parser ( any <?> any)
+                                            |> Expect.equal (Failure <| path ++ " does not contain ?" )     
                             ]
                         ]
                     , describe "Query"
@@ -449,7 +449,7 @@ suite =
                                     testStr
                                         |> parser ( query)
                                         |> Expect.equal (Failure <| "Query is not correct: string does not contain =" )
-                            , test "Incorrecy value in long query" <|
+                            , test "Incorrect value in long query" <|
                                 \_ ->
                                     let
                                         str1 = testStr ++ "1"

@@ -18,8 +18,8 @@ type SubURL
 
 type URL
     = URLNode SubURL 
-    | Ordered Char SubURL URL
-    | Unordered Char URL URL
+    | OrderedURL Char SubURL URL
+    | UnorderedURL Char URL URL
 
 
 type URLValue
@@ -70,7 +70,7 @@ parser value string =
 parsingLoop : URL -> (List URLValue) -> String -> URLValue
 parsingLoop url result string =
     case url of
-        Ordered char sub nextURL ->
+        OrderedURL char sub nextURL ->
             case sub of
                 ParsePath path ->
                     string 
@@ -155,7 +155,7 @@ parsingLoop url result string =
                         |> packResult
 
 
-        Unordered _ _ _ ->
+        UnorderedURL _ _ _ ->
             Failure "unimplemented"
         
         
@@ -262,35 +262,43 @@ makeValue list =
             Succes
 
 (</>): URL -> URL -> URL
-(</>) = devider packOrdered '/'
+(</>) = orderedDevider '/'
 
 
 (<?>): URL -> URL -> URL
-(<?>) = devider packOrdered '?'
+(<?>) = orderedDevider '?'
 
 
 (<&>): URL -> URL -> URL
-(<&>) = devider packOrdered '&'
+(<&>) = orderedDevider '&'
+
+
+orderedDevider = 
+    devider packOrderedURL
+
+
+unorderedDevider = 
+    devider packUnorderedURL
 
 
 devider : ( Char -> SubURL -> URL -> URL ) -> Char -> URL -> URL -> URL
 devider packer char url1 url2 =
     case url1 of
-        Ordered char1 sub1 nextURL1 ->
-            Ordered char1 sub1 <| devider packer char nextURL1 url2
+        OrderedURL char1 sub1 nextURL1 ->
+            OrderedURL char1 sub1 <| devider packer char nextURL1 url2
 
-        Unordered char currURL nextURL ->
-            Unordered char currURL <| devider packer char nextURL url2
+        UnorderedURL char currURL nextURL ->
+            UnorderedURL char currURL <| devider packer char nextURL url2
         
         URLNode sub1 ->
             packer char sub1 url2
 
 
-packOrdered char sub url =
-    Ordered char sub url
+packOrderedURL char sub url =
+    OrderedURL char sub url
 
-packUnordered char sub url =
-    Unordered char (URLNode sub) url
+packUnorderedURL char sub url =
+    UnorderedURL char (URLNode sub) url
 
 
 break: Char -> String -> Result String ( String, String )
