@@ -20,6 +20,7 @@ type URL
     = URLNode SubURL 
     | OrderedURL Char SubURL URL
     | UnorderedURL Char (List SubURL) URL
+    | URLEnd
 
 
 type URLValue
@@ -31,7 +32,11 @@ type URLValue
     | Query (Dict String String)
     | Succes
 
-
+end: URL
+end = 
+    URLEnd
+    
+    
 p : String -> URL
 p string =
     URLNode <| ParsePath string
@@ -158,6 +163,9 @@ parsingLoop url result string =
         UnorderedURL _ _ _ ->
             Failure "unimplemented"
         
+
+        URLEnd ->
+            Failure "unimplemented"
         
 parseValue parse (head, tail) =
     parse head
@@ -292,6 +300,10 @@ devider packer char url1 url2 =
         
         URLNode sub1 ->
             packer char sub1 url2
+
+        URLEnd ->
+            URLEnd
+
 
 orderedPacker =
     OrderedURL 
