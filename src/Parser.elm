@@ -17,10 +17,9 @@ type SubURL
 
 
 type URL
-    = URLNode SubURL 
-    | OrderedURL Char SubURL URL
-    | UnorderedURL Char (List SubURL) URL
-    | URLEnd
+    = OrderedURL Char URL URL
+    | UnorderedURL Char (List URL)
+    | NodeURL SubURL
 
 
 type URLValue
@@ -32,140 +31,133 @@ type URLValue
     | Query (Dict String String)
     | Succes
 
-end: URL
-end = 
-    URLEnd
-    
-    
+
 p : String -> URL
 p string =
-    URLNode <| ParsePath string
+    NodeURL <| ParsePath string
 
 
 float : URL
 float =
-    URLNode ParseFloat
+    NodeURL ParseFloat
 
 
 int : URL
 int =
-    URLNode ParseInt
+    NodeURL ParseInt
 
 
 str: URL 
 str = 
-    URLNode ParseStr
+    NodeURL ParseStr
 
 
 any: URL
 any = 
-    URLNode ParseAny
+    NodeURL ParseAny
 
 
 query : URL
 query =
-    URLNode ParseQuery
+    NodeURL ParseQuery
 
 
-parser : URL -> String -> URLValue
-parser value string =
-    parsingLoop value [] string
+-- parser : URL -> String -> URLValue
+-- parser value string =
+--     parsingLoop value [] string
 
 
-parsingLoop : URL -> (List URLValue) -> String -> URLValue
-parsingLoop url result string =
-    case url of
-        OrderedURL char sub nextURL ->
-            case sub of
-                ParsePath path ->
-                    string 
-                        |> break char 
-                        |> Result.andThen (checkEqual path)
-                        |> ignorValue result
-                        |> parseNext nextURL
+-- parsingLoop : URL -> (List URLValue) -> String -> URLValue
+-- parsingLoop url result string =
+--     case url of
+--         OrderedURL char sub nextURL ->
+--             case sub of
+--                 ParsePath path ->
+--                     string 
+--                         |> break char 
+--                         |> Result.andThen (checkEqual path)
+--                         |> ignorValue result
+--                         |> parseNext nextURL
 
 
-                ParseFloat ->
-                    string
-                        |> break char 
-                        |> Result.andThen (parseValue String.toFloat)
-                        |> packValue Floating result
-                        |> parseNext nextURL
+--                 ParseFloat ->
+--                     string
+--                         |> break char 
+--                         |> Result.andThen (parseValue String.toFloat)
+--                         |> packValue Floating result
+--                         |> parseNext nextURL
                            
 
-                ParseInt ->
-                    string  
-                        |> break char
-                        |> Result.andThen (parseValue String.toInt)
-                        |> packValue Interger result
-                        |> parseNext nextURL
+--                 ParseInt ->
+--                     string  
+--                         |> break char
+--                         |> Result.andThen (parseValue String.toInt)
+--                         |> packValue Interger result
+--                         |> parseNext nextURL
 
 
-                ParseQuery ->
-                    string
-                        |> break char
-                        |> Result.andThen (parseValue parseQuery)
-                        |> packValue Query result
-                        |> parseNext nextURL
+--                 ParseQuery ->
+--                     string
+--                         |> break char
+--                         |> Result.andThen (parseValue parseQuery)
+--                         |> packValue Query result
+--                         |> parseNext nextURL
 
                     
-                ParseStr ->
-                    string
-                        |> break char
-                        |> packValue Str result
-                        |> parseNext nextURL
+--                 ParseStr ->
+--                     string
+--                         |> break char
+--                         |> packValue Str result
+--                         |> parseNext nextURL
                     
 
-                ParseAny ->
-                    string
-                        |> break char
-                        |> Result.map Tuple.second
-                        |> ignorValue result
-                        |> parseNext nextURL
+--                 ParseAny ->
+--                     string
+--                         |> break char
+--                         |> Result.map Tuple.second
+--                         |> ignorValue result
+--                         |> parseNext nextURL
 
 
-        URLNode node ->
-            case node of
-                ParsePath path ->
-                    checkEqual path ( string, "" )
-                        |> ignorValue result
-                        |> packResult
+--         NodeURL node ->
+--             case node of
+--                 ParsePath path ->
+--                     checkEqual path ( string, "" )
+--                         |> ignorValue result
+--                         |> packResult
                 
 
-                ParseFloat ->
-                    parseValue String.toFloat ( string, "" )
-                        |> packValue Floating result
-                        |> packResult
+--                 ParseFloat ->
+--                     parseValue String.toFloat ( string, "" )
+--                         |> packValue Floating result
+--                         |> packResult
                 
 
-                ParseInt ->
-                    parseValue String.toInt ( string, "" )
-                        |> packValue Interger result
-                        |> packResult
+--                 ParseInt ->
+--                     parseValue String.toInt ( string, "" )
+--                         |> packValue Interger result
+--                         |> packResult
 
                                 
-                ParseStr ->
-                    parseValue Ok ( string, "" )
-                        |> packValue Str result
-                        |> packResult
+--                 ParseStr ->
+--                     parseValue Ok ( string, "" )
+--                         |> packValue Str result
+--                         |> packResult
 
 
-                ParseAny ->
-                    makeValue result 
+--                 ParseAny ->
+--                     makeValue result 
 
 
-                ParseQuery ->
-                    parseValue parseQuery ( string, "" )
-                        |> packValue Query result
-                        |> packResult
+--                 ParseQuery ->
+--                     parseValue parseQuery ( string, "" )
+--                         |> packValue Query result
+--                         |> packResult
 
 
-        UnorderedURL _ _ _ ->
-            Failure "unimplemented"
-        
-
-        URLEnd ->
-            Failure "unimplemented"
+--         UnorderedURL _ _ _ ->
+--             Failure "unimplemented"
+    
         
 parseValue parse (head, tail) =
     parse head
@@ -237,13 +229,13 @@ ignorValue result input =
                 |> Err
 
 
-parseNext url result =
-    case result of
-        Ok ( value, tail ) ->
-            parsingLoop url value tail
+-- parseNext url result =
+--     case result of
+--         Ok ( value, tail ) ->
+--             parsingLoop url value tail
         
-        Err url ->
-            makeValue url
+--         Err url ->
+--             makeValue url
             
 
 packResult result =
@@ -269,48 +261,78 @@ makeValue list =
         [] ->
             Succes
 
-(</>): URL -> URL -> URL
+-- (</>): URL -> URL -> URL
 (</>) = orderedDevider '/'
 
 
-(<?>): URL -> URL -> URL
+-- (<?>): URL -> URL -> URL
 (<?>) = orderedDevider '?'
 
 
-(<&>): URL -> URL -> URL
+-- (<&>): URL -> URL -> URL
 (<&>) = unorderedDevider '&'
 
-
-orderedDevider = 
-    devider orderedPacker
+(<%>) = unorderedDevider '%'
 
 
-unorderedDevider = 
-    devider unorderedPacker
+orderedDevider char url1 url2 =
+    OrderedURL char url1 url2
+
+
+unorderedDevider char url1 url2 =
+    case url1 of
+        OrderedURL _ a _ ->
+            merge ( Tuple.first >> (::) ) char url1 a url2
+
+
+        UnorderedURL char1 urls1 ->
+            if char1 == char then 
+                merge ( Tuple.second >> List.append ) char url1 urls1 url2
+            else 
+                merge ( Tuple.first >> (::) ) char url1 urls1 url2
+        
+
+        NodeURL a ->
+            merge ( Tuple.first >> (::) ) char url1 a url2
+
+
+merge joinUrls char url1 urls1 url2 =
+    case url2 of
+        UnorderedURL char2 urls2 ->
+            if char == char2 then
+                joinUrls (url1, urls1) urls2 
+                    |> UnorderedURL char 
+            else
+                [url1, url2]
+                    |> UnorderedURL char 
+        
+        _ ->
+            [url1, url2] 
+                |> UnorderedURL char 
     
 
-devider : ( Char -> SubURL -> URL -> URL ) -> Char -> URL -> URL -> URL
-devider packer char url1 url2 =
-    case url1 of
-        OrderedURL char1 sub1 nextURL1 ->
-            OrderedURL char1 sub1 <| devider packer char nextURL1 url2
+-- devider : ( Char -> SubURL -> URL -> URL ) -> Char -> SubURL -> URL -> URL
+-- devider packer char url1 url2 =
+--     case url2 of
+--         OrderedURL char1 sub1 nextURL1 ->
+--             OrderedURL char1 sub1 <| devider packer char nextURL1 url2
 
-        UnorderedURL char1 currURL nextURL ->
-            UnorderedURL char1 currURL <| devider packer char nextURL url2
+--         UnorderedURL char1 currURL nextURL ->
+--             UnorderedURL char1 currURL <| devider packer char nextURL url2
         
-        URLNode sub1 ->
-            packer char sub1 url2
+--         URLNode sub1 ->
+--             packer char sub1 url2
 
-        URLEnd ->
-            URLEnd
+--         URLEnd ->
+--             URLEnd
 
 
 orderedPacker =
     OrderedURL 
 
 
-unorderedPacker char sub1 url2 =
-    UnorderedURL char [sub1] url2
+-- unorderedPacker char sub1 url2 =
+--     UnorderedURL char [sub1] url2
 
 
 break: Char -> String -> Result String ( String, String )
