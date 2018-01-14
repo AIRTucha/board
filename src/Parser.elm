@@ -282,33 +282,32 @@ orderedDevider char url1 url2 =
 unorderedDevider char url1 url2 =
     case url1 of
         OrderedURL _ a _ ->
-            merge ( Tuple.first >> (::) ) char url1 a url2
+            merge ( (::) url1 ) char url1 url2
 
 
         UnorderedURL char1 urls1 ->
             if char1 == char then 
-                merge ( Tuple.second >> List.append ) char url1 urls1 url2
+                merge ( List.append urls1 ) char url1 url2
             else 
-                merge ( Tuple.first >> (::) ) char url1 urls1 url2
+                merge ( (::) url1 ) char url1 url2
         
 
         NodeURL a ->
-            merge ( Tuple.first >> (::) ) char url1 a url2
+            merge ( (::) url1 ) char url1 url2
 
 
-merge joinUrls char url1 urls1 url2 =
-    case url2 of
-        UnorderedURL char2 urls2 ->
-            if char == char2 then
-                joinUrls (url1, urls1) urls2 
-                    |> UnorderedURL char 
-            else
-                [url1, url2]
-                    |> UnorderedURL char 
-        
-        _ ->
-            [url1, url2] 
-                |> UnorderedURL char 
+merge append char url1 url2 =
+    UnorderedURL char <| 
+        append <| 
+            case url2 of
+                UnorderedURL char2 urls2 ->
+                    if char == char2 then
+                        urls2 
+                    else
+                        [url2]
+                
+                _ ->
+                    [url2] 
     
 
 -- devider : ( Char -> SubURL -> URL -> URL ) -> Char -> SubURL -> URL -> URL

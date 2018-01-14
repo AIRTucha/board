@@ -44,14 +44,18 @@ suite =
                 \_ -> 
                     float <&> p testStr 
                         |> Expect.equal ( UnorderedURL '&' [NodeURL ParseFloat, NodeURL (ParsePath testStr)])
-            -- , test "complex path with ordered dividers" <|
-            --     \_ -> 
-            --         float </> int <?> p testStr 
-            --             |> Expect.equal ( OrderedURL '/' ParseFloat <| OrderedURL '?' ParseInt (URLNode <| ParsePath testStr) )
-            -- , test "complex path with unordered dividers" <|
-            --     \_ -> 
-            --         float <&> int <&> p testStr 
-            --             |> Expect.equal ( UnorderedURL '&' [ParseFloat] <| UnorderedURL '&' [ParseInt] (URLNode <| ParsePath testStr) )
+            , test "complex path with ordered dividers" <|
+                \_ -> 
+                    float </> int <?> p testStr 
+                        |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) <| OrderedURL '?' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
+            , test "complex path with unordered dividers" <|
+                \_ -> 
+                    float <&> int <&> p testStr
+                        |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
+            , test "unorderely append node to unordered dividers" <|
+                \_ -> 
+                    float <&> (int <&> p testStr)
+                        |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
             -- , test "complex path with ordered and unordered deviders" <|
             --     \_ -> 
             --         float </> int <&> p testStr 
