@@ -48,22 +48,34 @@ suite =
                 \_ -> 
                     float </> int <?> p testStr 
                         |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) <| OrderedURL '?' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
+            , test "ordered devider between float and ordered devider" <|
+                \_ -> 
+                    float <?> (int </> p testStr)
+                        |> Expect.equal ( OrderedURL '?' (NodeURL ParseFloat) <| OrderedURL '/' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
             , test "complex path with unordered dividers" <|
                 \_ -> 
                     float <&> int <&> p testStr
                         |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
-            , test "unorderely append node to unordered dividers" <|
+            , test "unordered devider between an foat and unordered tree" <|
                 \_ -> 
                     float <&> (int <&> p testStr)
                         |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
-            -- , test "complex path with ordered and unordered deviders" <|
-            --     \_ -> 
-            --         float </> int <&> p testStr 
-            --             |> Expect.equal ( OrderedURL '/' ParseFloat <| UnorderedURL '&' [ParseInt] (URLNode <| ParsePath testStr) )
-            -- , test "complex path with unordered and ordered deviders" <|
-            --     \_ -> 
-            --         float <&> int <?> p testStr 
-            --             |> Expect.equal ( UnorderedURL '&' [ParseFloat] <| OrderedURL '?' ParseInt (URLNode <| ParsePath testStr) )
+            , test "unordred devider between ordered tree and path" <|
+                \_ -> 
+                    (float </> int) <&> p testStr 
+                        |> Expect.equal ( UnorderedURL '&' [ OrderedURL '/' (NodeURL ParseFloat) (NodeURL ParseInt), NodeURL <| ParsePath testStr ])
+            , test "unordred devider between float and unordered tree" <|
+                \_ -> 
+                    float </> int <&> p testStr 
+                        |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
+            , test "complex path with unordered and ordered deviders" <|
+                \_ -> 
+                    float <&> (int <?> p testStr)
+                        |> Expect.equal ( UnorderedURL '&' [NodeURL ParseFloat, OrderedURL '?' (NodeURL ParseInt) (NodeURL <| ParsePath testStr)] )
+            , test "complex path with ordered and unordered deviders" <|
+                \_ -> 
+                    float <&> int <?> p testStr
+                        |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath "string")) )
             -- , test "unordered devider between two ordered deviders" <|
             --     \_ ->
             --         (int </> int) <&> (float <?> p testStr)
