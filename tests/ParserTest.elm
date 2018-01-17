@@ -65,6 +65,38 @@ suite =
                     \_ -> 
                         float </> (int <&> p testStr)
                             |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
+                , test "two ordered subtrees" <|
+                    \_ ->
+                        (int </> float) <?> (str </> p testStr)
+                            |> Expect.equal 
+                                ( OrderedURL '?' 
+                                    (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat)) 
+                                    (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                )
+                , test "ordered and unordered subtrees" <|
+                    \_ ->
+                        (int </> float) <?> (str <&> p testStr)
+                            |> Expect.equal 
+                                ( OrderedURL '?' 
+                                    (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat))
+                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                )
+                , test "unordered and ordered subtrees" <|
+                    \_ ->
+                        (int <%> float) <?> (str </> p testStr)
+                            |> Expect.equal 
+                                ( OrderedURL '?' 
+                                    (UnorderedURL '%' [NodeURL ParseInt, NodeURL ParseFloat]) 
+                                    (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                )
+                , test "two unordered subtrees" <|
+                    \_ ->
+                        (int <&> float) <?> (str <&> p testStr)
+                            |> Expect.equal 
+                                ( OrderedURL '?' 
+                                    (UnorderedURL '&' [NodeURL ParseInt, NodeURL ParseFloat]) 
+                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                )
                 ]
             , describe "Unordered devider between"
                 [ test "two simple nodes" <|
@@ -107,44 +139,66 @@ suite =
                     \_ ->
                         int <&> (str <%> any)
                             |> Expect.equal (UnorderedURL '&' [NodeURL ParseInt, UnorderedURL '%' [NodeURL ParseStr, NodeURL ParseAny]])
+                , test "two ordered subtrees" <|
+                    \_ ->
+                        (int </> float) <&> (str </> p testStr)
+                            |> Expect.equal 
+                                ( UnorderedURL '&'
+                                    [ (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat)) 
+                                    , (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                    ]
+                                )
+                , test "ordered and unordered subtrees" <|
+                    \_ ->
+                        (int </> float) <?> (str <&> p testStr)
+                            |> Expect.equal 
+                                ( OrderedURL '?' 
+                                    (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat))
+                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                )
+                , test "unordered and ordered subtrees" <|
+                    \_ ->
+                        (int <%> float) <&> (str </> p testStr)
+                            |> Expect.equal 
+                                ( UnorderedURL '&' 
+                                    [ (UnorderedURL '%' [NodeURL ParseInt, NodeURL ParseFloat]) 
+                                    , (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                    ]
+                                )
+                , test "two unordered subtrees" <|
+                    \_ ->
+                        (int <&> float) <&> (str <&> p testStr)
+                            |> Expect.equal 
+                                ( UnorderedURL '&' ([NodeURL ParseInt,NodeURL ParseFloat,NodeURL ParseStr,NodeURL (ParsePath "string")]))
+                , test "two unordered subtrees, with different char" <|
+                    \_ ->
+                        (int <%> float) <&> (str <%> p testStr)
+                            |> Expect.equal 
+                                ( UnorderedURL '&' 
+                                    [(UnorderedURL '%' [NodeURL ParseInt, NodeURL ParseFloat]) 
+                                    ,(UnorderedURL '%' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    ]
+                                )
+                , test "two unordered subtrees, with different chars between nodes, left" <|
+                    \_ ->
+                        (int <&> float) <&> (str <%> p testStr)
+                            |> Expect.equal 
+                                ( UnorderedURL '&' 
+                                    [ NodeURL ParseInt
+                                    , NodeURL ParseFloat
+                                    ,(UnorderedURL '%' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    ]
+                                )
+                , test "two unordered subtrees, with different chars between nodes, right" <|
+                    \_ ->
+                        (int <&> float) <%> (str <%> p testStr)
+                            |> Expect.equal 
+                                ( UnorderedURL '&' 
+                                    [ NodeURL ParseInt
+                                    ,(UnorderedURL '%' [NodeURL ParseFloat, NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    ]
+                                )
                 ]
-
-            -- , test "unordered devider between two ordered deviders" <|
-            --     \_ ->
-            --         (int </> int) <&> (float <?> p testStr)
-            --             |> Expect.equal 
-            --                 ( OrderedURL '/' ParseInt <| 
-            --                     UnorderedURL '&' [ParseInt] <| 
-            --                         OrderedURL '?' ParseFloat <|
-            --                             URLNode (ParsePath testStr) 
-            --                 )
-            -- , test "ordered devider between two ordered forks" <|
-            --     \_ ->
-            --         (int </> int) <?> (str </> p testStr)
-            --             |> Expect.equal 
-            --                 ( OrderedURL '/' ParseInt <| 
-            --                     OrderedURL '?' ParseInt <| 
-            --                         OrderedURL '/' ParseStr <|
-            --                             URLNode (ParsePath testStr) 
-            --                 )
-            -- , test "ordered devider between two unordered forks" <|
-            --     \_ ->
-            --         (any <&> int) <?> (float <&> p testStr)
-            --             |> Expect.equal 
-            --                 ( UnorderedURL '&' [ParseAny] <| 
-            --                     OrderedURL '?' ParseInt <| 
-            --                         UnorderedURL '&' [ParseFloat] <|
-            --                             URLNode (ParsePath testStr) 
-            --                 )
-            -- , test "ordered devider between two mix forks" <|
-            --     \_ ->
-            --         (int </> query) <?> (float <&> p testStr)
-            --             |> Expect.equal 
-            --                 ( OrderedURL '/' ParseInt <| 
-            --                     OrderedURL '?' ParseQuery <| 
-            --                         UnorderedURL '&' [ParseFloat] <|
-            --                             URLNode (ParsePath testStr) 
-            --                 )
             ]
         -- , describe "Parse path"
         --     [ describe "Path"
