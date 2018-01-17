@@ -36,67 +36,79 @@ suite =
                         |> Expect.equal ( Ok ("","") )
             ]
         , describe "Build a tree"
-            [ 
-                describe "Ordered devider and" 
-                    [ test "simple node" <|
-                        \_ -> 
-                            p testStr </> int
-                                |> Expect.equal ( OrderedURL '/' (NodeURL <| ParsePath testStr) (NodeURL ParseInt) )
-                    , test "ordered subnode" <|
-                        \_ -> 
-                            float </> int <?> p testStr 
-                                |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) <| OrderedURL '?' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
-                    , test "ordered subnode, left" <|
-                        \_ -> 
-                            float <?> (int </> p testStr)
-                                |> Expect.equal ( OrderedURL '?' (NodeURL ParseFloat) <| OrderedURL '/' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
-                    , test "unordred devider between ordered subnode and path" <|
-                        \_ -> 
-                            float </> int <&> p testStr 
-                                |> Expect.equal ( UnorderedURL '&' [ OrderedURL '/' (NodeURL ParseFloat) (NodeURL ParseInt), NodeURL <| ParsePath testStr ])
-                    ]
-            
-            , test "unordered float and path" <|
-                \_ -> 
-                    float <&> p testStr 
-                        |> Expect.equal ( UnorderedURL '&' [NodeURL ParseFloat, NodeURL (ParsePath testStr)])
+            [ describe "Ordered devider between" 
+                [ test "two simple nodes" <|
+                    \_ -> 
+                        p testStr </> int
+                            |> Expect.equal ( OrderedURL '/' (NodeURL <| ParsePath testStr) (NodeURL ParseInt) )
+                , test "three simple nodes" <|
+                    \_ -> 
+                        float </> int <?> p testStr 
+                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) <| OrderedURL '?' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
+                , test "three simple nodes, left" <|
+                    \_ -> 
+                        float <?> (int </> p testStr)
+                            |> Expect.equal ( OrderedURL '?' (NodeURL ParseFloat) <| OrderedURL '/' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
+                , test "three simple nodes, right" <|
+                    \_ -> 
+                        (float </> int) <&> p testStr 
+                            |> Expect.equal ( UnorderedURL '&' [ OrderedURL '/' (NodeURL ParseFloat) (NodeURL ParseInt), NodeURL <| ParsePath testStr ])
+                , test "node and two other nodes devided unorderedly" <|
+                    \_ -> 
+                        float </> int <&> p testStr 
+                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
+                , test "node and two other nodes devided unorderedly, left" <|
+                    \_ -> 
+                        (float </> int) <&> p testStr 
+                            |> Expect.equal ( UnorderedURL '&' [ OrderedURL '/' (NodeURL ParseFloat) (NodeURL ParseInt), NodeURL <| ParsePath testStr ])
+                , test "node and two other nodes devided unorderedly, right" <|
+                    \_ -> 
+                        float </> (int <&> p testStr)
+                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
+                ]
+            , describe "Unordered devider between"
+                [ test "two simple nodes" <|
+                    \_ -> 
+                        float <&> p testStr 
+                            |> Expect.equal ( UnorderedURL '&' [NodeURL ParseFloat, NodeURL (ParsePath testStr)])
+                , test "three simple nodes" <|
+                    \_ -> 
+                        float <&> int <&> p testStr
+                            |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
+                , test "three simple nodes, left" <|
+                    \_ -> 
+                        (float <&> int) <&> p testStr
+                            |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
+                , test "three simple nodes, right" <|
+                    \_ -> 
+                        float <&> (int <&> p testStr)
+                            |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
+                , test "node and two other nodes devided orderedly" <|
+                    \_ -> 
+                        float <&> int <?> p testStr
+                            |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath "string")) )
+                , test "node and two other nodes devided orderedly, left" <|
+                    \_ -> 
+                        (float <&> int) <?> p testStr
+                            |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath "string")) )
+                , test "node and two other nodes devided orderedly, right" <|
+                    \_ -> 
+                        float <&> (int <?> p testStr)
+                            |> Expect.equal (  UnorderedURL '&' ([NodeURL ParseFloat,OrderedURL '?' (NodeURL ParseInt) (NodeURL (ParsePath "string"))]) )
+                , test "node and two other nodes devided unorderedly with different char" <|
+                    \_ ->
+                        int <&> str <%> any
+                            |> Expect.equal (UnorderedURL '%' [UnorderedURL '&' [NodeURL ParseInt, NodeURL ParseStr], NodeURL ParseAny])
+                , test "node and two other nodes devided unorderedly with different char, left" <|
+                    \_ ->
+                        (int <&> str) <%> any
+                            |> Expect.equal (UnorderedURL '%' [UnorderedURL '&' [NodeURL ParseInt, NodeURL ParseStr], NodeURL ParseAny])
+                , test "node and two other nodes devided unorderedly with different char, right" <|
+                    \_ ->
+                        int <&> (str <%> any)
+                            |> Expect.equal (UnorderedURL '&' [NodeURL ParseInt, UnorderedURL '%' [NodeURL ParseStr, NodeURL ParseAny]])
+                ]
 
-            , test "ordered devider between float and ordered subnode" <|
-                \_ -> 
-                    float <?> (int </> p testStr)
-                        |> Expect.equal ( OrderedURL '?' (NodeURL ParseFloat) <| OrderedURL '/' (NodeURL ParseInt) (NodeURL <| ParsePath testStr) )
-            , test "complex path with unordered dividers" <|
-                \_ -> 
-                    float <&> int <&> p testStr
-                        |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
-            , test "unordered devider between an float and unordered subnode" <|
-                \_ -> 
-                    float <&> (int <&> p testStr)
-                        |> Expect.equal ( UnorderedURL '&' [ NodeURL ParseFloat, NodeURL ParseInt, NodeURL <| ParsePath testStr] )
-            , test "unordred devider between ordered subnode and path" <|
-                \_ -> 
-                    (float </> int) <&> p testStr 
-                        |> Expect.equal ( UnorderedURL '&' [ OrderedURL '/' (NodeURL ParseFloat) (NodeURL ParseInt), NodeURL <| ParsePath testStr ])
-            , test "unordred devider between float and unordered subnode" <|
-                \_ -> 
-                    float </> int <&> p testStr 
-                        |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
-            , test "unordered devider between float and ordered subnode" <|
-                \_ -> 
-                    float <&> (int <?> p testStr)
-                        |> Expect.equal ( UnorderedURL '&' [NodeURL ParseFloat, OrderedURL '?' (NodeURL ParseInt) (NodeURL <| ParsePath testStr)] )
-            , test "complex path with ordered and unordered deviders" <|
-                \_ -> 
-                    float <&> int <?> p testStr
-                        |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath "string")) )
-            , test "two unordered deviders with different char" <|
-                \_ ->
-                    int <&> str <%> any
-                        |> Expect.equal (UnorderedURL '%' [UnorderedURL '&' [NodeURL ParseInt, NodeURL ParseStr], NodeURL ParseAny])
-            , test "two unordered deviders with different char, left associated" <|
-                \_ ->
-                    int <&> (str <%> any)
-                        |> Expect.equal (UnorderedURL '&' [ NodeURL ParseInt, UnorderedURL '%' [ NodeURL ParseStr, NodeURL ParseAny] ])
             -- , test "unordered devider between two ordered deviders" <|
             --     \_ ->
             --         (int </> int) <&> (float <?> p testStr)
