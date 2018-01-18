@@ -56,7 +56,7 @@ suite =
                 , test "node and two other nodes devided unorderedly" <|
                     \_ -> 
                         float </> int <&> p testStr 
-                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
+                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath testStr)] ) )
                 , test "node and two other nodes devided unorderedly, left" <|
                     \_ -> 
                         (float </> int) <&> p testStr 
@@ -64,14 +64,14 @@ suite =
                 , test "node and two other nodes devided unorderedly, right" <|
                     \_ -> 
                         float </> (int <&> p testStr)
-                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath "string")] ) )
+                            |> Expect.equal ( OrderedURL '/' (NodeURL ParseFloat) ( UnorderedURL '&' [NodeURL ParseInt,NodeURL (ParsePath testStr)] ) )
                 , test "two ordered subtrees" <|
                     \_ ->
                         (int </> float) <?> (str </> p testStr)
                             |> Expect.equal 
                                 ( OrderedURL '?' 
                                     (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat)) 
-                                    (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                    (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath testStr)))
                                 )
                 , test "ordered and unordered subtrees" <|
                     \_ ->
@@ -79,7 +79,7 @@ suite =
                             |> Expect.equal 
                                 ( OrderedURL '?' 
                                     (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat))
-                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath testStr)])
                                 )
                 , test "unordered and ordered subtrees" <|
                     \_ ->
@@ -87,7 +87,7 @@ suite =
                             |> Expect.equal 
                                 ( OrderedURL '?' 
                                     (UnorderedURL '%' [NodeURL ParseInt, NodeURL ParseFloat]) 
-                                    (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                    (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath testStr)))
                                 )
                 , test "two unordered subtrees" <|
                     \_ ->
@@ -95,7 +95,7 @@ suite =
                             |> Expect.equal 
                                 ( OrderedURL '?' 
                                     (UnorderedURL '&' [NodeURL ParseInt, NodeURL ParseFloat]) 
-                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath testStr)])
                                 )
                 ]
             , describe "Unordered devider between"
@@ -118,15 +118,15 @@ suite =
                 , test "node and two other nodes devided orderedly" <|
                     \_ -> 
                         float <&> int <?> p testStr
-                            |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath "string")) )
+                            |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath testStr)) )
                 , test "node and two other nodes devided orderedly, left" <|
                     \_ -> 
                         (float <&> int) <?> p testStr
-                            |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath "string")) )
+                            |> Expect.equal ( OrderedURL '?' (UnorderedURL '&' ([NodeURL ParseFloat,NodeURL ParseInt])) (NodeURL (ParsePath testStr)) )
                 , test "node and two other nodes devided orderedly, right" <|
                     \_ -> 
                         float <&> (int <?> p testStr)
-                            |> Expect.equal (  UnorderedURL '&' ([NodeURL ParseFloat,OrderedURL '?' (NodeURL ParseInt) (NodeURL (ParsePath "string"))]) )
+                            |> Expect.equal (  UnorderedURL '&' ([NodeURL ParseFloat,OrderedURL '?' (NodeURL ParseInt) (NodeURL (ParsePath testStr))]) )
                 , test "node and two other nodes devided unorderedly with different char" <|
                     \_ ->
                         int <&> str <%> any
@@ -145,7 +145,7 @@ suite =
                             |> Expect.equal 
                                 ( UnorderedURL '&'
                                     [ (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat)) 
-                                    , (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                    , (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath testStr)))
                                     ]
                                 )
                 , test "ordered and unordered subtrees" <|
@@ -154,7 +154,7 @@ suite =
                             |> Expect.equal 
                                 ( OrderedURL '?' 
                                     (OrderedURL '/' (NodeURL ParseInt) (NodeURL ParseFloat))
-                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    (UnorderedURL '&' [NodeURL ParseStr, NodeURL (ParsePath testStr)])
                                 )
                 , test "unordered and ordered subtrees" <|
                     \_ ->
@@ -162,21 +162,21 @@ suite =
                             |> Expect.equal 
                                 ( UnorderedURL '&' 
                                     [ (UnorderedURL '%' [NodeURL ParseInt, NodeURL ParseFloat]) 
-                                    , (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath "string")))
+                                    , (OrderedURL '/' (NodeURL ParseStr) (NodeURL (ParsePath testStr)))
                                     ]
                                 )
                 , test "two unordered subtrees" <|
                     \_ ->
                         (int <&> float) <&> (str <&> p testStr)
                             |> Expect.equal 
-                                ( UnorderedURL '&' ([NodeURL ParseInt,NodeURL ParseFloat,NodeURL ParseStr,NodeURL (ParsePath "string")]))
+                                ( UnorderedURL '&' ([NodeURL ParseInt,NodeURL ParseFloat,NodeURL ParseStr,NodeURL (ParsePath testStr)]))
                 , test "two unordered subtrees, with different char" <|
                     \_ ->
                         (int <%> float) <&> (str <%> p testStr)
                             |> Expect.equal 
                                 ( UnorderedURL '&' 
                                     [(UnorderedURL '%' [NodeURL ParseInt, NodeURL ParseFloat]) 
-                                    ,(UnorderedURL '%' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    ,(UnorderedURL '%' [NodeURL ParseStr, NodeURL (ParsePath testStr)])
                                     ]
                                 )
                 , test "two unordered subtrees, with different chars between nodes, left" <|
@@ -186,17 +186,18 @@ suite =
                                 ( UnorderedURL '&' 
                                     [ NodeURL ParseInt
                                     , NodeURL ParseFloat
-                                    ,(UnorderedURL '%' [NodeURL ParseStr, NodeURL (ParsePath "string")])
+                                    , UnorderedURL '%' [NodeURL ParseStr, NodeURL (ParsePath testStr)]
                                     ]
                                 )
                 , test "two unordered subtrees, with different chars between nodes, right" <|
                     \_ ->
                         (int <&> float) <%> (str <%> p testStr)
                             |> Expect.equal 
-                                ( UnorderedURL '&' 
-                                    [ NodeURL ParseInt
-                                    ,(UnorderedURL '%' [NodeURL ParseFloat, NodeURL ParseStr, NodeURL (ParsePath "string")])
-                                    ]
+                                ( UnorderedURL '%' 
+                                    ([ UnorderedURL '&' ([NodeURL ParseInt, NodeURL ParseFloat])
+                                    ,  NodeURL ParseStr
+                                    ,  NodeURL (ParsePath testStr)
+                                    ])
                                 )
                 ]
             ]
