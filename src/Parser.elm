@@ -67,98 +67,68 @@ query =
 --     parsingLoop value [] string
 
 
--- parsingLoop : URL -> (List URLValue) -> String -> URLValue
--- parsingLoop url result string =
---     case url of
---         OrderedURL char sub nextURL ->
---             case sub of
---                 ParsePath path ->
---                     string 
---                         |> break char 
---                         |> Result.andThen (checkEqual path)
---                         |> ignorValue result
---                         |> parseNext nextURL
+parsingLoop : URL -> (List URLValue) -> String -> Maybe Char -> Result (String) ( List URLValue, String )
+parsingLoop url result string tailChar =
+    case url of
+        OrderedURL char url nextURL ->
+            case parsingLoop url result string (Just char) of
+                Ok (newResult, newString) ->
+                    parsingLoop nextURL newResult newString Nothing
 
-
---                 ParseFloat ->
---                     string
---                         |> break char 
---                         |> Result.andThen (parseValue String.toFloat)
---                         |> packValue Floating result
---                         |> parseNext nextURL
-                           
-
---                 ParseInt ->
---                     string  
---                         |> break char
---                         |> Result.andThen (parseValue String.toInt)
---                         |> packValue Interger result
---                         |> parseNext nextURL
-
-
---                 ParseQuery ->
---                     string
---                         |> break char
---                         |> Result.andThen (parseValue parseQuery)
---                         |> packValue Query result
---                         |> parseNext nextURL
-
-                    
---                 ParseStr ->
---                     string
---                         |> break char
---                         |> packValue Str result
---                         |> parseNext nextURL
-                    
-
---                 ParseAny ->
---                     string
---                         |> break char
---                         |> Result.map Tuple.second
---                         |> ignorValue result
---                         |> parseNext nextURL
-
-
---         NodeURL node ->
---             case node of
---                 ParsePath path ->
---                     checkEqual path ( string, "" )
---                         |> ignorValue result
---                         |> packResult
+                a -> a
                 
 
---                 ParseFloat ->
---                     parseValue String.toFloat ( string, "" )
---                         |> packValue Floating result
---                         |> packResult
+        NodeURL node ->
+            case tailChar of
+                Just char ->
+                    string
+                        |> break char
+                        |> Result.andThen (parseNode result node)
                 
-
---                 ParseInt ->
---                     parseValue String.toInt ( string, "" )
---                         |> packValue Interger result
---                         |> packResult
-
-                                
---                 ParseStr ->
---                     parseValue Ok ( string, "" )
---                         |> packValue Str result
---                         |> packResult
+                Nothing ->
+                    parseNode result node (string, "")
 
 
---                 ParseAny ->
---                     makeValue result 
-
-
---                 ParseQuery ->
---                     parseValue parseQuery ( string, "" )
---                         |> packValue Query result
---                         |> packResult
-
-
---         UnorderedURL _ _ _ ->
---             Failure "unimplemented"
+        UnorderedURL _ _ ->
+            Err "unimplemented"
     
+
+parseNode result node strings =
+    case node of
+        ParsePath path ->
+            checkEqual path strings
+                |> ignorValue result
+                -- |> packResult
         
+
+        ParseFloat ->
+            parseValue String.toFloat strings
+                |> packValue Floating result
+                -- |> packResult
+        
+
+        ParseInt ->
+            parseValue String.toInt strings
+                |> packValue Interger result
+                -- |> packResult
+
+                        
+        ParseStr ->
+            parseValue Ok strings
+                |> packValue Str result
+                -- |> packResult
+
+
+        ParseAny ->
+            Ok (result, Tuple.second strings)
+            -- makeValue result
+
+
+        ParseQuery ->
+            parseValue parseQuery strings
+                |> packValue Query result
+                -- |> packResult
+
 parseValue parse (head, tail) =
     parse head
         |> Result.map ( \ value -> ( value, tail ))
@@ -205,9 +175,7 @@ packValue packer result input =
                 |> Ok
         
         Err error ->
-            result 
-                |> (::) ( Failure error )
-                |> Err
+            Err error
 
 
 checkEqual path (string, tail) =
@@ -224,29 +192,26 @@ ignorValue result input =
                 |> Ok
         
         Err error ->
-            result 
-                |> (::) ( Failure error )
-                |> Err
+            Err error
 
 
--- parseNext url result =
---     case result of
---         Ok ( value, tail ) ->
---             parsingLoop url value tail
+parseNext url result =
+    case result of
+        Ok ( value, tail ) ->
+            parsingLoop url value tail Nothing
         
---         Err url ->
---             makeValue url
+        err -> err
             
 
 packResult result =
     case result of 
-        Ok (value, _) ->
-            value
-                |> makeValue 
+        Ok (value, restOfString) ->
+            (makeValue value, restOfString)
+             
             
         Err error ->
-            error 
-                |> makeValue 
+            (makeValue error, "")
+                
 
 
 makeValue: (List URLValue) -> URLValue
