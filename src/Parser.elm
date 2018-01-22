@@ -62,10 +62,17 @@ query =
     NodeURL ParseQuery
 
 
--- parser : URL -> String -> URLValue
--- parser value string =
---     parsingLoop value [] string
+parser : URL -> String -> URLValue
+parser value string =
+    case parsingLoop value [] string Nothing of
+        Ok ( result, "" ) ->
+            makeValue result
 
+        Ok (result, stringEnding ) ->
+            Failure <| stringEnding ++ " is not specified"
+
+        Err err ->
+            Failure err
 
 parsingLoop : URL -> (List URLValue) -> String -> Maybe Char -> Result (String) ( List URLValue, String )
 parsingLoop url result string tailChar =
@@ -98,36 +105,30 @@ parseNode result node strings =
         ParsePath path ->
             checkEqual path strings
                 |> ignorValue result
-                -- |> packResult
         
 
         ParseFloat ->
             parseValue String.toFloat strings
                 |> packValue Floating result
-                -- |> packResult
         
 
         ParseInt ->
             parseValue String.toInt strings
                 |> packValue Interger result
-                -- |> packResult
 
                         
         ParseStr ->
             parseValue Ok strings
                 |> packValue Str result
-                -- |> packResult
 
 
         ParseAny ->
             Ok (result, Tuple.second strings)
-            -- makeValue result
 
 
         ParseQuery ->
             parseValue parseQuery strings
                 |> packValue Query result
-                -- |> packResult
 
 parseValue parse (head, tail) =
     parse head
@@ -193,26 +194,7 @@ ignorValue result input =
         
         Err error ->
             Err error
-
-
-parseNext url result =
-    case result of
-        Ok ( value, tail ) ->
-            parsingLoop url value tail Nothing
-        
-        err -> err
             
-
-packResult result =
-    case result of 
-        Ok (value, restOfString) ->
-            (makeValue value, restOfString)
-             
-            
-        Err error ->
-            (makeValue error, "")
-                
-
 
 makeValue: (List URLValue) -> URLValue
 makeValue list =

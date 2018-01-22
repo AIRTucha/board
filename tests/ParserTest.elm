@@ -201,133 +201,133 @@ suite =
                                 )
                 ]
             ]
-        -- , describe "Parse path"
-        --     [ describe "Path"
-        --         [ describe "Correct"
-        --             [ test "just path" <|
-        --                 \_ ->
-        --                     testStr   
-        --                         |> parser (p testStr)
-        --                         |> Expect.equal Succes
-        --             , test "two paths" <|
-        --                 \_ ->
-        --                     testStr ++ "/" ++ testStr
-        --                         |> parser (p testStr </> p testStr)
-        --                         |> Expect.equal Succes
-        --             , test "path and int" <|
-        --                 \_ ->
-        --                     testStr ++ "/10"
-        --                         |> parser (p testStr </> int)
-        --                         |> Expect.equal ( Interger 10 ) 
-        --             , test "path and float" <|
-        --                 \_ ->
-        --                     testStr ++ "/3.1415"
-        --                         |> parser (p testStr </> float)
-        --                         |> Expect.equal ( Floating 3.1415 )
-        --             , test "path and string" <|
-        --                 \_ ->
-        --                     testStr ++ "/" ++ testStr
-        --                         |> parser (p testStr </> str)
-        --                         |> Expect.equal ( Str testStr )
-        --             , test "path and any" <|
-        --                 \_ ->
-        --                     testStr ++ "/" ++ testStr
-        --                         |> parser (p testStr </> any)
-        --                         |> Expect.equal ( Succes )
-        --             , test "path and query" <|
-        --                 \_ ->
-        --                     testStr ++ "/" ++ testStr ++ "=" ++ testStr
-        --                         |> parser (p testStr </> query)
-        --                         |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)])
-        --             ]
-        --         , describe "Error" 
-        --             [ test "Incorrect path" <|
-        --                 \_ ->
-        --                     let
-        --                         strErr = testStr ++ "Error"
-        --                     in
-        --                         strErr
-        --                             |> parser (p testStr)
-        --                             |> Expect.equal ( Failure <| testStr ++ " is not " ++ strErr )
-        --             , test "Incorrect path after divider" <|
-        --                 \_ ->
-        --                     let
-        --                         str1   = testStr ++ "1"
-        --                         strErr = testStr ++ "Error"
-        --                     in
-        --                         str1 ++ "/" ++ strErr
-        --                             |> parser ( p str1 </> p testStr )
-        --                             |> Expect.equal ( Failure <| testStr ++ " is not " ++ strErr )
-        --             , test "Incorrect devider between paths" <|
-        --                 \_ ->
-        --                     let
-        --                         str1 = testStr ++ "1"
-        --                         str2 = testStr ++ "2"
-        --                         path = str1 ++ "/" ++ str2
-        --                     in
-        --                         path
-        --                             |> parser (p str1 <?> p str2)
-        --                             |> Expect.equal (Failure <| path ++ " does not contain ?" )     
-        --             ]
-        --         ]
-        --         , describe "Integer"
-        --             [ describe "Correct"
-        --                 [ test "single int" <|
-        --                     \_ ->
-        --                         "10"
-        --                             |> parser int 
-        --                             |> Expect.equal ( Interger 10 ) 
-        --                 , test "two ints" <|
-        --                     \_ ->
-        --                         "10/9"
-        --                             |> parser  (int </> int) 
-        --                             |> Expect.equal ( MultyValue <| Interger 10 :: Interger 9 :: [] )
-        --                 , test "int and path" <|
-        --                     \_ ->
-        --                         "9/" ++ testStr
-        --                             |> parser (int </> p testStr)
-        --                             |> Expect.equal ( Interger 9 )
-        --                 , test "int and float" <|
-        --                     \_ ->
-        --                         "10/9.123"
-        --                             |> parser  (int </> float) 
-        --                             |> Expect.equal ( MultyValue <| Interger 10 :: Floating 9.123 :: [] )
-        --                 , test "int and string" <|
-        --                     \_ ->
-        --                         "10/" ++ testStr
-        --                             |> parser  (int </> str) 
-        --                             |> Expect.equal ( MultyValue <| Interger 10 :: Str testStr :: [] )
-        --                 , test "int and any" <|
-        --                     \_ ->
-        --                         "10/" ++ testStr
-        --                             |> parser  (int </> any) 
-        --                             |> Expect.equal ( Interger 10 )
-        --                 , test "int and query" <|
-        --                     \_ ->
-        --                         "10/" ++ testStr ++ "=" ++ testStr
-        --                             |> parser (int </> query)
-        --                             |> Expect.equal ( MultyValue 
-        --                                 [ Interger 10
-        --                                 , Query <| Dict.fromList [(testStr, testStr)]
-        --                                 ]
-        --                             )
-        --                 ]
-        --             , describe "Error"
-        --                 [ test "Incorrect int" <|
-        --                     \_ ->
-        --                         "9.14"
-        --                             |> parser int
-        --                             |> Expect.equal (Failure "could not convert string '9.14' to an Int")
-        --                 , test "Incorrect separator between ints" <|
-        --                     \_ ->
-        --                         "10?43"
-        --                             |> parser (int </> int)
-        --                             |> Expect.equal ( Failure <| "10?43 does not contain /")
-        --                 , test "Incorrect int after devider" <|
-        --                     \_ ->
-        --                         "5?a3"
-        --                             |> parser (int <?> int)
-        --                             |> Expect.equal ( MultyValue <| Interger 5 :: Failure "could not convert string 'a3' to an Int" :: [] )
+        , describe "Parse path"
+            [ describe "Path"
+                [ describe "Correct"
+                    [ test "just path" <|
+                        \_ ->
+                            testStr   
+                                |> parser (p testStr)
+                                |> Expect.equal Succes
+                    , test "two paths" <|
+                        \_ ->
+                            testStr ++ "/" ++ testStr
+                                |> parser (p testStr </> p testStr)
+                                |> Expect.equal Succes
+                    , test "path and int" <|
+                        \_ ->
+                            testStr ++ "/10"
+                                |> parser (p testStr </> int)
+                                |> Expect.equal ( Interger 10 ) 
+                    , test "path and float" <|
+                        \_ ->
+                            testStr ++ "/3.1415"
+                                |> parser (p testStr </> float)
+                                |> Expect.equal ( Floating 3.1415 )
+                    , test "path and string" <|
+                        \_ ->
+                            testStr ++ "/" ++ testStr
+                                |> parser (p testStr </> str)
+                                |> Expect.equal ( Str testStr )
+                    , test "path and any" <|
+                        \_ ->
+                            testStr ++ "/" ++ testStr
+                                |> parser (p testStr </> any)
+                                |> Expect.equal ( Succes )
+                    , test "path and query" <|
+                        \_ ->
+                            testStr ++ "/" ++ testStr ++ "=" ++ testStr
+                                |> parser (p testStr </> query)
+                                |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)])
+                    ]
+                , describe "Error" 
+                    [ test "Incorrect path" <|
+                        \_ ->
+                            let
+                                strErr = testStr ++ "Error"
+                            in
+                                strErr
+                                    |> parser (p testStr)
+                                    |> Expect.equal ( Failure <| testStr ++ " is not " ++ strErr )
+                    , test "Incorrect path after divider" <|
+                        \_ ->
+                            let
+                                str1   = testStr ++ "1"
+                                strErr = testStr ++ "Error"
+                            in
+                                str1 ++ "/" ++ strErr
+                                    |> parser ( p str1 </> p testStr )
+                                    |> Expect.equal ( Failure <| testStr ++ " is not " ++ strErr )
+                    , test "Incorrect devider between paths" <|
+                        \_ ->
+                            let
+                                str1 = testStr ++ "1"
+                                str2 = testStr ++ "2"
+                                path = str1 ++ "/" ++ str2
+                            in
+                                path
+                                    |> parser (p str1 <?> p str2)
+                                    |> Expect.equal (Failure <| path ++ " does not contain ?" )     
+                    ]
+                ]
+                , describe "Integer"
+                    [ describe "Correct"
+                        [ test "single int" <|
+                            \_ ->
+                                "10"
+                                    |> parser int 
+                                    |> Expect.equal ( Interger 10 ) 
+                        , test "two ints" <|
+                            \_ ->
+                                "10/9"
+                                    |> parser  (int </> int) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Interger 9 :: [] )
+                        , test "int and path" <|
+                            \_ ->
+                                "9/" ++ testStr
+                                    |> parser (int </> p testStr)
+                                    |> Expect.equal ( Interger 9 )
+                        , test "int and float" <|
+                            \_ ->
+                                "10/9.123"
+                                    |> parser  (int </> float) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Floating 9.123 :: [] )
+                        , test "int and string" <|
+                            \_ ->
+                                "10/" ++ testStr
+                                    |> parser  (int </> str) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Str testStr :: [] )
+                        , test "int and any" <|
+                            \_ ->
+                                "10/" ++ testStr
+                                    |> parser  (int </> any) 
+                                    |> Expect.equal ( Interger 10 )
+                        , test "int and query" <|
+                            \_ ->
+                                "10/" ++ testStr ++ "=" ++ testStr
+                                    |> parser (int </> query)
+                                    |> Expect.equal ( MultyValue 
+                                        [ Interger 10
+                                        , Query <| Dict.fromList [(testStr, testStr)]
+                                        ]
+                                    )
+                        ]
+                    , describe "Error"
+                        [ test "Incorrect int" <|
+                            \_ ->
+                                "9.14"
+                                    |> parser int
+                                    |> Expect.equal (Failure "could not convert string '9.14' to an Int")
+                        , test "Incorrect separator between ints" <|
+                            \_ ->
+                                "10?43"
+                                    |> parser (int </> int)
+                                    |> Expect.equal ( Failure <| "10?43 does not contain /")
+                        , test "Incorrect int after devider" <|
+                            \_ ->
+                                "5?a3"
+                                    |> parser (int <?> int)
+                                    |> Expect.equal ( MultyValue <| Interger 5 :: Failure "could not convert string 'a3' to an Int" :: [] )
         --                 ]
         --             ]
         --         , describe "Floating"
@@ -582,7 +582,7 @@ suite =
         --                                     |> parser ( query </> query)
         --                                     |> Expect.equal (Failure <| path ++ " does not contain /" )     
         --                     ]
-        --                 ]
-                    -- ]
-            -- ]
+                        ]
+                    ]
+            ]
         ]
