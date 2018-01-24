@@ -96,9 +96,67 @@ parsingLoop url result string tailChar =
                     parseNode result node (string, "")
 
 
-        UnorderedURL _ _ ->
-            Err "unimplemented"
-    
+        UnorderedURL char urls ->
+            urls
+                |> zipIndex
+                |> parseUnordered char string [] []
+                |> Result.map (\_ -> (Failure "unimp" :: [], ""))
+
+parseUnordered: Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, URL) -> Result String (List URLValue)
+parseUnordered char string prevUrls result urls =
+    case urls of 
+        [] ->
+            result
+                |> List.sortBy Tuple.first
+                |> List.map Tuple.second
+                |> flattenUtilFailure []
+                
+
+        (i, url) :: restOfUrls ->
+            case parsingLoop url [] string (Just char) of
+                Ok (newResult, restOfString) ->
+                    parseUnordered char restOfString prevUrls ((i, newResult) :: result) restOfUrls
+                
+                Err _ ->
+                    parseUnordered char string ((i, url) :: prevUrls) result restOfUrls
+
+flattenUtilFailure: List URLValue -> List( List URLValue ) -> Result String (List URLValue)
+flattenUtilFailure accum result =
+    case result of 
+        [] ->
+            Ok accum
+        
+        head :: tail ->
+            case findFailure head of
+                Just err ->
+                    Err err
+
+
+                Nothing ->
+                    flattenUtilFailure (List.append head accum) tail
+
+
+findFailure result =
+    case result of 
+        [] ->
+            Nothing
+        
+        (Failure err) :: tail ->
+            Just err
+
+        _ :: tail ->
+            findFailure tail 
+
+
+indices list =
+    List.range 1 (List.length list)
+
+
+zipIndex: List a -> List ( Int, a )
+zipIndex list =
+    list |>
+      List.map2 (,) (indices list)
+
 
 parseNode result node strings =
     case node of
