@@ -100,16 +100,23 @@ parsingLoop url result string tailChar =
             urls
                 |> zipIndex
                 |> parseUnordered char string [] []
-                |> Result.map (\_ -> (Failure "unimp" :: [], ""))
 
-parseUnordered: Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, URL) -> Result String (List URLValue)
+
+parseUnordered: Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, URL) -> Result String (List URLValue, String)
 parseUnordered char string prevUrls result urls =
     case urls of 
         [] ->
-            result
-                |> List.sortBy Tuple.first
-                |> List.map Tuple.second
-                |> flattenUtilFailure []
+            case prevUrls of
+                [] ->
+                    result
+                        |> List.sortBy Tuple.first
+                        |> List.map Tuple.second
+                        |> flattenUtilFailure []
+                        |> Result.map (\ v -> ( v, string) )
+                
+
+                head :: tail ->
+                    parseUnordered char string [] result prevUrls
                 
 
         (i, url) :: restOfUrls ->
@@ -119,6 +126,7 @@ parseUnordered char string prevUrls result urls =
                 
                 Err _ ->
                     parseUnordered char string ((i, url) :: prevUrls) result restOfUrls
+
 
 flattenUtilFailure: List URLValue -> List( List URLValue ) -> Result String (List URLValue)
 flattenUtilFailure accum result =
@@ -277,7 +285,7 @@ makeValue list =
 -- (<&>): URL -> URL -> URL
 (<&>) = unorderedDevider '&'
 
-(<%>) = unorderedDevider '%'
+(<*>) = unorderedDevider '*'
 
 
 orderedDevider char url1 url2 =
