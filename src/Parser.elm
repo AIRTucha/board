@@ -99,11 +99,11 @@ parsingLoop url result string tailChar =
         UnorderedURL char urls ->
             urls
                 |> zipIndex
-                |> parseUnordered char string [] []
+                |> parseUnordered char string [] [] []
 
 
-parseUnordered: Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, URL) -> Result String (List URLValue, String)
-parseUnordered char string prevUrls result urls =
+parseUnordered: Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, List URLValue)  -> List (Int, URL) -> Result String (List URLValue, String)
+parseUnordered char string prevUrls result curResult urls =
     case urls of 
         [] ->
             case prevUrls of
@@ -113,19 +113,22 @@ parseUnordered char string prevUrls result urls =
                         |> List.map Tuple.second
                         |> flattenUtilFailure []
                         |> Result.map (\ v -> ( v, string) )
-                
+
 
                 head :: tail ->
-                    parseUnordered char string [] result prevUrls
+                    if 0 > List.length curResult then 
+                        parseUnordered char string [] (List.append curResult result) [] prevUrls
+                    else
+                        Err <| "Start of " ++ string ++ " do not have any value which can be correctly parsed in according with provided template"
                 
 
         (i, url) :: restOfUrls ->
-            case parsingLoop url [] string (Just char) of
+            case parsingLoop url [] string (if restOfUrls == [] then Nothing else (Just char)) of
                 Ok (newResult, restOfString) ->
-                    parseUnordered char restOfString prevUrls ((i, newResult) :: result) restOfUrls
+                    parseUnordered char restOfString prevUrls result ((i, newResult) :: curResult) restOfUrls
                 
                 Err _ ->
-                    parseUnordered char string ((i, url) :: prevUrls) result restOfUrls
+                    parseUnordered char string ((i, url) :: prevUrls) result curResult restOfUrls
 
 
 flattenUtilFailure: List URLValue -> List( List URLValue ) -> Result String (List URLValue)

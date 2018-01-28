@@ -248,7 +248,7 @@ suite =
                                     testStr1 = testStr ++ "1"
                                     testStr2 = testStr ++ "2"
                                 in
-                                    testStr1 ++ "*" ++ testStr2 ++ "*"
+                                    testStr1 ++ "*" ++ testStr2
                                         |> parser (p testStr1 <*> p testStr2)
                                         |> Expect.equal Succes
                         -- , test "two parths, inverted" <|
