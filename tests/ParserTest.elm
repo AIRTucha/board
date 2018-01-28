@@ -242,49 +242,98 @@ suite =
                                     |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)])
                         ]
                     , describe "Unordered" <|
-                        [ test "two paths" <|
-                            \_ ->
-                                let 
-                                    testStr1 = testStr ++ "1"
-                                    testStr2 = testStr ++ "2"
-                                in
-                                    testStr1 ++ "*" ++ testStr2
-                                        |> parser (p testStr1 <*> p testStr2)
-                                        |> Expect.equal Succes
-                        -- , test "two parths, inverted" <|
-                        --     \_ ->
-                        --         let 
-                        --             testStr1 = testStr ++ "1"
-                        --             testStr2 = testStr ++ "2"
-                        --         in
-                        --             testStr2 ++ "*" ++ testStr1
-                        --                 |> parser (p testStr1 <*> p testStr2)
-                        --                 |> Expect.equal Succes
-                        , test "path and int" <|
-                            \_ ->
-                                testStr ++ "/10"
-                                    |> parser (p testStr </> int)
-                                    |> Expect.equal ( Interger 10 ) 
-                        , test "path and float" <|
-                            \_ ->
-                                testStr ++ "/3.1415"
-                                    |> parser (p testStr </> float)
-                                    |> Expect.equal ( Floating 3.1415 )
-                        , test "path and string" <|
-                            \_ ->
-                                testStr ++ "/" ++ testStr
-                                    |> parser (p testStr </> str)
-                                    |> Expect.equal ( Str testStr )
-                        , test "path and any" <|
-                            \_ ->
-                                testStr ++ "/" ++ testStr
-                                    |> parser (p testStr </> any)
-                                    |> Expect.equal ( Succes )
-                        , test "path and query" <|
-                            \_ ->
-                                testStr ++ "/" ++ testStr ++ "=" ++ testStr
-                                    |> parser (p testStr </> query)
-                                    |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)])
+                        [ describe "straight"
+                            [ test "two paths" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr1 ++ "*" ++ testStr2
+                                            |> parser (p testStr1 <*> p testStr2)
+                                            |> Expect.equal Succes
+                            , test "path or int" <|
+                                \_ ->
+                                    testStr ++ "&10"
+                                        |> parser (p testStr <&> int)
+                                        |> Expect.equal ( Interger 10 ) 
+                            , test "path or float" <|
+                                \_ ->
+                                    testStr ++ "&3.1415"
+                                        |> parser (p testStr <&> float)
+                                        |> Expect.equal ( Floating 3.1415 )
+                            , test "path or string" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr1 ++ "*" ++ testStr2
+                                            |> parser (p testStr1 <*> str)
+                                            |> Expect.equal ( Str testStr2 )
+                            , test "path or any" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr1 ++ "&" ++ testStr2
+                                            |> parser (p testStr1 <&> any)
+                                            |> Expect.equal ( Succes )
+                            , test "path or query" <|
+                                \_ ->
+                                    testStr ++ "&" ++ testStr ++ "=" ++ testStr
+                                        |> parser (p testStr <&> query)
+                                        |> Expect.equal ( Query <| Dict.fromList [(testStr, testStr)])
+                            ]
+                        , describe "inverted"
+                            [ test "two paths" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr2 ++ "*" ++ testStr1
+                                            |> parser (p testStr1 <*> p testStr2)
+                                            |> Expect.equal Succes
+                            , test "path or int" <|
+                                \_ ->
+                                    "10&" ++ testStr
+                                        |> parser (p testStr <&> int)
+                                        |> Expect.equal ( Interger 10 ) 
+                            , test "path or float" <|
+                                \_ ->
+                                    "3.1415&" ++ testStr
+                                        |> parser (p testStr <&> float)
+                                        |> Expect.equal ( Floating 3.1415 )
+                            , test "path or string" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr2 ++ "*" ++ testStr1
+                                            |> parser (p testStr1 <*> str)
+                                            |> Expect.equal ( Str testStr2 )
+                            , test "path or any" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr2 ++ "&" ++ testStr1
+                                            |> parser (p testStr1 <&> any)
+                                            |> Expect.equal ( Succes )
+                            , test "path or query" <|
+                                \_ ->
+                                    let 
+                                        testStr1 = testStr ++ "1"
+                                        testStr2 = testStr ++ "2"
+                                    in
+                                        testStr1 ++ "&" ++ testStr2 ++ "=" ++ testStr
+                                            |> parser (p testStr1 <&> query)
+                                            |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr)])
+                            ]
                         ]
                     ]
                 , describe "Error" 

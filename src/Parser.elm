@@ -99,36 +99,46 @@ parsingLoop url result string tailChar =
         UnorderedURL char urls ->
             urls
                 |> zipIndex
-                |> parseUnordered char string [] [] []
+                |> parseUnordered char tailChar string [] [] []
 
 
-parseUnordered: Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, List URLValue)  -> List (Int, URL) -> Result String (List URLValue, String)
-parseUnordered char string prevUrls result curResult urls =
+parseUnordered: Char -> Maybe Char -> String -> List (Int, URL) -> List (Int, List URLValue) -> List (Int, List URLValue)  -> List (Int, URL) -> Result String (List URLValue, String)
+parseUnordered char tailChar string prevUrls result curResult urls =
     case urls of 
         [] ->
-            case prevUrls of
-                [] ->
-                    result
-                        |> List.sortBy Tuple.first
-                        |> List.map Tuple.second
-                        |> flattenUtilFailure []
-                        |> Result.map (\ v -> ( v, string) )
+            let
+                newResult = (List.append curResult result)
+            in
+                case prevUrls of
+                    [] ->
+                        newResult
+                            |> List.sortBy Tuple.first
+                            |> List.map Tuple.second
+                            |> flattenUtilFailure []
+                            |> Result.map (\ v -> ( v, string) )
 
 
-                head :: tail ->
-                    if 0 > List.length curResult then 
-                        parseUnordered char string [] (List.append curResult result) [] prevUrls
-                    else
-                        Err <| "Start of " ++ string ++ " do not have any value which can be correctly parsed in according with provided template"
-                
+                    head :: tail ->
+                        if 0 < List.length curResult then 
+                            parseUnordered char tailChar string [] newResult [] prevUrls
+                        else
+                            Err <| "Start of " ++ string ++ " do not have any value which can be correctly parsed in according with provided template"
+                    
 
         (i, url) :: restOfUrls ->
-            case parsingLoop url [] string (if restOfUrls == [] then Nothing else (Just char)) of
-                Ok (newResult, restOfString) ->
-                    parseUnordered char restOfString prevUrls result ((i, newResult) :: curResult) restOfUrls
-                
-                Err _ ->
-                    parseUnordered char string ((i, url) :: prevUrls) result curResult restOfUrls
+            let 
+                newTailChar = 
+                    if restOfUrls == [] && prevUrls == [] then 
+                        tailChar 
+                    else 
+                        Just char
+            in
+                case parsingLoop url [] string newTailChar of
+                    Ok (newResult, restOfString) ->
+                        parseUnordered char tailChar restOfString prevUrls result ((i, newResult) :: curResult) restOfUrls
+                    
+                    Err _ ->
+                        parseUnordered char tailChar string ((i, url) :: prevUrls) result curResult restOfUrls
 
 
 flattenUtilFailure: List URLValue -> List( List URLValue ) -> Result String (List URLValue)
