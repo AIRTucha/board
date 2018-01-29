@@ -31,6 +31,39 @@ type URLValue
     | Query (Dict String String)
     | Succes
 
+toString url =
+    case url of 
+        OrderedURL char url1 url2 ->
+            "OrderedURL(" ++ (fromChar char) ++ " " ++ toString url1 ++ " " ++ toString url2 ++ ")"
+
+        UnorderedURL char subUrls ->
+            "UnorderedURL(" ++ (fromChar char) ++ " " ++ String.join " " (List.map toString subUrls) 
+
+        NodeURL node ->
+            case node of
+                ParsePath path ->
+                    "Path " ++ path   
+                
+                
+                ParseFloat ->
+                    "Float"
+
+
+                ParseInt ->
+                    "Int"
+                
+                
+                ParseStr ->
+                    "String"
+
+
+                ParseAny ->
+                    "Any"
+    
+    
+                ParseQuery ->
+                    "Query"
+
 
 p : String -> URL
 p string =
@@ -122,7 +155,14 @@ parseUnordered char tailChar string prevUrls result curResult urls =
                         if 0 < List.length curResult then 
                             parseUnordered char tailChar string [] newResult [] prevUrls
                         else
-                            Err <| "Start of " ++ string ++ " do not have any value which can be correctly parsed in according with provided template"
+                            let
+                                template = prevUrls
+                                    |> List.sortBy Tuple.first
+                                    |> List.map (Tuple.second >> toString)
+                                    |> String.join " or "
+                            in
+                                
+                            Err <| "Start of " ++ string ++ " does not have any value which can be corectly parsed by: " ++ template ++ ", separated by " ++ fromChar char ++ "."
                     
 
         (i, url) :: restOfUrls ->

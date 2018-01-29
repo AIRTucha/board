@@ -345,7 +345,7 @@ suite =
                                 strErr
                                     |> parser (p testStr)
                                     |> Expect.equal ( Failure <| testStr ++ " is not " ++ strErr )
-                    , test "Incorrect path after divider" <|
+                    , test "Incorrect path after ordered divider" <|
                         \_ ->
                             let
                                 str1   = testStr ++ "1"
@@ -354,7 +354,36 @@ suite =
                                 str1 ++ "/" ++ strErr
                                     |> parser ( p str1 </> p testStr )
                                     |> Expect.equal ( Failure <| testStr ++ " is not " ++ strErr )
-                    , test "Incorrect devider between paths" <|
+                    , test "Incorrect path after unordered divider" <|
+                        \_ ->
+                            let
+                                str1   = testStr ++ "1"
+                                strErr = testStr ++ "Error"
+                            in
+                                str1 ++ "&" ++ strErr
+                                    |> parser ( p str1 <&> p testStr )
+                                    |> Expect.equal ( Failure <| "Start of " ++ strErr ++ " does not have any value which can be corectly parsed by: Path string, separated by &." )
+                    , test "Incorrect ordered devider between paths" <|
+                        \_ ->
+                            let
+                                str1 = testStr ++ "1"
+                                str2 = testStr ++ "2"
+                                path = str1 ++ "/" ++ str2
+                            in
+                                path
+                                    |> parser (p str1 <?> p str2)
+                                    |> Expect.equal (Failure <| path ++ " does not contain ?" )   
+                    , test "Incorrect unordered devider between paths" <|
+                        \_ ->
+                            let
+                                str1 = testStr ++ "1"
+                                str2 = testStr ++ "2"
+                                path = str1 ++ "&" ++ str2
+                            in
+                                path
+                                    |> parser (p str1 <*> p str2)
+                                    |> Expect.equal (Failure <| "Start of " ++ path ++ " does not have any value which can be corectly parsed by: Path " ++ str1 ++ " or Path " ++ str2 ++ ", separated by *." )     
+                    , test "Incorrect ordered devider instead of unordered one between paths" <|
                         \_ ->
                             let
                                 str1 = testStr ++ "1"
@@ -364,6 +393,16 @@ suite =
                                 path
                                     |> parser (p str1 <?> p str2)
                                     |> Expect.equal (Failure <| path ++ " does not contain ?" )     
+                    , test "Incorrect unordered devider instead of ordered one between paths" <|
+                        \_ ->
+                            let
+                                str1 = testStr ++ "1"
+                                str2 = testStr ++ "2"
+                                path = str1 ++ "/" ++ str2
+                            in
+                                path
+                                    |> parser (p str1 <*> p str2)
+                                    |> Expect.equal (Failure <| "Start of " ++ path ++ " does not have any value which can be corectly parsed by: Path " ++ str1 ++ " or Path " ++ str2 ++ ", separated by *." )      
                     ]
                 ]
             , describe "Integer"
