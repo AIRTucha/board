@@ -413,39 +413,97 @@ suite =
                                 |> parser int 
                                 |> Expect.equal ( Interger 10 ) 
                     , test "two ints" <|
-                        \_ ->
-                            "10/9"
-                                |> parser  (int </> int) 
-                                |> Expect.equal ( MultyValue <| Interger 10 :: Interger 9 :: [] )
-                    , test "int and path" <|
-                        \_ ->
-                            "9/" ++ testStr
-                                |> parser (int </> p testStr)
-                                |> Expect.equal ( Interger 9 )
-                    , test "int and float" <|
-                        \_ ->
-                            "10/9.123"
-                                |> parser  (int </> float) 
-                                |> Expect.equal ( MultyValue <| Interger 10 :: Floating 9.123 :: [] )
-                    , test "int and string" <|
-                        \_ ->
-                            "10/" ++ testStr
-                                |> parser  (int </> str) 
-                                |> Expect.equal ( MultyValue <| Interger 10 :: Str testStr :: [] )
-                    , test "int and any" <|
-                        \_ ->
-                            "10/" ++ testStr
-                                |> parser  (int </> any) 
-                                |> Expect.equal ( Interger 10 )
-                    , test "int and query" <|
-                        \_ ->
-                            "10/" ++ testStr ++ "=" ++ testStr
-                                |> parser (int </> query)
-                                |> Expect.equal ( MultyValue 
-                                    [ Interger 10
-                                    , Query <| Dict.fromList [(testStr, testStr)]
-                                    ]
-                                )
+                            \_ ->
+                                "10/9"
+                                    |> parser  (int </> int) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Interger 9 :: [] )
+                    , describe "Ordered" <|
+                        [ test "int and path" <|
+                            \_ ->
+                                "9/" ++ testStr
+                                    |> parser (int </> p testStr)
+                                    |> Expect.equal ( Interger 9 )
+                        , test "int and float" <|
+                            \_ ->
+                                "10/9.123"
+                                    |> parser  (int </> float) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Floating 9.123 :: [] )
+                        , test "int and string" <|
+                            \_ ->
+                                "10/" ++ testStr
+                                    |> parser  (int </> str) 
+                                    |> Expect.equal ( MultyValue <| Interger 10 :: Str testStr :: [] )
+                        , test "int and any" <|
+                            \_ ->
+                                "10/" ++ testStr
+                                    |> parser  (int </> any) 
+                                    |> Expect.equal ( Interger 10 )
+                        , test "int and query" <|
+                            \_ ->
+                                "10/" ++ testStr ++ "=" ++ testStr
+                                    |> parser (int </> query)
+                                    |> Expect.equal ( MultyValue 
+                                        [ Interger 10
+                                        , Query <| Dict.fromList [(testStr, testStr)]
+                                        ]
+                                    )
+                        ]
+                    , describe "Unordered" <|
+                        [ describe "straight"
+                            [ test "int or path" <|
+                                \_ ->
+                                     "10&" ++ testStr
+                                        |> parser (int <&> p testStr)
+                                        |> Expect.equal ( Interger 10 ) 
+                            , test "int or float" <|
+                                \_ ->
+                                    "10&3.1415"
+                                        |> parser (int <&> float )
+                                        |> Expect.equal ( MultyValue <| [Interger 10, Floating 3.1415] )
+                            , test "int or string" <|
+                                \_ ->
+                                    "10*" ++ testStr
+                                        |> parser (int <*> str)
+                                        |> Expect.equal ( MultyValue <| [Interger 10, Str testStr] )
+                            , test "int or any" <|
+                                \_ ->
+                                        "10&" ++ testStr
+                                            |> parser ( int <&> any)
+                                            |> Expect.equal ( Interger 10 )
+                            , test "int or query" <|
+                                \_ ->
+                                    "10&" ++ testStr ++ "=" ++ testStr
+                                        |> parser ( int <&> query )
+                                        |> Expect.equal (MultyValue <| [ Interger 10, Query <| Dict.fromList [(testStr, testStr)] ])
+                            ]
+                        , describe "inverted"
+                            [ test "int or path" <|
+                                \_ ->
+                                     testStr ++ "&10"
+                                        |> parser (int <&> p testStr)
+                                        |> Expect.equal ( Interger 10 ) 
+                            , test "int or float" <|
+                                \_ ->
+                                    "3.1415&10"
+                                        |> parser (int <&> float )
+                                        |> Expect.equal ( MultyValue <| [Interger 10, Floating 3.1415] )
+                            , test "int or string" <|
+                                \_ ->
+                                    testStr ++ "*10"
+                                        |> parser (int <*> str)
+                                        |> Expect.equal ( MultyValue <| [Interger 10, Str testStr] )
+                            , test "int or any" <|
+                                \_ ->
+                                    testStr ++ "&10"
+                                        |> parser ( int <&> any)
+                                        |> Expect.equal ( Interger 10 )
+                            , test "int or query" <|
+                                \_ ->
+                                    testStr ++ "=" ++ testStr ++ "&10"
+                                        |> parser ( int <&> query )
+                                        |> Expect.equal (MultyValue <| [ Interger 10, Query <| Dict.fromList [(testStr, testStr)] ])
+                            ]
+                        ]
                     ]
                 , describe "Error"
                     [ test "Incorrect int" <|
@@ -458,11 +516,48 @@ suite =
                             "10?43"
                                 |> parser (int </> int)
                                 |> Expect.equal ( Failure <| "10?43 does not contain /")
-                    , test "Incorrect int after devider" <|
+                    , test "Incorrect int after ordered devider" <|
                         \_ ->
                             "5?a3"
                                 |> parser (int <?> int)
                                 |> Expect.equal ( Failure "could not convert string 'a3' to an Int" )
+                    , test "Incorrect int after unordered divider" <|
+                        \_ ->
+                            "10&a43"
+                                |> parser ( int <&> int )
+                                |> Expect.equal ( Failure <| "Start of a43 does not have any value which can be corectly parsed by: Int, separated by &." )
+                    , test "Incorrect ordered devider between paths" <|
+                        \_ ->
+                            let
+                                path = "10/34"
+                            in
+                                path
+                                    |> parser (int <?> int)
+                                    |> Expect.equal (Failure <| path ++ " does not contain ?" )   
+                    , test "Incorrect unordered devider between paths" <|
+                        \_ ->
+                            let
+                                path = "10&23"
+                            in
+                                path
+                                    |> parser (int <*> int)
+                                    |> Expect.equal (Failure <| "Start of " ++ path ++ " does not have any value which can be corectly parsed by: Int or Int, separated by *." )     
+                    , test "Incorrect unordered devider instead of ordered one between paths" <|
+                        \_ ->
+                            let
+                                path = "10/2"
+                            in
+                                path
+                                    |> parser (int <&> int)
+                                    |> Expect.equal (Failure <| "Start of " ++ path ++ " does not have any value which can be corectly parsed by: Int or Int, separated by &."  )     
+                    , test "Incorrect ordered devider instead of unordered one between paths" <|
+                        \_ ->
+                            let
+                                path = "10*20"
+                            in
+                                path
+                                    |> parser (int </> int)
+                                    |> Expect.equal (Failure <| path ++ " does not contain /" )      
                     ]
                 ]
             , describe "Floating"
