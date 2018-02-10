@@ -110,10 +110,10 @@ parser value string =
 parsingLoop : URL -> (List URLValue) -> String -> Maybe Char -> Result (String) ( List URLValue, String )
 parsingLoop url result string tailChar =
     case url of
-        OrderedURL char url nextURL ->
-            case parsingLoop url result string (Just char) of
+        OrderedURL char suburl nextURL ->
+            case parsingLoop suburl result string (Just char) of
                 Ok (newResult, newString) ->
-                    parsingLoop nextURL newResult newString Nothing
+                    parsingLoop nextURL newResult newString tailChar
 
                 a -> a
                 
@@ -330,6 +330,7 @@ makeValue list =
 -- (</>): URL -> URL -> URL
 (</>) = orderedDevider '/'
 
+(<=>) = orderedDevider '='
 
 -- (<?>): URL -> URL -> URL
 (<?>) = orderedDevider '?'

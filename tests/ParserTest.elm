@@ -36,7 +36,21 @@ suite =
                         |> Expect.equal ( Ok ("","") )
             ]
         , describe "Build a tree"
-            [ describe "Ordered devider between" 
+            [ describe "Random cases" <|
+                [ test "parsing of url and typical query" <|
+                    \_ ->
+                        (p "test" <?> ((p "name" <=> str) <&> (p "age" <=> int )))
+                            |> Expect.equal 
+                                ( OrderedURL '?' 
+                                    ( NodeURL <| ParsePath "test") 
+                                    ( UnorderedURL '&' 
+                                        [ (OrderedURL '=' (NodeURL <| ParsePath "name") (NodeURL <| ParseStr))
+                                        , (OrderedURL '=' (NodeURL <| ParsePath "age") (NodeURL <| ParseInt)) 
+                                        ]
+                                    )
+                                ) 
+                ]
+            , describe "Ordered devider between" 
                 [ test "two simple nodes" <|
                     \_ -> 
                         p testStr </> int
@@ -202,7 +216,84 @@ suite =
                 ]
             ]
         , describe "Parse path"
-            [ describe "Path"
+            [ describe "Random cases" <|
+                [ test "url and typical query from two values" <|
+                    \_ ->
+                        "test?name=testName&age=18"
+                            |> parser (p "test" <?>((p "name" <=> str) <&> (p "age" <=> int) ))
+                            |> Expect.equal ( MultyValue [Str "testName", Interger 18 ])
+                , test "url and typical query from two values, inverted" <|
+                    \_ ->
+                        "test?age=18&name=testName"
+                            |> parser (p "test" <?>((p "name" <=> str) <&> (p "age" <=> int) ))
+                            |> Expect.equal ( MultyValue [Str "testName", Interger 18 ])
+                , test "multiple urls" <|
+                    \_ ->
+                        "test1/test2/test3?name"
+                            |> parser ( p "test1" </> p "test2" </> p "test3" <?> str )
+                            |> Expect.equal ( Str "name" )
+                , test "query inside two urls" <|
+                    \_ ->
+                        "test1/test2?age=18&name=testName/test3"
+                            |> parser ( p "test1" </> p "test2" <?> query </> p "test3")
+                            |> Expect.equal ( Query <| Dict.fromList [("age", "18"),("name","testName")] )
+                , test "ordered and unordered mix" <|
+                    \_ ->
+                        "test1/test2?18&name/test3"
+                            |> parser ( p "test1" </> p "test2" <?> (p "name" <&> int) </> p "test3")
+                            |> Expect.equal ( Interger 18 )
+                ]
+            , describe "Ordered sub tree"
+                [ test "tree and int" <|
+                    \_ ->
+                        let 
+                            testStr1 = testStr ++ "1"
+                            testStr2 = testStr ++ "2"
+                        in
+                            testStr1 ++ "/" ++ testStr2 ++ "/10"
+                                |> parser ( (p testStr1 </> p testStr2) </> int )
+                                |> Expect.equal ( Interger 10 )
+                , test "tree or int" <|
+                    \_ ->
+                        let 
+                            testStr1 = testStr ++ "1"
+                            testStr2 = testStr ++ "2"
+                        in
+                        (testStr1 ++ "/" ++ testStr2) ++ "*10"
+                            |> parser ( (p testStr1 </> p testStr2) <*> int )
+                            |> Expect.equal ( Interger 10 )
+                ]
+            , describe "Unordered sub tree"
+                [ test "tree and int" <|
+                    \_ ->
+                        let 
+                            testStr1 = testStr ++ "1"
+                            testStr2 = testStr ++ "2"
+                        in
+                            (testStr1 ++ "&" ++ testStr2) ++ "/10"
+                                |> parser ( (p testStr1 <&> p testStr2) </> int )
+                                |> Expect.equal ( Interger 10 )
+                , test "tree or int, same devider" <|
+                    \_ ->
+                        let 
+                            testStr1 = testStr ++ "1"
+                            testStr2 = testStr ++ "2"
+                        in
+                            (testStr1 ++ "*" ++ testStr2) ++ "*10"
+                                |> parser ( (p testStr1 <*> p testStr2) <*> int )
+                                |> Expect.equal ( Interger 10 )
+                , test "tree or int, different deviders" <|
+                    \_ ->
+                        let 
+                            testStr1 = testStr ++ "1"
+                            testStr2 = testStr ++ "2"
+                        in
+                            (testStr1 ++ "*" ++ testStr2) ++ "&10"
+                                |> parser ( (p testStr1 <*> p testStr2) <&> int )
+                                |> Expect.equal ( Interger 10 )
+                ]
+
+            , describe "Path"
                 [ describe "Correct"
                     [ test "single" <|
                         \_ ->
@@ -760,9 +851,9 @@ suite =
                                     testStr1 = testStr ++ "1"
                                     testStr2 = testStr ++ "2"
                                 in
-                                testStr1 ++ "/" ++ testStr2
-                                    |> parser  (str </> any) 
-                                    |> Expect.equal ( Str testStr1 )
+                                    testStr1 ++ "/" ++ testStr2
+                                        |> parser  (str </> any) 
+                                        |> Expect.equal ( Str testStr1 )
                         , test "string and query" <|
                             \_ ->
                                 let
@@ -770,13 +861,13 @@ suite =
                                     testStr2 = testStr ++ "2"
                                     testStr3 = testStr ++ "3"
                                 in 
-                                testStr1 ++ "/" ++ testStr2 ++ "=" ++ testStr3
-                                    |> parser (str </> query)
-                                    |> Expect.equal ( MultyValue 
-                                        [ Str testStr1
-                                        , Query <| Dict.fromList [(testStr2, testStr3)]
-                                        ]
-                                    )
+                                    testStr1 ++ "/" ++ testStr2 ++ "=" ++ testStr3
+                                        |> parser (str </> query)
+                                        |> Expect.equal ( MultyValue 
+                                            [ Str testStr1
+                                            , Query <| Dict.fromList [(testStr2, testStr3)]
+                                            ]
+                                        )
                         ]
                     , describe "Unordered" <|
                         [ describe "straight"
@@ -815,9 +906,9 @@ suite =
                                         testStr2 = testStr ++ "2"
                                         testStr3 = testStr ++ "3"
                                     in
-                                    testStr1 ++ "&" ++ testStr2 ++ "=" ++ testStr3
-                                        |> parser ( str <&> query )
-                                        |> Expect.equal (MultyValue <| [ Str testStr1, Query <| Dict.fromList [(testStr2, testStr3)] ])
+                                        testStr1 ++ "&" ++ testStr2 ++ "=" ++ testStr3
+                                            |> parser ( str <&> query )
+                                            |> Expect.equal (MultyValue <| [ Str testStr1, Query <| Dict.fromList [(testStr2, testStr3)] ])
                             ]
                         , describe "inverted"
                             [ describe "limitations"
@@ -852,9 +943,9 @@ suite =
                                             testStr2 = testStr ++ "2"
                                             testStr3 = testStr ++ "3"
                                         in
-                                        testStr2 ++ "=" ++ testStr3 ++ "&" ++ testStr1
-                                            |> parser ( str <&> query )
-                                            |> Expect.equal (Failure <| "Start of " ++ testStr1 ++ " does not have any value which can be corectly parsed by: Query, separated by &.")
+                                            testStr2 ++ "=" ++ testStr3 ++ "&" ++ testStr1
+                                                |> parser ( str <&> query )
+                                                |> Expect.equal (Failure <| "Start of " ++ testStr1 ++ " does not have any value which can be corectly parsed by: Query, separated by &.")
                                 ]
                             ]
                         ]
@@ -944,9 +1035,9 @@ suite =
                                     testStr1 = testStr ++ "1"
                                     testStr2 = testStr ++ "2"
                                 in
-                                testStr1 ++ "/" ++ testStr2
-                                    |> parser  (any </> str) 
-                                    |> Expect.equal ( Str testStr2 )
+                                    testStr1 ++ "/" ++ testStr2
+                                        |> parser  (any </> str) 
+                                        |> Expect.equal ( Str testStr2 )
                         , test "any and query" <|
                             \_ ->
                                 let
@@ -954,9 +1045,9 @@ suite =
                                     testStr2 = testStr ++ "2"
                                     testStr3 = testStr ++ "3"
                                 in 
-                                testStr1 ++ "/" ++ testStr2 ++ "=" ++ testStr3
-                                    |> parser (any </> query)
-                                    |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr3)] )
+                                    testStr1 ++ "/" ++ testStr2 ++ "=" ++ testStr3
+                                        |> parser (any </> query)
+                                        |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr3)] )
                         ]
                     , describe "Unordered" <|
                         [ describe "straight"
@@ -1027,9 +1118,9 @@ suite =
                                             testStr2 = testStr ++ "2"
                                             testStr3 = testStr ++ "3"
                                         in
-                                        testStr2 ++ "=" ++ testStr3 ++ "&" ++ testStr1
-                                            |> parser ( any <&> query )
-                                            |> Expect.equal (Failure <| "Start of " ++ testStr1 ++ " does not have any value which can be corectly parsed by: Query, separated by &.")
+                                            testStr2 ++ "=" ++ testStr3 ++ "&" ++ testStr1
+                                                |> parser ( any <&> query )
+                                                |> Expect.equal (Failure <| "Start of " ++ testStr1 ++ " does not have any value which can be corectly parsed by: Query, separated by &.")
                                 ]
                             , test "any or string" <|
                                 \_ ->
@@ -1140,9 +1231,9 @@ suite =
                                     testStr2 = testStr ++ "2"
                                     testStr3 = testStr ++ "3"
                                 in
-                                testStr1 ++ "=" ++ testStr2 ++ "/" ++ testStr3
-                                    |> parser  (query </> str) 
-                                    |> Expect.equal ( MultyValue [Query <| Dict.fromList [(testStr1, testStr2)], Str testStr3] )
+                                    testStr1 ++ "=" ++ testStr2 ++ "/" ++ testStr3
+                                        |> parser  (query </> str) 
+                                        |> Expect.equal ( MultyValue [Query <| Dict.fromList [(testStr1, testStr2)], Str testStr3] )
                         , test "query and any" <|
                             \_ ->
                                 let
@@ -1150,9 +1241,9 @@ suite =
                                     testStr2 = testStr ++ "2"
                                     testStr3 = testStr ++ "3"
                                 in 
-                                testStr2 ++ "=" ++ testStr3 ++ "/" ++ testStr1
-                                    |> parser (query </> any)
-                                    |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr3)] )
+                                    testStr2 ++ "=" ++ testStr3 ++ "/" ++ testStr1
+                                        |> parser (query </> any)
+                                        |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr3)] )
                         ]
                     , describe "Unordered" <|
                         [ describe "straight"
@@ -1202,9 +1293,9 @@ suite =
                                         testStr2 = testStr ++ "2"
                                         testStr3 = testStr ++ "3"
                                     in
-                                    testStr1 ++ "=" ++ testStr2 ++ "*" ++ testStr3
-                                        |> parser  (query <*> str) 
-                                        |> Expect.equal ( MultyValue [Query <| Dict.fromList [(testStr1, testStr2)], Str testStr3] )
+                                        testStr1 ++ "=" ++ testStr2 ++ "*" ++ testStr3
+                                            |> parser  (query <*> str) 
+                                            |> Expect.equal ( MultyValue [Query <| Dict.fromList [(testStr1, testStr2)], Str testStr3] )
                             , test "query and any" <|
                                 \_ ->
                                     let
@@ -1212,9 +1303,9 @@ suite =
                                         testStr2 = testStr ++ "2"
                                         testStr3 = testStr ++ "3"
                                     in 
-                                    testStr2 ++ "=" ++ testStr3 ++ "&" ++ testStr1
-                                        |> parser (query <&> any)
-                                        |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr3)] )
+                                        testStr2 ++ "=" ++ testStr3 ++ "&" ++ testStr1
+                                            |> parser (query <&> any)
+                                            |> Expect.equal ( Query <| Dict.fromList [(testStr2, testStr3)] )
                             ]
                         , describe "inverted"
                              [ test "two query" <|
