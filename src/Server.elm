@@ -24,7 +24,7 @@ import Debug
 type alias Body =
     { url : String
     }
-    
+
 type alias ReqRes =
     { request : Body
     , response : Body
@@ -39,7 +39,6 @@ type Pack
 
 type alias Message =
     Result String Pack
-
 
 
 -- type Response 
