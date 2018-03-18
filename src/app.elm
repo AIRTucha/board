@@ -3,7 +3,6 @@ module App exposing (..)
 import Platform
 import Server
 import Task
-import Console exposing(println)
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)

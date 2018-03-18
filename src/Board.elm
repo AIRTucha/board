@@ -15,15 +15,6 @@ urlParser url =
     else 
         "./public" ++ url
 
-main : Program Never Model Msg
-main =
-    Platform.program
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
 typeParser : String -> String
 typeParser path =
     case toLower << takeExtension <| path of
@@ -83,6 +74,7 @@ type Msg
     = Request Server.Message
     | File (Server.ReqRes, File.File)
  
+ 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
@@ -108,9 +100,6 @@ update message model =
             Server.send pack file
                 |> (\ _ -> ( model, Cmd.none) )
             
-                    
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Server.listen 8080 Request
+
     
     

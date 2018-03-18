@@ -2,10 +2,10 @@
   "name": "board",
   "version": "0.0.1",
   "description": "Elm Back-end framework",
-  "main": "main.elm",
+  "main": "app.elm",
   "scripts": {
-    "serve": "nodemon --exec \"elm make src/app.elm --output dist/main.js && node local.js\"",
-    "build": "elm make src/main.elm --output=dist/main.js",
+    "start": "nodemon --exec \"elm make src/app.elm --output dist/main.js && node local.js\"",
+    "build": "elm make src/app.elm --output=dist/main.js",
     "install": "elm-package install",
     "elm": "elm",
     "test": "elm-test --watch"
