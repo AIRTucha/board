@@ -10,7 +10,7 @@ suite =
     describe "Board"
         [ test "true" <|
             \_ ->
-            -- ( \ (MultiValue [ Integer i, Floating f] )-> i)
-                a (int </> float) "10/20" ( \ (MultiValue [Integer i, Floating f] )-> Finish )
-                    |> Expect.equal Finish
+                MultiValue [ Integer 10, Floating 3.1415, Str "ok"]
+                    |> parsingResult2params
+                    |> Expect.equal ( Ok <| MultiParam [ IntParam 10, FloatParam 3.1415, StrParam "ok"])
         ]

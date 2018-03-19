@@ -4,7 +4,7 @@ import Pathfinder exposing (..)
 import Request exposing (..)
 import Dict exposing (..)
 import Result exposing (..)
-import List exposing (map)
+import List exposing (map, reverse)
 
 type HandlingResult
     = Contenue Request
@@ -92,7 +92,7 @@ multiValue2Param: List ParsingResult -> List Params -> Result String Params
 multiValue2Param list params =
     case list of
         [] -> 
-            Ok <| MultiParam params
+            Ok <| MultiParam (reverse params)
         
         head :: tail ->
             case parsingResult2params head of
