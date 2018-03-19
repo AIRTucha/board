@@ -1,105 +1,103 @@
 module Board exposing (..)
 
-import Platform
-import Server
-import Task
-import Console exposing(println)
-import File exposing(read)
-import Path.Generic exposing (takeExtension)
-import String exposing (toLower)
-import Debug exposing (log)
+import Pathfinder exposing (..)
+import Request exposing (..)
+import Dict exposing (..)
+import Result exposing (..)
+import List exposing (map)
 
-urlParser url =
-    if url == "/" then 
-        "./public/index.html" 
-    else 
-        "./public" ++ url
+type HandlingResult
+    = Contenue Request
+    | Finish
 
-typeParser : String -> String
-typeParser path =
-    case toLower << takeExtension <| path of
-        ".html" ->
-            "text/html"
+type alias Handler a = 
+    (a, Request) -> HandlingResult
 
-        ".js" ->
-            "text/javascript"
-        
-        ".css" ->
-            "application/json"
+type alias Mid =
+    Request -> HandlingResult
+-- type Board a
+--     = Default (Handler a)
+--     | Custom URL (Handler a)
 
-        ".png" ->
-            "image/png"
-        
-        ".jpg" ->
-            "image/jpg"
+-- mid: URL -> Handler a -> Request -> Maybe ()
+-- mid url handler req =
+--     let 
+--         body = getBody url
+--     in
+--         case parse body.url of 
+--             a -> 
+--                 handler (body, req)
+--                     |> Just 
 
-        ".gif" ->
-            "image/gif"
+--             _ -> Nothing
 
-        ".wav" ->
-            "audio/wav'"
-        
-        ".mp4" ->
-            "video/mp4"
-        
-        ".woff" ->
-            "application/font-woff"
-        
-        ".ttf" ->
-            "application/font-ttf"
-        
-        ".eot" ->
-            "application/vnd.ms-fontobject"
+use: URL -> Handler ParsingResult -> Mid -> Request -> HandlingResult
+use url cur next req =
+    let 
+        body = getBody req
+    in
+        case parse url body.url of
 
-        ".otf" ->
-            "application/font-otf"
-        
-        ".svg" ->
-            "application/image/svg+xml"
-        
-        _  ->
-            "application/octet-stream'"
-
-
-type alias Model =
-    Int
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( 0, Cmd.none )
-
-
-type Msg
-    = Request Server.Message
-    | File (Server.ReqRes, File.File)
- 
- 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update message model =
-    case message of
-        Request request ->
-            case request of 
-                Ok req ->
-                    case req of
-                        Server.Get pack ->
-                            ( model + 1
-                            , urlParser(Server.url pack)
-                                |> read
-                                |> Task.andThen (\ file -> Task.succeed(pack, file) )
-                                |> Task.perform File 
-                            )
-                        
-                        _ -> 
-                            ( model, Cmd.none)
-
-                Err msg ->
-                    log msg ( model, Cmd.none)
-
-        File (pack, file) ->
-            Server.send pack file
-                |> (\ _ -> ( model, Cmd.none) )
+            Failure _ ->
+                next req
             
+            value ->
+                cur (value, req)
 
+a: URL -> String -> (ParsingResult -> HandlingResult) -> HandlingResult
+a url value handler = 
+    case parse url value of 
+
+        Failure _ ->
+            Finish 
+        
+        value ->
+            handler value
+
+
+type Params
+    = IntParam Int
+    | FloatParam Float
+    | StrParam String
+    | MultiParam (List Params)
+    | QueryParam (Dict String String)
+    | EmptyParam
+
+parsingResult2params: ParsingResult -> Result String Params
+parsingResult2params result =
+    case result of 
+
+       Integer int ->
+         Ok <| IntParam int
+
+       Floating float ->
+         Ok <| FloatParam float 
+
+       Str str ->
+         Ok <| StrParam str 
     
-    
+       Failure str ->
+         Err str
+
+       MultiValue list ->
+         multiValue2Param list []
+
+       Query dict ->
+         Ok <| QueryParam dict
+
+       Succes ->
+         Ok EmptyParam
+
+multiValue2Param: List ParsingResult -> List Params -> Result String Params
+multiValue2Param list params =
+    case list of
+        [] -> 
+            Ok <| MultiParam params
+        
+        head :: tail ->
+            case parsingResult2params head of
+                Ok value ->
+                    value :: params
+                        |> multiValue2Param tail
+                
+                Err err -> Err err
