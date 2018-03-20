@@ -19,7 +19,7 @@ type alias Mid =
     Request -> HandlingResult
 
 
-use: URL -> Handler -> Mid -> Request -> HandlingResult
+use: URL -> Handler -> Mid -> Mid
 use url cur next req =
     let 
         body = getBody req
