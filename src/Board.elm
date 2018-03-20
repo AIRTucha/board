@@ -10,49 +10,30 @@ type HandlingResult
     = Contenue Request
     | Finish
 
-type alias Handler a = 
-    (a, Request) -> HandlingResult
+
+type alias Handler = 
+    (Params, Request) -> HandlingResult
+
 
 type alias Mid =
     Request -> HandlingResult
--- type Board a
---     = Default (Handler a)
---     | Custom URL (Handler a)
 
--- mid: URL -> Handler a -> Request -> Maybe ()
--- mid url handler req =
---     let 
---         body = getBody url
---     in
---         case parse body.url of 
---             a -> 
---                 handler (body, req)
---                     |> Just 
 
---             _ -> Nothing
-
-use: URL -> Handler ParsingResult -> Mid -> Request -> HandlingResult
+use: URL -> Handler -> Mid -> Request -> HandlingResult
 use url cur next req =
     let 
         body = getBody req
     in
         case parse url body.url of
-
             Failure _ ->
                 next req
             
             value ->
-                cur (value, req)
-
-a: URL -> String -> (ParsingResult -> HandlingResult) -> HandlingResult
-a url value handler = 
-    case parse url value of 
-
-        Failure _ ->
-            Finish 
-        
-        value ->
-            handler value
+                case parsingResult2params value of
+                    Ok params ->
+                        cur (params, req)
+                    
+                    Err _ -> next req
 
 
 type Params
@@ -63,10 +44,10 @@ type Params
     | QueryParam (Dict String String)
     | EmptyParam
 
+
 parsingResult2params: ParsingResult -> Result String Params
 parsingResult2params result =
     case result of 
-
        Integer int ->
          Ok <| IntParam int
 
@@ -87,6 +68,7 @@ parsingResult2params result =
 
        Succes ->
          Ok EmptyParam
+
 
 multiValue2Param: List ParsingResult -> List Params -> Result String Params
 multiValue2Param list params =
