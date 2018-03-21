@@ -11,29 +11,126 @@ type HandlingResult
     | Finish
 
 
-type alias Handler = 
-    (Params, Request) -> HandlingResult
+type alias ReqHandler a = 
+    (Params, a) -> HandlingResult
+
+type alias BodyHandler =
+    (Params, Body) -> HandlingResult
 
 
 type alias Mid =
     Request -> HandlingResult
 
 
-use: URL -> Handler -> Mid -> Mid
-use url cur next req =
-    let 
-        body = getBody req
-    in
-        case parse url body.url of
-            Failure _ ->
-                next req
-            
-            value ->
-                case parsingResult2params value of
-                    Ok params ->
-                        cur (params, req)
-                    
-                    Err _ -> next req
+-- use: URL -> ReqHandler -> Mid -> Mid
+use = factory useHandler
+
+
+get = factory getHandler
+
+
+post = factory postHandler
+
+
+put = factory putHandler
+
+
+delete = factory deleteHandler
+
+factory: (Request -> Maybe (a, String)) -> URL -> ReqHandler a -> Mid -> Mid
+factory parsePath url cur next req =
+    case parsePath req of
+        Just (resul, path) ->
+            case parse url path of
+                Failure _ ->
+                    next req
+                
+                value ->
+                    case parsingResult2params value of
+                        Ok params ->
+                            cur (params, resul)
+                        
+                        Err _ -> 
+                            next req
+
+        Nothing ->
+            next req
+
+
+useHandler: Request -> Maybe (Request, String)
+useHandler req =
+    case req of
+        Get body ->
+            Just (req, body.url)
+        
+        Post body ->
+            Just (req, body.url)
+        
+        Put body ->
+            Just (req, body.url)
+        
+        Delete body ->
+            Just (req, body.url)
+
+getHandler: Request -> Maybe (Body, String)
+getHandler req =
+    case req of
+        Get body ->
+            Just (body, body.url)
+        
+        Post body ->
+            Nothing
+        
+        Put body ->
+            Nothing
+        
+        Delete body ->
+            Nothing
+
+postHandler: Request -> Maybe (Body, String)
+postHandler req =
+    case req of
+        Get body ->
+            Nothing
+        
+        Post body ->
+            Just (body, body.url)
+        
+        Put body ->
+            Nothing
+        
+        Delete body ->
+            Nothing
+
+putHandler: Request -> Maybe (Body, String)
+putHandler req =
+    case req of
+        Get body ->
+            Nothing
+        
+        Post body ->
+            Nothing
+        
+        Put body ->
+            Just (body, body.url)
+        
+        Delete body ->
+            Nothing
+
+deleteHandler: Request -> Maybe (Body, String)
+deleteHandler req =
+    case req of
+        Get body ->
+            Nothing
+        
+        Post body ->
+            Nothing
+        
+        Put body ->
+            Nothing
+        
+        Delete body ->
+            Just (body, body.url)
 
 
 type Params

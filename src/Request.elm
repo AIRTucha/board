@@ -28,18 +28,4 @@ type Request
     | Delete Body
 
 
-getBody req =
-    case req of
-        Get body ->
-            body
-        
-        Post body ->
-            body 
-        
-        Put body ->
-            body
-        
-        Delete body ->
-            body
-
 
