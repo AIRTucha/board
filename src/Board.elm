@@ -2,6 +2,7 @@ module Board exposing (..)
 
 import Pathfinder exposing (..)
 import Request exposing (..)
+import Response exposing (..)
 import Dict exposing (..)
 import Result exposing (..)
 import List exposing (map, reverse)
@@ -12,14 +13,11 @@ type HandlingResult
 
 
 type alias ReqHandler a = 
-    (Params, a) -> HandlingResult
-
-type alias BodyHandler =
-    (Params, Body) -> HandlingResult
+    (Params, a) -> Response
 
 
 type alias Mid =
-    Request -> HandlingResult
+    Request -> Response
 
 
 -- use: URL -> ReqHandler -> Mid -> Mid
@@ -37,13 +35,26 @@ put = factory putHandler
 
 delete = factory deleteHandler
 
+ 
 factory: (Request -> Maybe (a, String)) -> URL -> ReqHandler a -> Mid -> Mid
 factory parsePath url cur next req =
+    case next req of
+        Next newReq ->
+            try2Dispache parsePath newReq cur url
+
+        TaskNext reqTask ->
+            reqTask
+                |> andThen (try2Dispache parsePath cur url)
+        next -> 
+            next
+        
+
+try2Dispache parsePath req cur url =
     case parsePath req of
         Just (resul, path) ->
             case parse url path of
                 Failure _ ->
-                    next req
+                    Next req
                 
                 value ->
                     case parsingResult2params value of
@@ -51,11 +62,10 @@ factory parsePath url cur next req =
                             cur (params, resul)
                         
                         Err _ -> 
-                            next req
+                            Next req
 
         Nothing ->
-            next req
-
+            Next req
 
 useHandler: Request -> Maybe (Request, String)
 useHandler req =

@@ -3,6 +3,7 @@ module Response exposing (..)
 import Shared exposing (Object)
 import Request exposing (Request)
 import File exposing (File)
+import Task exposing (..)
 
 type Content 
     = JSON Object
@@ -10,7 +11,7 @@ type Content
     | Raw String
 
 
-type alias Body =
+type alias RespBody =
     { cookeis : Object
     , content : Content
     , status : Int
@@ -18,7 +19,10 @@ type alias Body =
     }
 
 
-type Response 
+type Response
     = Redirect String
-    | Reply Body
+    | Reply RespBody
     | Next Request
+    | TaskRedirect (Task String String)
+    | TaskReply (Task String RespBody)
+    | TaskNext (Task String Request)
