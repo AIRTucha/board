@@ -4,8 +4,9 @@ import Pathfinder exposing (..)
 import Request exposing (..)
 import Response exposing (..)
 import Dict exposing (..)
-import Result exposing (..)
+import Result
 import List exposing (map, reverse)
+import Task
 
 type HandlingResult
     = Contenue Request
@@ -16,11 +17,11 @@ type alias ReqHandler a =
     (Params, a) -> Response
 
 
-type alias Mid =
+type alias Router =
     Request -> Response
 
 
--- use: URL -> ReqHandler -> Mid -> Mid
+-- use: URL -> ReqHandler -> Router-> Mid
 use = factory useHandler
 
 
@@ -36,20 +37,25 @@ put = factory putHandler
 delete = factory deleteHandler
 
  
-factory: (Request -> Maybe (a, String)) -> URL -> ReqHandler a -> Mid -> Mid
+factory: (Request -> Maybe (a, String)) -> URL -> ReqHandler a -> Router -> Router
 factory parsePath url cur next req =
     case next req of
         Next newReq ->
-            try2Dispache parsePath newReq cur url
+            try2Dispache parsePath cur url newReq
 
-        TaskNext reqTask ->
-            reqTask
-                |> andThen (try2Dispache parsePath cur url)
+        -- TaskNext reqTask ->
+        --     reqTask
+        --         |> 
         next -> 
             next
         
-
-try2Dispache parsePath req cur url =
+try2Dispache
+    : (Request -> Maybe ( a, String ))
+    -> (( Params, a ) -> Response)
+    -> URL
+    -> Request
+    -> Response
+try2Dispache parsePath cur url req =
     case parsePath req of
         Just (resul, path) ->
             case parse url path of
