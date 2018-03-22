@@ -14,11 +14,11 @@ type HandlingResult
 
 
 type alias ReqHandler a = 
-    (Params, a) -> Response
+    (Params, a) ->  Mode Response
 
 
 type alias Router =
-    Request -> Response
+    Request -> Mode Response
 
 
 -- use: URL -> ReqHandler -> Router-> Mid
@@ -39,28 +39,52 @@ delete = factory deleteHandler
  
 factory: (Request -> Maybe (a, String)) -> URL -> ReqHandler a -> Router -> Router
 factory parsePath url cur next req =
-    case next req of
-        Next newReq ->
-            try2Dispache parsePath cur url newReq
+    case next req of    
+        Sync result ->
+            case result of
+                Next newReq ->
+                    try2Dispache parsePath cur url newReq
+                
+                _ ->
+                    Sync result 
 
-        -- TaskNext reqTask ->
-        --     reqTask
-        --         |> 
-        next -> 
-            next
-        
+        Async result ->
+            result 
+                |> Task.andThen (try2DispacheAsync parsePath cur url)
+                |> Async
+ 
+ 
+try2DispacheAsync
+    : (Request -> Maybe ( a, String ))
+    -> ReqHandler a 
+    -> URL
+    -> Response
+    -> Task.Task String Response
+try2DispacheAsync parsePath cur url response =
+    case response of
+        Next req ->
+            case try2Dispache parsePath cur url req of
+                Sync value ->
+                    Task.succeed value
+                
+                Async value ->
+                    value
+              
+        other ->
+            Task.succeed (response) 
+
 try2Dispache
     : (Request -> Maybe ( a, String ))
-    -> (( Params, a ) -> Response)
+    -> ReqHandler a 
     -> URL
     -> Request
-    -> Response
+    -> Mode Response
 try2Dispache parsePath cur url req =
     case parsePath req of
         Just (resul, path) ->
             case parse url path of
                 Failure _ ->
-                    Next req
+                    Sync <| Next req
                 
                 value ->
                     case parsingResult2params value of
@@ -68,10 +92,10 @@ try2Dispache parsePath cur url req =
                             cur (params, resul)
                         
                         Err _ -> 
-                            Next req
+                            Sync <| Next req
 
         Nothing ->
-            Next req
+            Sync <| Next req
 
 useHandler: Request -> Maybe (Request, String)
 useHandler req =

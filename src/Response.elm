@@ -23,6 +23,7 @@ type Response
     = Redirect String
     | Reply RespBody
     | Next Request
-    | TaskRedirect (Task String String)
-    | TaskReply (Task String RespBody)
-    | TaskNext (Task String Request)
+
+type Mode a
+    = Async (Task String a)
+    | Sync a
