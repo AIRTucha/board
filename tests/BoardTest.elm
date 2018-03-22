@@ -6,14 +6,15 @@ import Board exposing (..)
 import Pathfinder exposing (..)
 import Dict exposing(..)
 import Request exposing(..)
+import Response exposing(..)
 
 body =
-    { url =  "10/3.1415/ok"
+    { url =  "10"
     , content = Dict.empty
     , cookeis = Dict.empty
     , params = Dict.empty
     , query = Dict.empty
-    , local = Dict.empty
+    , cargo = Dict.empty
     , ip = "some ip"
     , host = "some host"
     , path = "some path"
@@ -24,10 +25,14 @@ body =
 suite : Test
 suite =
     describe "Board"
-        [ test "call hanlder" <|
+        [ test "single hanlder" <|
             \_ ->
-                
-                    Expect.equal True True
+                -- handler incorrect -> go to default
+                -- multiple handlers are correct
+                -- multiple handler, first is not correct 
+                Get body
+                    |> use (int) (\ (url, req) -> Sync <| Reply <| sendText "success"  ) (\ req -> Sync <| Next req  )
+                    |> Expect.equal (Sync <| Reply <| sendText "success")
         -- , test "call default" <|
         --     \_ ->
         --         Get body

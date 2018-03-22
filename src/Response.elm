@@ -4,6 +4,7 @@ import Shared exposing (Object)
 import Request exposing (Request)
 import File exposing (File)
 import Task exposing (..)
+import Dict 
 
 type Content 
     = JSON Object
@@ -27,3 +28,10 @@ type Response
 type Mode a
     = Async (Task String a)
     | Sync a
+
+sendText str =
+    { cookeis = Dict.empty
+    , content = Raw str
+    , status = 200
+    , header = Dict.empty
+    }
