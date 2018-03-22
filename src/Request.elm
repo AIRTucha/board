@@ -12,7 +12,7 @@ type alias Body =
     , cookeis : Object
     , params : Object
     , query : Object
-    , local : Object
+    , cargo : Object
     , ip : String
     , host : String
     , path : String

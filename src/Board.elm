@@ -13,7 +13,7 @@ type HandlingResult
     | Finish
 
 
-type alias ReqHandler a = 
+type alias RoutHandler a = 
     (Params, a) ->  Mode Response
 
 
@@ -21,7 +21,7 @@ type alias Router =
     Request -> Mode Response
 
 
--- use: URL -> ReqHandler -> Router-> Mid
+-- use: URL -> RoutHandler -> Router-> Mid
 use = factory useHandler
 
 
@@ -37,7 +37,7 @@ put = factory putHandler
 delete = factory deleteHandler
 
  
-factory: (Request -> Maybe (a, String)) -> URL -> ReqHandler a -> Router -> Router
+factory: (Request -> Maybe (a, String)) -> URL -> RoutHandler a -> Router -> Router
 factory parsePath url cur next req =
     case next req of    
         Sync result ->
@@ -53,10 +53,10 @@ factory parsePath url cur next req =
                 |> Task.andThen (try2DispacheAsync parsePath cur url)
                 |> Async
  
- 
+
 try2DispacheAsync
     : (Request -> Maybe ( a, String ))
-    -> ReqHandler a 
+    -> RoutHandler a 
     -> URL
     -> Response
     -> Task.Task String Response
@@ -73,9 +73,10 @@ try2DispacheAsync parsePath cur url response =
         other ->
             Task.succeed (response) 
 
+
 try2Dispache
     : (Request -> Maybe ( a, String ))
-    -> ReqHandler a 
+    -> RoutHandler a 
     -> URL
     -> Request
     -> Mode Response
@@ -97,6 +98,7 @@ try2Dispache parsePath cur url req =
         Nothing ->
             Sync <| Next req
 
+
 useHandler: Request -> Maybe (Request, String)
 useHandler req =
     case req of
@@ -111,6 +113,7 @@ useHandler req =
         
         Delete body ->
             Just (req, body.url)
+
 
 getHandler: Request -> Maybe (Body, String)
 getHandler req =
@@ -127,6 +130,7 @@ getHandler req =
         Delete body ->
             Nothing
 
+
 postHandler: Request -> Maybe (Body, String)
 postHandler req =
     case req of
@@ -142,6 +146,7 @@ postHandler req =
         Delete body ->
             Nothing
 
+
 putHandler: Request -> Maybe (Body, String)
 putHandler req =
     case req of
@@ -156,6 +161,7 @@ putHandler req =
         
         Delete body ->
             Nothing
+
 
 deleteHandler: Request -> Maybe (Body, String)
 deleteHandler req =
