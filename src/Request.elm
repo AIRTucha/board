@@ -18,6 +18,7 @@ type alias Body =
     , path : String
     , protocol : Protocol
     , subdomains : List String
+    , time : Int
     }
 
 

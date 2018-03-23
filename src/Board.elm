@@ -20,7 +20,10 @@ type alias RoutHandler a =
 type alias Router =
     Request -> Mode Response
 
+empty req =
+    Sync <| Next req
 
+    
 -- use: URL -> RoutHandler -> Router-> Mid
 use = factory useHandler
 

@@ -80,7 +80,7 @@ init =
 
 type Msg
     = Request Server.Message
-    | File (Server.ReqRes, File.File)
+    | File (Server.Body, File.File)
  
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =

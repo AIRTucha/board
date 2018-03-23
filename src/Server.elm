@@ -6,7 +6,7 @@ effect module Server
         , Message
         , Pack(..)
         , url
-        , ReqRes
+        , Body
         )
 
 {-|
@@ -25,16 +25,11 @@ type alias Body =
     { url : String
     }
 
-type alias ReqRes =
-    { request : Body
-    , response : Body
-    } 
-
 type Pack
-    = Get ReqRes
-    | Post ReqRes
-    | Put ReqRes
-    | Delete ReqRes
+    = Get Body
+    | Post Body
+    | Put Body
+    | Delete Body
 
 
 type alias Message =
@@ -44,16 +39,16 @@ type alias Message =
 -- type Response 
 --     = Response
 
-url : ReqRes -> String
+url : Body -> String
 url req =
-    req.request.url
+    req.url
 
 type Server
     = Server
 
 {-| Respond to a given request
 -}
-send : ReqRes -> a -> Cmd msg
+send : Body -> a -> Cmd msg
 send =
     Native.Server.end
 

@@ -20,6 +20,7 @@ body =
     , path = "some path"
     , protocol = HTTP
     , subdomains = ["some domain"]
+    , time = 0
     }
 
 suite : Test
