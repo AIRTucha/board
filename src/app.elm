@@ -7,6 +7,7 @@ import File exposing(read)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing (log)
+import Request exposing(..)
 
 urlParser url =
     if url == "/" then 
@@ -80,7 +81,7 @@ init =
 
 type Msg
     = Request Server.Message
-    | File (Server.Body, File.File)
+    | File (ReqValue, File.File)
  
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
@@ -89,7 +90,7 @@ update message model =
             case request of 
                 Ok req ->
                     case req of
-                        Server.Get pack ->
+                        Get pack ->
                             ( model + 1
                             , urlParser(Server.url pack)
                                 |> read

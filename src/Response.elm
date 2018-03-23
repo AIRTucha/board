@@ -12,7 +12,7 @@ type Content
     | Raw String
 
 
-type alias RespBody =
+type alias ResValue =
     { cookeis : Object
     , content : Content
     , status : Int
@@ -22,7 +22,7 @@ type alias RespBody =
 
 type Response
     = Redirect String
-    | Reply RespBody
+    | Reply ResValue
     | Next Request
 
 type Mode a

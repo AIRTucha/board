@@ -4,11 +4,8 @@ effect module Server
         ( send
         , listen
         , Message
-        , Pack(..)
         , url
-        , Body
         )
-
 {-|
 
 @docs respond, listen, Request
@@ -19,27 +16,17 @@ import Native.Server
 import Json.Encode as Json
 import Result
 import Debug 
-
-
-type alias Body =
-    { url : String
-    }
-
-type Pack
-    = Get Body
-    | Post Body
-    | Put Body
-    | Delete Body
+import Request exposing(..)
 
 
 type alias Message =
-    Result String Pack
+    Result String Request
 
 
 -- type Response 
 --     = Response
 
-url : Body -> String
+url : ReqValue -> String
 url req =
     req.url
 
@@ -48,7 +35,7 @@ type Server
 
 {-| Respond to a given request
 -}
-send : Body -> a -> Cmd msg
+send : ReqValue -> a -> Cmd msg
 send =
     Native.Server.end
 
@@ -158,14 +145,14 @@ updateServers portNumber servers server =
 {-|
 -}
 type alias Settings =
-    { onRequest : Pack -> Task Never ()
+    { onRequest : Request -> Task Never ()
     , onClose : () -> Task Never ()
     }
 
 
 setting : Platform.Router msg Msg -> Int -> Settings
 setting router portNumber =
-    { onRequest = \request -> Platform.sendToSelf router (Request portNumber request)
+    { onRequest = \request -> Platform.sendToSelf router (Input portNumber request)
     , onClose = \_ -> Platform.sendToSelf router (Close portNumber)
     }
     
@@ -216,7 +203,7 @@ groupSubs subs dict =
 
 
 type Msg
-    = Request Int Pack
+    = Input Int Request
     | Close Int
 
 
@@ -227,7 +214,7 @@ onSelfMsg :
     -> Task Never (State msg)
 onSelfMsg router selfMsg state =
     case selfMsg of
-        Request portNumber request ->
+        Input portNumber request ->
             case Dict.get portNumber state.subs of 
                 Maybe.Just taggers ->
                     case taggers of

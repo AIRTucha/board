@@ -6,7 +6,7 @@ type Protocol
     | HTTPS
 
 
-type alias Body =
+type alias ReqValue =
     { url : String
     , content : Object
     , cookeis : Object
@@ -23,10 +23,10 @@ type alias Body =
 
 
 type Request
-    = Get Body
-    | Post Body
-    | Put Body
-    | Delete Body
+    = Get ReqValue
+    | Post ReqValue
+    | Put ReqValue
+    | Delete ReqValue
 
 
 
