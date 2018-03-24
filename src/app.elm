@@ -8,6 +8,7 @@ import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing (log)
 import Request exposing(..)
+import Console exposing(println)
 
 urlParser url =
     if url == "/" then 
@@ -33,7 +34,7 @@ typeParser path =
         ".js" ->
             "text/javascript"
         
-        ".css" ->
+        ".json" ->
             "application/json"
 
         ".png" ->
@@ -82,6 +83,7 @@ init =
 type Msg
     = Request Server.Message
     | File (ReqValue, File.File)
+ 
  
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =

@@ -1,5 +1,6 @@
 module Request exposing (..)
 import Shared exposing (Object)
+import Array exposing (Array)
 
 type Protocol
     = HTTP
@@ -8,17 +9,15 @@ type Protocol
 
 type alias ReqValue =
     { url : String
-    , content : Object
-    , cookeis : Object
+    , id : String
+    , time : Int
+    , content : Content
+    -- , cookeis : Object
     , params : Object
     , query : Object
-    , cargo : Object
     , ip : String
     , host : String
-    , path : String
     , protocol : Protocol
-    , subdomains : List String
-    , time : Int
     }
 
 
@@ -28,5 +27,9 @@ type Request
     | Put ReqValue
     | Delete ReqValue
 
-
+type Content 
+    = JSON Object
+    -- | File File
+    | Raw String
+    | Empty
 

@@ -5,6 +5,7 @@ var _airtucha$board$Native_Server = function(){
     const toArray = ( array ) => ({ ctor: '_Array', height: 0, table: array })
     const emptyDict = () => ({ ctor: 'RBEmpty_elm_builtin', _0: { ctor: 'LBlack' } } )
     const emptyList = () => ( { ctor: '[]' })
+    const empty = () => ( {ctor: 'Empty'})
     const getMethod = (str) => {
         switch(str){
             case "GET": return "Get"
@@ -21,23 +22,22 @@ var _airtucha$board$Native_Server = function(){
                     const time = (new Date).getTime()
                     const id = hash( {
                         path: req.path, 
-                        ip: req.ip,
+                        ip: req.connection.remoteAddress,
                         time: time
                     } )
+                    // req.on("data", data => console.log(JSON.parse(data.toString('utf8')))) 
+                    const address = req.connection.address()
                     const body = {    
                         url : req.url,
                         id : id,
                         time : time,
-                        cookeis : emptyDict,
-                        content : emptyDict,
-                        params : emptyDict,
-                        query : emptyDict,
-                        cargo : emptyDict,
-                        ip : req.ip,
-                        host : req,
-                        path : req.path,
-                        protocol : getProtocol(req.protocol),
-                        subdomains : toArray(req.subdomains),
+                        cookeis : emptyDict(),
+                        content : empty(),
+                        params : emptyDict(),
+                        query : emptyDict(),
+                        ip : address.address.toString(),
+                        host : req.headers.host,
+                        protocol : getProtocol(req.protocol)
                     }
                     requests.set( id, res )
                     _elm_lang$core$Native_Scheduler.rawSpawn(settings.onRequest(

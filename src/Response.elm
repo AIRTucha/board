@@ -10,6 +10,7 @@ type Content
     = JSON Object
     | File File
     | Raw String
+    | Empty
 
 
 type alias ResValue =
