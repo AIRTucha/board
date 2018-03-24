@@ -25,7 +25,9 @@ var _airtucha$board$Native_Server = function(){
                         ip: req.connection.remoteAddress,
                         time: time
                     } )
-                    // req.on("data", data => console.log(JSON.parse(data.toString('utf8')))) 
+                    // req.on("data", data => console.log(data.toString('utf8'))) 
+                    console.log(req.headers['content-type'])
+                    req.on("data", data => console.log(data.toString('hex') ))
                     const address = req.connection.address()
                     const body = {    
                         url : req.url,

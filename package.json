@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon --exec \"elm make src/app.elm --output dist/main.js && node local.js\"",
     "build": "elm make src/app.elm --output=dist/main.js",
-    "install": "elm-package install",
+    "install": "elm-package install spisemisu/elm-bytes",
     "elm": "elm",
     "test": "elm-test --watch"
   },

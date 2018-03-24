@@ -5,6 +5,9 @@ effect module Server
         , listen
         , Message
         , url
+        , ReqValue
+        , Request(..)
+        , Response
         )
 {-|
 
@@ -16,7 +19,68 @@ import Native.Server
 import Json.Encode as Json
 import Result
 import Debug 
-import Request exposing(..)
+import Dict exposing (Dict)
+import File exposing (File)
+
+type alias Object =
+    Dict String String
+
+
+type Content 
+    = JSON Object
+    | File File
+    | Raw String
+    | Empty
+
+
+type alias ResValue =
+    { cookeis : Object
+    , content : Content
+    , status : Int
+    , header : Object
+    }
+
+
+type Response
+    = Redirect String
+    | Reply ResValue
+    | Next Request
+
+type Mode a
+    = Async (Task String a)
+    | Sync a
+
+sendText str =
+    { cookeis = Dict.empty
+    , content = Raw str
+    , status = 200
+    , header = Dict.empty
+    }
+
+type Protocol
+    = HTTP
+    | HTTPS
+
+
+type alias ReqValue =
+    { url : String
+    , id : String
+    , time : Int
+    , content : Content
+    -- , cookeis : Object
+    , params : Object
+    , query : Object
+    , ip : String
+    , host : String
+    , protocol : Protocol
+    }
+
+
+type Request
+    = Get ReqValue
+    | Post ReqValue
+    | Put ReqValue
+    | Delete ReqValue
 
 
 type alias Message =

@@ -1,13 +1,12 @@
 module App exposing (..)
 
 import Platform
-import Server
+import Server exposing (ReqValue, Request(Get), Response)
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing (log)
-import Request exposing(..)
 import Console exposing(println)
 
 urlParser url =
@@ -84,7 +83,7 @@ type Msg
     = Request Server.Message
     | File (ReqValue, File.File)
  
- 
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
