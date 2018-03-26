@@ -2,12 +2,7 @@ module File exposing (..)
 
 import Native.File
 import Task exposing (Task)
+import Bytes exposing (Bytes)
 
-type Error 
-    = Error String
-
-type File a
-    = Buffer a 
-
-read : String -> Task Never File
+read : String -> Task Never Bytes
 read path = Native.File.read path

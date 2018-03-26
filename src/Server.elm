@@ -8,6 +8,7 @@ effect module Server
         , ReqValue
         , Request(..)
         , Response
+        , Content(..)
         )
 {-|
 
@@ -19,19 +20,25 @@ import Native.Server
 import Json.Encode as Json
 import Result
 import Debug 
-import Dict exposing (Dict)
-import File exposing (File)
-
+import Dict exposing (Dict, insert)
+import Bytes exposing (Bytes)
+import String exposing (split)
+import List exposing (foldl)
 type alias Object =
     Dict String String
 
 
 type Content 
     = JSON Object
-    | File File
-    | Raw String
+    | File String Bytes
+    | Text String String
     | Empty
 
+type Buffer
+    = Raw String String
+    | UTF8 String String
+    | RawJSON String
+    | NoData
 
 type alias ResValue =
     { cookeis : Object
@@ -62,14 +69,25 @@ type Protocol
     | HTTPS
 
 
+type alias RawRequest =
+    { url : String
+    , id : String
+    , time : Int
+    , content : Content
+    , cookeis : String
+    , ip : String
+    , host : String
+    , protocol : Protocol
+    }
+
+
 type alias ReqValue =
     { url : String
     , id : String
     , time : Int
     , content : Content
-    -- , cookeis : Object
-    , params : Object
-    , query : Object
+    , cookeis : Object
+    , cargo : Object
     , ip : String
     , host : String
     , protocol : Protocol
@@ -216,10 +234,45 @@ type alias Settings =
 
 setting : Platform.Router msg Msg -> Int -> Settings
 setting router portNumber =
-    { onRequest = \request -> Platform.sendToSelf router (Input portNumber request)
+    { onRequest = \request -> request 
+        |> Input portNumber
+        |> Platform.sendToSelf router
     , onClose = \_ -> Platform.sendToSelf router (Close portNumber)
     }
-    
+
+processRequest: RawRequest -> ReqValue
+processRequest raw = 
+    let 
+        cookies = parseCookeys raw
+        content = Empty --raw.content
+    in 
+        { url = raw.url
+        , id = raw.id
+        , time = raw.time
+        , content = content
+        , cookeis = cookies
+        , cargo = Dict.empty
+        , ip = raw.ip
+        , host = raw.host
+        , protocol = raw.protocol
+        }
+
+
+parseCookeys: RawRequest -> Object 
+parseCookeys req =
+    req.cookeis
+        |> split "; "
+        |> foldl parseSinglCookey Dict.empty
+
+
+parseSinglCookey string dict =
+    case split "=" string of 
+        key :: value :: [] ->
+            dict 
+                |> insert key value
+        
+        _ ->
+            dict
 
 keepAll
     : comparable

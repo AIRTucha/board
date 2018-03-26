@@ -8,7 +8,7 @@ import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing (log)
 import Console exposing(println)
-
+import Bytes exposing(Bytes)
 urlParser url =
     if url == "/" then 
         "./public/index.html" 
@@ -81,7 +81,7 @@ init =
 
 type Msg
     = Request Server.Message
-    | File (ReqValue, File.File)
+    | File (ReqValue, Bytes)
  
 
 update : Msg -> Model -> ( Model, Cmd Msg )
