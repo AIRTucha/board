@@ -14,6 +14,10 @@ var _airtucha$board$Native_Server = function(){
             case "DELETE": return "Delete"
         }
     }
+    const toMethod = str => body => ({
+        ctor: getMethod(str),
+        _0: body
+    })
     const getData = (content, contentType) => {
         const splitType = contentType.split("/")
         if(content) {
@@ -63,19 +67,16 @@ var _airtucha$board$Native_Server = function(){
                                 url : req.url,
                                 id : id,
                                 time : time,
-                                cookeis : cookeis,
+                                cookies : cookies,
                                 content : getData(content, contentType),
                                 ip : address.address.toString(),
                                 host : req.headers.host,
                                 protocol : getProtocol(req.protocol)
                             }
                             requests.set( id, res )
-                            _elm_lang$core$Native_Scheduler.rawSpawn(settings.onRequest(
-                                {
-                                    ctor: getMethod(req.method),
-                                    _0: body
-                                }
-                            ));
+                            _elm_lang$core$Native_Scheduler.rawSpawn(
+                                settings.onRequest(body)(toMethod(req.method))
+                            );
                         })
                   }).on('close', function () {
                     _elm_lang$core$Native_Scheduler.rawSpawn(settings.onClose());

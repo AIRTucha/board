@@ -227,18 +227,22 @@ updateServers portNumber servers server =
 {-|
 -}
 type alias Settings =
-    { onRequest : Request -> Task Never ()
+    { onRequest :  RawRequest -> (ReqValue -> Request) -> Task Never ()
     , onClose : () -> Task Never ()
     }
 
 
 setting : Platform.Router msg Msg -> Int -> Settings
 setting router portNumber =
-    { onRequest = \request -> request 
-        |> Input portNumber
-        |> Platform.sendToSelf router
+    { onRequest = \request method -> 
+        request 
+            |> processRequest
+            |> method
+            |> Input portNumber
+            |> Platform.sendToSelf router
     , onClose = \_ -> Platform.sendToSelf router (Close portNumber)
     }
+
 
 processRequest: RawRequest -> ReqValue
 processRequest raw = 
