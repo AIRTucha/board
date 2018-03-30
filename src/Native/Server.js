@@ -19,8 +19,8 @@ var _airtucha$board$Native_Server = function(){
         _0: body
     })
     const getData = (content, contentType) => {
-        const splitType = contentType.split("/")
         if(content) {
+            const splitType = contentType ? contentType.split("/") : ["", ""]
             if(splitType[0] == "text")
                 return { 
                     ctor: 'UTF8',
@@ -67,7 +67,7 @@ var _airtucha$board$Native_Server = function(){
                                 url : req.url,
                                 id : id,
                                 time : time,
-                                cookies : cookies,
+                                cookeis : cookeis || "",
                                 content : getData(content, contentType),
                                 ip : address.address.toString(),
                                 host : req.headers.host,

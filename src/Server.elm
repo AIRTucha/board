@@ -9,6 +9,7 @@ effect module Server
         , Request(..)
         , Response
         , Content(..)
+        , Buffer(..)
         )
 {-|
 
@@ -24,6 +25,8 @@ import Dict exposing (Dict, insert)
 import Bytes exposing (Bytes)
 import String exposing (split)
 import List exposing (foldl)
+
+
 type alias Object =
     Dict String String
 
@@ -69,11 +72,11 @@ type Protocol
     | HTTPS
 
 
-type alias RawRequest =
+type alias RawRequest a =
     { url : String
     , id : String
     , time : Int
-    , content : Content
+    , content : a
     , cookeis : String
     , ip : String
     , host : String
@@ -81,11 +84,11 @@ type alias RawRequest =
     }
 
 
-type alias ReqValue =
+type alias ReqValue a =
     { url : String
     , id : String
     , time : Int
-    , content : Content
+    , content : a
     , cookeis : Object
     , cargo : Object
     , ip : String
@@ -94,21 +97,21 @@ type alias ReqValue =
     }
 
 
-type Request
-    = Get ReqValue
-    | Post ReqValue
-    | Put ReqValue
-    | Delete ReqValue
+type Request a
+    = Get (ReqValue a)
+    | Post (ReqValue a)
+    | Put (ReqValue a)
+    | Delete (ReqValue a)
 
 
 type alias Message =
-    Result String Request
+    Result String (Request Buffer)
 
 
 -- type Response 
 --     = Response
 
-url : ReqValue -> String
+url : ReqValue a -> String
 url req =
     req.url
 
@@ -117,7 +120,7 @@ type Server
 
 {-| Respond to a given request
 -}
-send : ReqValue -> a -> Cmd msg
+send : ReqValue a -> b -> Cmd msg
 send =
     Native.Server.end
 
@@ -227,7 +230,7 @@ updateServers portNumber servers server =
 {-|
 -}
 type alias Settings =
-    { onRequest :  RawRequest -> (ReqValue -> Request) -> Task Never ()
+    { onRequest :  RawRequest Buffer -> (ReqValue Buffer -> Request Buffer) -> Task Never ()
     , onClose : () -> Task Never ()
     }
 
@@ -244,25 +247,21 @@ setting router portNumber =
     }
 
 
-processRequest: RawRequest -> ReqValue
+processRequest: RawRequest Buffer -> ReqValue Buffer
 processRequest raw = 
-    let 
-        cookies = parseCookeys raw
-        content = Empty --raw.content
-    in 
-        { url = raw.url
-        , id = raw.id
-        , time = raw.time
-        , content = content
-        , cookeis = cookies
-        , cargo = Dict.empty
-        , ip = raw.ip
-        , host = raw.host
-        , protocol = raw.protocol
-        }
+    { url = raw.url
+    , id = raw.id
+    , time = raw.time
+    , content = raw.content
+    , cookeis = parseCookeys raw
+    , cargo = Dict.empty
+    , ip = raw.ip
+    , host = raw.host
+    , protocol = raw.protocol
+    }
 
 
-parseCookeys: RawRequest -> Object 
+parseCookeys: RawRequest Buffer -> Object 
 parseCookeys req =
     req.cookeis
         |> split "; "
@@ -277,6 +276,9 @@ parseSinglCookey string dict =
         
         _ ->
             dict
+
+-- parseJSON  
+
 
 keepAll
     : comparable
@@ -324,7 +326,7 @@ groupSubs subs dict =
 
 
 type Msg
-    = Input Int Request
+    = Input Int (Request Buffer)
     | Close Int
 
 
