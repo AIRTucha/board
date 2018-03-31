@@ -1,7 +1,7 @@
 module App exposing (..)
 
 import Platform
-import Server exposing (ReqValue, Request(Get), Response, Content)
+import Server exposing (ReqValue, Request(Get), Response, Content, response)
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
@@ -106,8 +106,14 @@ update message model =
                     log msg ( model, Cmd.none)
 
         File (pack, file) ->
-            Server.send pack file
-                |> (\ _ -> ( model, Cmd.none) )
+            let 
+                res = response
+            in
+                Server.send { res
+                    | content = Server.File "test" file
+                    , id = pack.id
+                    }
+                    |> (\ _ -> ( model, Cmd.none) )
             
                     
 subscriptions : Model -> Sub Msg

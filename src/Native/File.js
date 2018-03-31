@@ -8,7 +8,7 @@ var _airtucha$board$Native_File = function() {
                     if (error) 
                         return callback(scheduler.fail(error))
                     else 
-                        return callback(scheduler.succeed(content))
+                        return callback(scheduler.succeed(content.toString('HEX')))
                 })
             })
         }

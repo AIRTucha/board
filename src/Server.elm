@@ -10,6 +10,7 @@ effect module Server
         , Response
         , Content(..)
         , RawContent(..)
+        , response
         )
 {-|
 
@@ -45,8 +46,18 @@ type RawContent
     | NoData
 
 
+response =
+    { cookeis = Dict.empty
+    , id = ""
+    , content = Empty 
+    , status = 200
+    , header = Dict.empty
+    }
+
+
 type alias ResValue =
     { cookeis : Object
+    , id: String
     , content : Content
     , status : Int
     , header : Object
@@ -56,7 +67,7 @@ type alias ResValue =
 type Response
     = Redirect String
     | Reply ResValue
-    | Next Request
+    | Next Request -- ReqValue
 
 type Mode a
     = Async (Task String a)
@@ -122,9 +133,23 @@ type Server
 
 {-| Respond to a given request
 -}
-send : ReqValue a -> b -> Cmd msg
-send =
-    Native.Server.end
+send : ResValue -> ()
+send res =
+    case res.content of 
+        File contentType data ->
+            Bytes.toString data
+                |> Native.Server.end res 
+
+
+        JSON json ->
+            Native.Server.end res json
+    
+        Text contentType data ->
+            Native.Server.end res data
+
+        Empty ->
+             ()
+
 
 -- SUBSCRIPTIONS
 
