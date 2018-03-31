@@ -9,7 +9,7 @@ effect module Server
         , Request(..)
         , Response
         , Content(..)
-        , Buffer(..)
+        , RawContent(..)
         )
 {-|
 
@@ -32,16 +32,18 @@ type alias Object =
 
 
 type Content 
-    = JSON Object
+    = JSON String
     | File String Bytes
     | Text String String
     | Empty
 
-type Buffer
+
+type RawContent
     = Raw String String
     | UTF8 String String
     | RawJSON String
     | NoData
+
 
 type alias ResValue =
     { cookeis : Object
@@ -105,7 +107,7 @@ type Request a
 
 
 type alias Message =
-    Result String (Request Buffer)
+    Result String (Request Content)
 
 
 -- type Response 
@@ -230,7 +232,7 @@ updateServers portNumber servers server =
 {-|
 -}
 type alias Settings =
-    { onRequest :  RawRequest Buffer -> (ReqValue Buffer -> Request Buffer) -> Task Never ()
+    { onRequest :  RawRequest RawContent -> (ReqValue Content -> Request Content) -> Task Never ()
     , onClose : () -> Task Never ()
     }
 
@@ -247,12 +249,12 @@ setting router portNumber =
     }
 
 
-processRequest: RawRequest Buffer -> ReqValue Buffer
+processRequest: RawRequest RawContent -> ReqValue Content
 processRequest raw = 
     { url = raw.url
     , id = raw.id
     , time = raw.time
-    , content = raw.content
+    , content = parseContent raw 
     , cookeis = parseCookeys raw
     , cargo = Dict.empty
     , ip = raw.ip
@@ -261,11 +263,27 @@ processRequest raw =
     }
 
 
-parseCookeys: RawRequest Buffer -> Object 
+parseCookeys: RawRequest RawContent -> Object 
 parseCookeys req =
     req.cookeis
         |> split "; "
         |> foldl parseSinglCookey Dict.empty
+
+
+parseContent: RawRequest RawContent -> Content
+parseContent raw = 
+    case raw.content of  
+        Raw contentType data ->
+            File contentType <| Bytes.fromHex data 
+
+        UTF8 contentType data ->
+            Text contentType data
+        
+        RawJSON data ->
+            JSON data 
+        
+        NoData ->
+            Empty
 
 
 parseSinglCookey string dict =
@@ -326,7 +344,7 @@ groupSubs subs dict =
 
 
 type Msg
-    = Input Int (Request Buffer)
+    = Input Int (Request Content)
     | Close Int
 
 

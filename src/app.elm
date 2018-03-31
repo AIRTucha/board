@@ -1,7 +1,7 @@
 module App exposing (..)
 
 import Platform
-import Server exposing (ReqValue, Request(Get), Response, Buffer)
+import Server exposing (ReqValue, Request(Get), Response, Content)
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
@@ -81,7 +81,7 @@ init =
 
 type Msg
     = Request Server.Message
-    | File (ReqValue Buffer, Bytes)
+    | File (ReqValue Content, Bytes)
  
 
 update : Msg -> Model -> ( Model, Cmd Msg )
