@@ -81,7 +81,7 @@ init =
 
 type Msg
     = Request Server.Message
-    | File (ReqValue Content, Bytes)
+    | Done 
  
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -95,8 +95,8 @@ update message model =
                             ( model + 1
                             , urlParser(Server.url pack)
                                 |> read
-                                |> Task.andThen (\ file -> Task.succeed(pack, file) )
-                                |> Task.perform File 
+                                |> Task.map (sendFile pack model)
+                                |> Task.perform (\_ -> Done)
                             )
                         
                         _ -> 
@@ -105,15 +105,17 @@ update message model =
                 Err msg ->
                     log msg ( model, Cmd.none)
 
-        File (pack, file) ->
-            let 
-                res = response
-            in
-                Server.send { res
-                    | content = Server.File "test" file
-                    , id = pack.id
-                    }
-                    |> (\ _ -> ( model, Cmd.none) )
+        Done ->
+            (model, Cmd.none)
+
+sendFile pack model file  =
+    let 
+        res = response
+    in
+        Server.send { res
+            | content = Server.File "test" file
+            , id = pack.id
+            }
             
                     
 subscriptions : Model -> Sub Msg
