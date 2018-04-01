@@ -34,49 +34,56 @@ empty req =
     Sync <| Next req
 
 
+useSync = factory useHandler Sync
+
+
+getSync = factory getHandler Sync
+
+
+postSync = factory postHandler Sync
+
+
+putSync = factory putHandler Sync
+
+
+deleteSync = factory deleteHandler Sync
+
 -- use: URL -> RoutHandler -> Router-> Mid
-use = factory useHandler
+use = factory useHandler Async
 
 
-get = factory getHandler
+get = factory getHandler Async
 
 
-post = factory postHandler
+post = factory postHandler Async
 
 
-put = factory putHandler
+put = factory putHandler Async
 
 
-delete = factory deleteHandler
+delete = factory deleteHandler Async
 
- 
--- factory: (Request a -> Maybe (ReqValue a, String)) -> URL -> RoutHandler a b -> Router b -> Router a
-factory parsePath url cur next req =
+
+factory parsePath mode url cur next req =
     case next req of    
         Sync result ->
             case result of
                 Next newReq ->
-                    try2Dispache parsePath cur url newReq
+                    try2Dispache parsePath mode cur url newReq
                 
                 _ ->
                     Sync result 
 
         Async result ->
             result 
-                |> Task.andThen (try2DispacheAsync parsePath cur url)
+                |> Task.andThen (try2DispacheAsync parsePath mode cur url)
                 |> Async
  
 
--- try2DispacheAsync
---     : (Request a -> Maybe ( ReqValue a, String ))
---     -> RoutHandler a b
---     -> URL
---     -> Answer b
---     -> Task.Task String (Answer b)
-try2DispacheAsync parsePath cur url response =
+try2DispacheAsync parsePath mode cur url response =
     case response of
         Next req ->
-            case try2Dispache parsePath cur url req of
+            case try2Dispache parsePath mode cur url req of
                 Sync value ->
                     Task.succeed value
                 
@@ -87,13 +94,7 @@ try2DispacheAsync parsePath cur url response =
             Task.succeed (response) 
 
 
--- try2Dispache
---     : (Request a -> Maybe ( ReqValue a, String ))
---     -> RoutHandler a b
---     -> URL
---     -> Request b
---     -> Mode (Answer b)
-try2Dispache parsePath cur url req =
+try2Dispache parsePath mode cur url req =
     case parsePath req of
         Just (resul, path) ->
             case parse url path of
@@ -103,7 +104,7 @@ try2Dispache parsePath cur url req =
                 value ->
                     case parsingResult2params value of
                         Ok params ->
-                            cur (params, resul)
+                            mode <| cur (params, resul)
                         
                         Err _ -> 
                             Sync <| Next req

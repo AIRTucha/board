@@ -148,7 +148,7 @@ getStyles =
 
 
 redirect str _ =
-    Board.Async <| Task.succeed <| Board.Redirect str
+    Task.succeed <| Board.Redirect str
 
 
 getFile path (param, req)  =
@@ -156,7 +156,6 @@ getFile path (param, req)  =
         |> read
         |> Task.map (makeResponse req)
         |> Task.map Board.Reply
-        |> Board.Async
 
 
 makeResponse req file = 
