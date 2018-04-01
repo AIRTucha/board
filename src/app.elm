@@ -1,7 +1,7 @@
 module App exposing (..)
 
 import Platform
-import Server exposing (ReqValue, Request(Get), Content, response, Response)
+import Server exposing (ReqValue, Request(Get), Content, response, Response, url)
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
@@ -95,7 +95,7 @@ update message model =
                 Ok req ->
                     case server req of
                         _ ->
-                            (model, Cmd.none)
+                            (model, server req)
 
                 Err msg ->
                     log msg ( model, Cmd.none)
@@ -104,37 +104,59 @@ update message model =
             Server.send res
                 |> (\ _ -> ( model, Cmd.none) )
 
-server = 
+server req = 
+    case router req of 
+        Async task ->
+            task 
+                |> Task.perform (dispacheTask req)
+
+        Sync value ->
+            Cmd.none
+
+dispacheTask req ans =
+    case ans of 
+        Reply res ->
+            Send res
+        
+        _ ->
+            Input <| Err <| url req
+
+router =
     empty 
-        -- |> get (p "/") (getFile "") getIndex
-        -- |> get (p "/public/") (getFile "") getIndex
-        -- |> get (p "/public") (getFile "") getIndex
-        -- |> get (p "/public/index.html") (getFile "") getIndex
-        -- |> get (p "/public/app.js") getApp
-        -- |> get (p "/public/styles.css") getStyles
+        |> get (p "/") getIndex
+        |> get (p "/public/") getIndex
+        |> get (p "/public") getIndex
+        |> get (p "/public/index.html") getIndex
+        |> get (p "/app.js") getApp
+        |> get (p "/public/app.js") getApp
+        |> get (p "/styles.css") getStyles
+        |> get (p "/public/styles.css") getStyles
         |> use any (redirect "/")
 
--- getIndex _ =
---     getFile "./public/index.html" 
 
 
--- getApp _ =
---     getFile "./public/app.js" 
+getIndex =
+    getFile "./public/index.html" 
 
 
--- getStyles _ =
---     getFile "./public/styles.css" 
+getApp =
+    getFile "./public/app.js" 
+
+
+getStyles =
+    getFile "./public/styles.css" 
 
 
 redirect str _ =
     Board.Async <| Task.succeed <| Board.Redirect str
 
--- getFile path (param, req)  =
---     path
---         |> read
---         |> Task.map (makeResponse req)
---         |> Task.map Board.Reply
---         |> Board.Async
+
+getFile path (param, req)  =
+    path
+        |> read
+        |> Task.map (makeResponse req)
+        |> Task.map Board.Reply
+        |> Board.Async
 
 
 makeResponse req file = 

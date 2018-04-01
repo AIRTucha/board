@@ -17,19 +17,19 @@ type Answer a
     | Next (Request a)
 
 
-type Mode a
-    = Async (Task.Task String a)
-    | Sync a
+type Mode a b
+    = Async (Task.Task a b)
+    | Sync b
 
-type alias RoutHandler a b = 
-    (Params, ReqValue a) ->  Mode (Answer b)
-
-
-type alias Router  a =
-    Request a -> Mode (Answer a)
+type alias RoutHandler a b c = 
+    (Params, ReqValue a) ->  Mode b (Answer c)
 
 
-empty: Request a -> Mode (Answer a)
+type alias Router a b =
+    Request a -> Mode b (Answer a)
+
+
+empty: Request a -> Mode b (Answer a)
 empty req =
     Sync <| Next req
 

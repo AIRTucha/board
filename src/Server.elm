@@ -106,17 +106,25 @@ type Request a
     | Put (ReqValue a)
     | Delete (ReqValue a)
 
+url req =
+     case req of 
+        Get val ->
+            val.url
 
+        Post val ->
+            val.url
+
+        Put val ->
+            val.url
+
+        Delete val ->
+            val.url
 type alias Message =
     Result String (Request Content)
 
 
 -- type Response 
 --     = Response
-
-url : ReqValue a -> String
-url req =
-    req.url
 
 type Server
     = Server

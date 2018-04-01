@@ -87,7 +87,8 @@ var _airtucha$board$Native_Server = function(){
             const res = requests.get(request.id)
             requests.delete(request.id)
             return function( value ) {
-                res.end(value);
+                if(res)
+                    res.end(value);
                 return { type: 'node', branches: { ctor: '[]' } }
             }
         },
