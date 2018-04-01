@@ -7,7 +7,6 @@ effect module Server
         , url
         , ReqValue
         , Request(..)
-        , Response
         , Content(..)
         , RawContent(..)
         , response
@@ -55,23 +54,13 @@ response =
     }
 
 
-type alias ResValue =
+type alias Response =
     { cookeis : Object
     , id: String
     , content : Content
     , status : Int
     , header : Object
     }
-
-
-type Response
-    = Redirect String
-    | Reply ResValue
-    | Next Request -- ReqValue
-
-type Mode a
-    = Async (Task String a)
-    | Sync a
 
 sendText str =
     { cookeis = Dict.empty
@@ -133,7 +122,7 @@ type Server
 
 {-| Respond to a given request
 -}
-send : ResValue -> ()
+send : Response -> ()
 send res =
     case res.content of 
         File contentType data ->

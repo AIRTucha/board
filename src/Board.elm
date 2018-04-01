@@ -1,29 +1,37 @@
 module Board exposing (..)
 
 import Pathfinder exposing (..)
-import Request exposing (..)
-import Response exposing (..)
 import Dict exposing (..)
 import Result
 import List exposing (map, reverse)
 import Task
+import Server exposing (Request)
 
 type HandlingResult
     = Contenue Request
     | Finish
 
+type Answer
+    = Redirect String
+    | Reply Answer
+    | Next Request -- ReqValue
+
+
+type Mode a
+    = Async (Task.Task String a)
+    | Sync a
 
 type alias RoutHandler a = 
-    (Params, a) ->  Mode Response
+    (Params, a) ->  Mode Answer
 
 
 type alias Router =
-    Request -> Mode Response
+    Request -> Mode Answer
 
 empty req =
     Sync <| Next req
 
-    
+
 -- use: URL -> RoutHandler -> Router-> Mid
 use = factory useHandler
 
@@ -61,8 +69,8 @@ try2DispacheAsync
     : (Request -> Maybe ( a, String ))
     -> RoutHandler a 
     -> URL
-    -> Response
-    -> Task.Task String Response
+    -> Answer
+    -> Task.Task String Answer
 try2DispacheAsync parsePath cur url response =
     case response of
         Next req ->
@@ -82,7 +90,7 @@ try2Dispache
     -> RoutHandler a 
     -> URL
     -> Request
-    -> Mode Response
+    -> Mode Answer
 try2Dispache parsePath cur url req =
     case parsePath req of
         Just (resul, path) ->
