@@ -5,29 +5,31 @@ import Dict exposing (..)
 import Result
 import List exposing (map, reverse)
 import Task
-import Server exposing (Request)
+import Server exposing (Request(..), Response, ReqValue)
 
 type HandlingResult
     = Contenue Request
     | Finish
 
-type Answer
+type Answer a
     = Redirect String
-    | Reply Answer
-    | Next Request -- ReqValue
+    | Reply Response
+    | Next (Request a)
 
 
 type Mode a
     = Async (Task.Task String a)
     | Sync a
 
-type alias RoutHandler a = 
-    (Params, a) ->  Mode Answer
+type alias RoutHandler a b = 
+    (Params, ReqValue a) ->  Mode (Answer b)
 
 
-type alias Router =
-    Request -> Mode Answer
+type alias Router  a =
+    Request a -> Mode (Answer a)
 
+
+empty: Request a -> Mode (Answer a)
 empty req =
     Sync <| Next req
 
@@ -48,7 +50,7 @@ put = factory putHandler
 delete = factory deleteHandler
 
  
-factory: (Request -> Maybe (a, String)) -> URL -> RoutHandler a -> Router -> Router
+-- factory: (Request a -> Maybe (ReqValue a, String)) -> URL -> RoutHandler a b -> Router b -> Router a
 factory parsePath url cur next req =
     case next req of    
         Sync result ->
@@ -65,12 +67,12 @@ factory parsePath url cur next req =
                 |> Async
  
 
-try2DispacheAsync
-    : (Request -> Maybe ( a, String ))
-    -> RoutHandler a 
-    -> URL
-    -> Answer
-    -> Task.Task String Answer
+-- try2DispacheAsync
+--     : (Request a -> Maybe ( ReqValue a, String ))
+--     -> RoutHandler a b
+--     -> URL
+--     -> Answer b
+--     -> Task.Task String (Answer b)
 try2DispacheAsync parsePath cur url response =
     case response of
         Next req ->
@@ -85,12 +87,12 @@ try2DispacheAsync parsePath cur url response =
             Task.succeed (response) 
 
 
-try2Dispache
-    : (Request -> Maybe ( a, String ))
-    -> RoutHandler a 
-    -> URL
-    -> Request
-    -> Mode Answer
+-- try2Dispache
+--     : (Request a -> Maybe ( ReqValue a, String ))
+--     -> RoutHandler a b
+--     -> URL
+--     -> Request b
+--     -> Mode (Answer b)
 try2Dispache parsePath cur url req =
     case parsePath req of
         Just (resul, path) ->
@@ -110,23 +112,23 @@ try2Dispache parsePath cur url req =
             Sync <| Next req
 
 
-useHandler: Request -> Maybe (Request, String)
+useHandler: Request a -> Maybe (ReqValue a, String)
 useHandler req =
     case req of
         Get body ->
-            Just (req, body.url)
+            Just (body, body.url)
         
         Post body ->
-            Just (req, body.url)
+            Just (body, body.url)
         
         Put body ->
-            Just (req, body.url)
+            Just (body, body.url)
         
         Delete body ->
-            Just (req, body.url)
+            Just (body, body.url)
 
 
-getHandler: Request -> Maybe (Body, String)
+getHandler: Request a -> Maybe (ReqValue a, String)
 getHandler req =
     case req of
         Get body ->
@@ -142,7 +144,7 @@ getHandler req =
             Nothing
 
 
-postHandler: Request -> Maybe (Body, String)
+postHandler: Request a -> Maybe (ReqValue a, String)
 postHandler req =
     case req of
         Get body ->
@@ -158,7 +160,7 @@ postHandler req =
             Nothing
 
 
-putHandler: Request -> Maybe (Body, String)
+putHandler: Request a -> Maybe (ReqValue a, String)
 putHandler req =
     case req of
         Get body ->
@@ -174,7 +176,7 @@ putHandler req =
             Nothing
 
 
-deleteHandler: Request -> Maybe (Body, String)
+deleteHandler: Request a -> Maybe (ReqValue a, String)
 deleteHandler req =
     case req of
         Get body ->

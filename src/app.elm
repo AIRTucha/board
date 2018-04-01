@@ -1,7 +1,7 @@
 module App exposing (..)
 
 import Platform
-import Server exposing (ReqValue, Request(Get), Content, response)
+import Server exposing (ReqValue, Request(Get), Content, response, Response)
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
@@ -9,6 +9,9 @@ import String exposing (toLower)
 import Debug exposing (log)
 import Console exposing(println)
 import Bytes exposing(Bytes)
+import Pathfinder exposing (..)
+import Board exposing (..)
+
 urlParser url =
     if url == "/" then 
         "./public/index.html" 
@@ -80,46 +83,72 @@ init =
 
 
 type Msg
-    = Request Server.Message
-    | Done 
+    = Input Server.Message
+    | Send Response
  
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        Request request ->
+        Input request ->
             case request of 
                 Ok req ->
-                    case req of
-                        Get pack ->
-                            ( model + 1
-                            , urlParser(Server.url pack)
-                                |> read
-                                |> Task.map (sendFile pack model)
-                                |> Task.perform (\_ -> Done)
-                            )
-                        
-                        _ -> 
-                            ( model, Cmd.none)
+                    case server req of
+                        _ ->
+                            (model, Cmd.none)
 
                 Err msg ->
                     log msg ( model, Cmd.none)
 
-        Done ->
-            (model, Cmd.none)
+        Send res ->
+            Server.send res
+                |> (\ _ -> ( model, Cmd.none) )
 
-sendFile pack model file  =
+server = 
+    empty 
+        -- |> get (p "/") (getFile "") getIndex
+        -- |> get (p "/public/") (getFile "") getIndex
+        -- |> get (p "/public") (getFile "") getIndex
+        -- |> get (p "/public/index.html") (getFile "") getIndex
+        -- |> get (p "/public/app.js") getApp
+        -- |> get (p "/public/styles.css") getStyles
+        |> use any (redirect "/")
+
+-- getIndex _ =
+--     getFile "./public/index.html" 
+
+
+-- getApp _ =
+--     getFile "./public/app.js" 
+
+
+-- getStyles _ =
+--     getFile "./public/styles.css" 
+
+
+redirect str _ =
+    Board.Async <| Task.succeed <| Board.Redirect str
+
+-- getFile path (param, req)  =
+--     path
+--         |> read
+--         |> Task.map (makeResponse req)
+--         |> Task.map Board.Reply
+--         |> Board.Async
+
+
+makeResponse req file = 
     let 
         res = response
     in
-        Server.send { res
-            | content = Server.File "test" file
-            , id = pack.id
-            }
-            
-                    
+        { res
+        | content = Server.File "test" file
+        , id = req.id
+        } 
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Server.listen 8080 Request
+    Server.listen 8080 Input
     
     

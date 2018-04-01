@@ -10,6 +10,7 @@ effect module Server
         , Content(..)
         , RawContent(..)
         , response
+        , Response
         )
 {-|
 
