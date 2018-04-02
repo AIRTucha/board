@@ -93,9 +93,7 @@ update message model =
         Input request ->
             case request of 
                 Ok req ->
-                    case server req of
-                        _ ->
-                            (model, server req)
+                        (model, server req)
 
                 Err msg ->
                     log msg ( model, Cmd.none)
