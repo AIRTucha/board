@@ -62,8 +62,15 @@ put = factory putHandler Async
 
 
 delete = factory deleteHandler Async
-
-
+ 
+factory 
+    : (Request a -> Maybe ( b, String )) 
+    -> (c -> Mode a1 (Answer a)) 
+    -> URL 
+    -> (( Params, b ) -> c) 
+    -> (d -> Mode a1 (Answer a)) 
+    -> d 
+    -> Mode a1 (Answer a)
 factory parsePath mode url cur next req =
     case next req of    
         Sync result ->

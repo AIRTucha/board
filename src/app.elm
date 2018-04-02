@@ -84,7 +84,7 @@ init =
 
 type Msg
     = Input Server.Message
-    | Send Response
+    | Output (Model -> Result String Response)
  
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -98,26 +98,32 @@ update message model =
                 Err msg ->
                     log msg ( model, Cmd.none)
 
-        Send res ->
-            Server.send res
-                |> (\ _ -> ( model, Cmd.none) )
+        Output model2res ->
+            case model2res model of
+                Ok res ->
+                    Server.send res
+                        |> (\_ -> ( model, Cmd.none) )
+            
+                Err msg ->
+                    log msg (model, Cmd.none)
 
 server req = 
     case router req of 
         Async task ->
             task 
-                |> Task.perform (dispacheTask req)
+                |> Task.map (dispacheTask req)
+                |> Task.perform Output
 
         Sync value ->
             Cmd.none
 
-dispacheTask req ans =
+dispacheTask req ans model =
     case ans of 
         Reply res ->
-            Send res
+            Ok res
         
         _ ->
-            Input <| Err <| url req
+            Err <| url req
 
 router =
     empty 
