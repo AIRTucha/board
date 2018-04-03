@@ -7,7 +7,7 @@ type alias Object =
     Dict String String
 
 type Msg
-    = Input (Result String (Request Content))
+    = Input (Request Content)
     | Output Response
     | Error String
 

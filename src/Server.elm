@@ -76,7 +76,8 @@ url req =
 
         Delete val ->
             val.url
-type alias Message = Result String (Request Content)
+
+type alias Message = Shared.Msg
 
 
 type Server
@@ -336,12 +337,12 @@ onSelfMsg router selfMsg state =
                 Maybe.Just taggers ->
                     case taggers of
                         sub :: [] ->
-                            Platform.sendToApp router (sub (Ok request))
+                            Platform.sendToApp router (sub (Shared.Input request))
                                 |> Task.andThen (\_ -> Task.succeed state) 
 
                         sub :: tail ->
-                            Platform.sendToApp router (sub (Ok request))
-                            :: List.map (\tagger -> Platform.sendToApp router (tagger (Err "Too many subscribers"))) tail
+                            Platform.sendToApp router (sub (Shared.Input request))
+                            :: List.map (\tagger -> Platform.sendToApp router (tagger (Shared.Error "Too many subscribers"))) tail
                                 |> Task.sequence
                                 |> Task.andThen (\_ -> Task.succeed state) 
 

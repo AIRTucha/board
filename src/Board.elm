@@ -9,6 +9,8 @@ import Server exposing (url)
 import Debug exposing (log)
 import Board.Router exposing(..)
 import Shared exposing (..)
+
+
 board router =
     Platform.program
         { init = init
@@ -21,7 +23,7 @@ board router =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Server.listen 8080 Input
+    Server.listen 8080 (\v -> v)
     
 
 type alias Model =
@@ -35,16 +37,11 @@ init =
 update server message model =
     case message of
         Input request ->
-            case request of 
-                Ok req ->
-                        (model, server req)
-
-                Err msg ->
-                    log msg ( model, Cmd.none)
+            (model, server request)
 
         Output response ->
-                    Server.send response
-                        |> (\_ -> ( model, Cmd.none) )
+            Server.send response
+                |> (\_ -> ( model, Cmd.none) )
             
         Error msg ->
             log msg (model, Cmd.none)
