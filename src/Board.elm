@@ -9,7 +9,7 @@ import Server exposing (url)
 import Debug exposing (log)
 import Board.Router exposing(..)
 import Shared exposing (..)
-
+import Platform.Sub exposing (none)
 
 board router =
     Platform.program

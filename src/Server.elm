@@ -338,13 +338,13 @@ onSelfMsg router selfMsg state =
                     case taggers of
                         sub :: [] ->
                             Platform.sendToApp router (sub (Shared.Input request))
-                                |> Task.andThen (\_ -> Task.succeed state) 
+                                |> Task.map (\_ -> state) 
 
                         sub :: tail ->
                             Platform.sendToApp router (sub (Shared.Input request))
                             :: List.map (\tagger -> Platform.sendToApp router (tagger (Shared.Error "Too many subscribers"))) tail
                                 |> Task.sequence
-                                |> Task.andThen (\_ -> Task.succeed state) 
+                                |> Task.map (\_ -> state) 
 
                         _ -> 
                             Task.succeed state
