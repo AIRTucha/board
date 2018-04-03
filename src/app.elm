@@ -11,14 +11,8 @@ import Console exposing(println)
 import Bytes exposing(Bytes)
 import Pathfinder exposing (..)
 import Board exposing (..)
+import Board.Router exposing (..)
 
-urlParser url =
-    if url == "/" then 
-        "./public/index.html" 
-    else 
-        "./public" ++ url
-
-main : Program Never Model Msg
 main = board router
 
 router =
@@ -34,7 +28,6 @@ router =
         |> use any (redirect "/")
 
 
-
 getIndex =
     getFile "./public/index.html" 
 
@@ -48,14 +41,14 @@ getStyles =
 
 
 redirect str _ =
-    Task.succeed <| Board.Redirect str
+    Task.succeed <| Redirect str
 
 
 getFile path (param, req)  =
     path
         |> read
         |> Task.map (makeResponse req)
-        |> Task.map Board.Reply
+        |> Task.map Reply
 
 
 makeResponse req file = 
