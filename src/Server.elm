@@ -5,12 +5,8 @@ effect module Server
         , listen
         , Message
         , url
-        , ReqValue
-        , Request(..)
-        , Content(..)
         , RawContent(..)
         , response
-        , Response
         )
 {-|
 
@@ -26,18 +22,7 @@ import Dict exposing (Dict, insert)
 import Bytes exposing (Bytes)
 import String exposing (split)
 import List exposing (foldl)
-
-
-type alias Object =
-    Dict String String
-
-
-type Content 
-    = JSON String
-    | File String Bytes
-    | Text String String
-    | Empty
-
+import Shared exposing (..)
 
 type RawContent
     = Raw String String
@@ -55,13 +40,7 @@ response =
     }
 
 
-type alias Response =
-    { cookeis : Object
-    , id: String
-    , content : Content
-    , status : Int
-    , header : Object
-    }
+
 
 sendText str =
     { cookeis = Dict.empty
@@ -69,11 +48,6 @@ sendText str =
     , status = 200
     , header = Dict.empty
     }
-
-type Protocol
-    = HTTP
-    | HTTPS
-
 
 type alias RawRequest a =
     { url : String
@@ -87,24 +61,7 @@ type alias RawRequest a =
     }
 
 
-type alias ReqValue a =
-    { url : String
-    , id : String
-    , time : Int
-    , content : a
-    , cookeis : Object
-    , cargo : Object
-    , ip : String
-    , host : String
-    , protocol : Protocol
-    }
 
-
-type Request a
-    = Get (ReqValue a)
-    | Post (ReqValue a)
-    | Put (ReqValue a)
-    | Delete (ReqValue a)
 
 url req =
      case req of 
@@ -119,12 +76,8 @@ url req =
 
         Delete val ->
             val.url
-type alias Message =
-    Result String (Request Content)
+type alias Message = Result String (Request Content)
 
-
--- type Response 
---     = Response
 
 type Server
     = Server

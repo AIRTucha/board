@@ -1,7 +1,7 @@
 module App exposing (..)
 
 import Platform
-import Server exposing (ReqValue, Request(Get), Content, response, Response, url)
+import Server exposing (response)
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)
@@ -11,6 +11,7 @@ import Bytes exposing(Bytes)
 import Pathfinder exposing (..)
 import Board exposing (..)
 import Board.Router exposing (..)
+import Shared exposing (..)
 
 main = board router
 
@@ -56,6 +57,6 @@ makeResponse req file =
         res = response
     in
         { res
-        | content = Server.File "test" file
+        | content = File "test" file
         , id = req.id
         } 

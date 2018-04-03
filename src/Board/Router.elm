@@ -5,9 +5,9 @@ import Dict exposing (..)
 import Result
 import List exposing (map, reverse)
 import Task
-import Server exposing (Request(..), Response, ReqValue, url)
+import Server exposing (url)
 import Debug exposing (log)
-
+import Shared exposing (..)
 
 type Answer a
     = Redirect String

@@ -5,10 +5,10 @@ import Dict exposing (..)
 import Result
 import List exposing (map, reverse)
 import Task
-import Server exposing (Request(..), Response, ReqValue, url)
+import Server exposing (url)
 import Debug exposing (log)
 import Board.Router exposing(..)
-
+import Shared exposing (..)
 board router =
     Platform.program
         { init = init
@@ -31,12 +31,6 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( 0, Cmd.none )
-
-
-type Msg
-    = Input Server.Message
-    | Output Response
-    | Error String
 
 update server message model =
     case message of
