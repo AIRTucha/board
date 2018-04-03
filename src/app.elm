@@ -7,13 +7,13 @@ import File exposing(read)
 import Path.Generic exposing (takeExtension)
 import String exposing (toLower)
 import Debug exposing (log)
-import Console exposing(println)
 import Bytes exposing(Bytes)
 import Pathfinder exposing (..)
 import Board exposing (..)
 import Board.Router exposing (..)
 
 main = board router
+
 
 router =
     empty 

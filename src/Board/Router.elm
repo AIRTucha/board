@@ -62,6 +62,7 @@ put = factory putHandler Async
 
 delete = factory deleteHandler Async
  
+ 
 factory 
     : (Request a -> Maybe ( b, String )) 
     -> (c -> Mode a1 (Answer a)) 
