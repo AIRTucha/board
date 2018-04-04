@@ -77,7 +77,7 @@ url req =
         Delete val ->
             val.url
 
-type alias Message = Shared.Msg
+type alias Message = (Request Content)
 
 
 type Server
@@ -106,21 +106,19 @@ send res =
 -- SUBSCRIPTIONS
 
 type MySub msg
-    = Listen Int (Message -> msg)
+    = Listen Int (Message -> msg) (String -> msg)
 
 
 {-| Subscribe to a port
 -}
-listen : Int -> (Message -> msg) -> Sub msg
-listen portNumber tagger =
-    subscription (Listen portNumber tagger)
+listen : Int -> (Message -> msg) -> (String -> msg) -> Sub msg
+listen portNumber success failuer =
+    subscription (Listen portNumber success failuer)
 
 
 subMap : (a -> b) -> MySub a -> MySub b
-subMap func sub =
-    case sub of
-        Listen portNumber tagger ->
-            Listen portNumber (tagger >> func)
+subMap func (Listen portNumber success failuer) =
+    Listen portNumber (success >> func) (failuer >> func)
 
 
 -- MANAGER
@@ -137,7 +135,7 @@ type alias Servers =
 
 
 type alias Subs msg =
-    Dict.Dict Int (List (Message -> msg))
+    Dict.Dict Int (List ((Message -> msg),(String -> msg)))
 
 
 init : Task Never (State msg)
@@ -300,16 +298,16 @@ close =
 groupSubs : List (MySub msg) -> Subs msg -> Subs msg
 groupSubs subs dict =
     case subs of
-        (Listen portNumber tagger) :: tail ->
+        (Listen portNumber success failuer) :: tail ->
             dict
                 |> Dict.update portNumber 
                     (\ list -> 
                         case list of
                             Nothing ->
-                                Just [ tagger ]
+                                Just [ (success, failuer) ]
 
                             Just list ->
-                                Just (tagger :: list)
+                                Just ((success, failuer) :: list)
                     ) 
                 |> groupSubs tail
 
@@ -334,15 +332,15 @@ onSelfMsg router selfMsg state =
     case selfMsg of
         Input portNumber request ->
             case Dict.get portNumber state.subs of 
-                Maybe.Just taggers ->
+                Maybe.Just (taggers) ->
                     case taggers of
-                        sub :: [] ->
-                            Platform.sendToApp router (sub (Shared.Input request))
+                        (success, failuer) :: [] ->
+                            Platform.sendToApp router (success request)
                                 |> Task.map (\_ -> state) 
 
-                        sub :: tail ->
-                            Platform.sendToApp router (sub (Shared.Input request))
-                            :: List.map (\tagger -> Platform.sendToApp router (tagger (Shared.Error "Too many subscribers"))) tail
+                        (success, failuer) :: tail ->
+                            Platform.sendToApp router (success request)
+                            :: List.map (\tagger -> Platform.sendToApp router (failuer  "Too many subscribers")) tail
                                 |> Task.sequence
                                 |> Task.map (\_ -> state) 
 

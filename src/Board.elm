@@ -23,7 +23,7 @@ board router =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Server.listen 8080 (\v -> v)
+    Server.listen 8080 Input Error
     
 
 type alias Model =
