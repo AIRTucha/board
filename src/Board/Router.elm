@@ -31,13 +31,7 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
-response =
-    { cookeis = Dict.empty
-    , id = ""
-    , content = Empty 
-    , status = 200
-    , header = Dict.empty
-    }
+
 
 
 

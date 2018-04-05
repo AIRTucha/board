@@ -52,3 +52,12 @@ type Request a
     | Post (ReqValue a)
     | Put (ReqValue a)
     | Delete (ReqValue a)
+
+
+response =
+    { cookeis = Dict.empty
+    , id = ""
+    , content = Empty 
+    , status = 200
+    , header = Dict.empty
+    }

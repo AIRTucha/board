@@ -73,14 +73,14 @@ result2output req res =
 
                 Redirect path ->
                     req
-                        |> setRequestURL  path
+                        |> setURL path
                         |> Input
         
         _ ->
             Error <| url req
 
 
-setRequestURL path req =
+setURL path req =
     case req of 
         Get value ->
             Get { value | url = path }
