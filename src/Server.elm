@@ -332,7 +332,7 @@ onSelfMsg router selfMsg state =
     case selfMsg of
         Input portNumber request ->
             case Dict.get portNumber state.subs of 
-                Maybe.Just (taggers) ->
+                Maybe.Just taggers ->
                     case taggers of
                         (success, failuer) :: [] ->
                             Platform.sendToApp router (success request)
