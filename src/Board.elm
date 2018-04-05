@@ -11,6 +11,7 @@ import Board.Router exposing(..)
 import Shared exposing (..)
 import Platform.Sub exposing (none)
 
+
 board router =
     Platform.program
         { init = init
@@ -34,6 +35,7 @@ init : ( Model, Cmd Msg )
 init =
     ( 0, Cmd.none )
 
+
 update server message model =
     case message of
         Input request ->
@@ -45,8 +47,9 @@ update server message model =
             
         Error msg ->
             log msg (model, Cmd.none)
-                    
-server : (Request a -> Mode x (Answer a1)) -> Request a -> Cmd Msg
+
+
+-- server : (Request a -> Mode x (Answer a1)) -> Request a -> Cmd Msg
 server router req = 
     case router req of 
         Async task ->
@@ -56,11 +59,20 @@ server router req =
         Sync value ->
             Cmd.none
 
-result2output : Request a -> Result x (Answer a1) -> Msg
+
+-- result2output : Request a -> Result x (Answer a1) -> Msg
 result2output req res =
     case res of
-        Ok (Reply value) ->
-            Output value  
+        Ok value ->
+            case value of
+                Next newReq ->
+                    Output response
+                    
+                Reply res ->
+                    Output res 
+
+                Redirect path ->
+                    Input req --({req | url = path})
         
         _ ->
             Error <| url req

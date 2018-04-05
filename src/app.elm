@@ -1,7 +1,7 @@
 module App exposing (..)
 
 import Platform
-import Server exposing (response)
+import Server
 import Task
 import File exposing(read)
 import Path.Generic exposing (takeExtension)

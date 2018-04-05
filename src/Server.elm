@@ -6,7 +6,6 @@ effect module Server
         , Message
         , url
         , RawContent(..)
-        , response
         )
 {-|
 
@@ -29,17 +28,6 @@ type RawContent
     | UTF8 String String
     | RawJSON String
     | NoData
-
-
-response =
-    { cookeis = Dict.empty
-    , id = ""
-    , content = Empty 
-    , status = 200
-    , header = Dict.empty
-    }
-
-
 
 
 sendText str =

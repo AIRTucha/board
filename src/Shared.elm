@@ -6,16 +6,19 @@ import Dict exposing (Dict)
 type alias Object =
     Dict String String
 
+
 type Msg
     = Input (Request Content)
     | Output Response
     | Error String
+
 
 type Content 
     = JSON String
     | File String Bytes
     | Text String String
     | Empty
+
 
 type alias Response =
     { cookeis : Object
@@ -25,9 +28,11 @@ type alias Response =
     , header : Object
     }
 
+
 type Protocol
     = HTTP
     | HTTPS
+
 
 type alias ReqValue a =
     { url : String

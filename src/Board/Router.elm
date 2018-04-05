@@ -9,10 +9,13 @@ import Server exposing (url)
 import Debug exposing (log)
 import Shared exposing (..)
 
-type Answer a
+-- Model
+-- All paths
+type Answer a 
     = Redirect String
     | Reply Response
     | Next (Request a)
+    -- | StateRedirect ()
 
 
 type Mode a b
@@ -26,6 +29,16 @@ type alias RoutHandler a b c =
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
+
+
+response =
+    { cookeis = Dict.empty
+    , id = ""
+    , content = Empty 
+    , status = 200
+    , header = Dict.empty
+    }
+
 
 
 empty: Request a -> Mode b (Answer a)
@@ -78,7 +91,10 @@ factory parsePath mode url cur next req =
                 Next newReq ->
                     try2Dispache parsePath mode cur url newReq
                 
-                _ ->
+                Reply res ->
+                    Sync result 
+
+                Redirect string ->
                     Sync result 
 
         Async result ->
