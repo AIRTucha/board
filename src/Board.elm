@@ -72,8 +72,24 @@ result2output req res =
                     Output res 
 
                 Redirect path ->
-                    Input req --({req | url = path})
+                    req
+                        |> setRequestURL  path
+                        |> Input
         
         _ ->
             Error <| url req
 
+
+setRequestURL path req =
+    case req of 
+        Get value ->
+            Get { value | url = path }
+
+        Post value ->
+            Post { value | url = path }
+
+        Put value ->
+            Put { value | url = path }
+
+        Delete value ->
+            Delete { value | url = path }
