@@ -7,15 +7,36 @@ import Bytes exposing (Bytes)
 read : String -> Task String Bytes
 read path = 
     Native.File.read path
-        |> Task.map Bytes.fromHex
+        |> Task.map bytes
 
 
-type Data =
-    Data
-
--- TODO: untested
-write: String -> Bytes -> Task String ()
+write: Data a -> Bytes -> Task String ()
 write path data = 
     data
         |> Bytes.toString
         |> Native.File.write path 
+
+
+type Buffer = Buffer
+
+
+type alias Data a = (Buffer -> a) -> a
+
+
+bytes: Data a -> Bytes
+bytes =
+    Bytes.fromHex << string Hex 
+
+
+string: Encoding -> Data a -> String 
+string =
+    Native.File.string
+
+
+type Encoding
+    = ASCII
+    | UTF8
+    | UTF16LE
+    | Base64
+    | Binary
+    | Hex

@@ -8,7 +8,7 @@ var _airtucha$board$Native_File = function() {
                     if (error) 
                         return callback(scheduler.fail(error))
                     else 
-                        return callback(scheduler.succeed(content.toString('HEX')))
+                        return callback(scheduler.succeed((func) => func(content)))
                 })
             })
         },
@@ -22,6 +22,11 @@ var _airtucha$board$Native_File = function() {
                             return callback(scheduler.succeed( { ctor: '_Tuple0' }))
                     })
                 })
+            }
+        },
+        string: function (encoding) {
+            return function (data) {
+                return data( buffer => buffer.toString(encoding.ctor.toLocaleLowerCase()))
             }
         }
     }
