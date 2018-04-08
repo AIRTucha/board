@@ -69,7 +69,7 @@ var _airtucha$board$Native_Server = function(){
                     } )
                     const address = req.connection.address()
                     const contentType = req.headers['content-type']
-                    const cookeis = req.headers['cookies']
+                    const cookies = req.headers['cookies']
                     let content = undefined
                     req
                         .on("data", data => {
