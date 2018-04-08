@@ -65,16 +65,16 @@ send : Response a -> ()
 send res =
     case Debug.log "res" res.content of 
         Data contentType data ->
-            Native.Server.end res data
+            Native.Server.sendData res data
 
         JSON json ->
-            Native.Server.end res json
+            Native.Server.sendJson res json
     
         Text contentType data ->
-            Native.Server.end res data
+            Native.Server.sendText contentType res data
 
         Empty ->
-             ()
+            Native.Server.sendEmpty res ()
 
 
 -- SUBSCRIPTIONS

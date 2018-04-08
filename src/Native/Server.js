@@ -23,6 +23,10 @@ var _airtucha$board$Native_Server = function(){
             return { type: 'node', branches: { ctor: '[]' } }
         }
     }
+    const sendPlainText = contentType => 
+        sendContent(
+            ( value, res ) => res.end(value) 
+        )
     const toMethod = str => body => ({
         ctor: getMethod(str),
         _0: body
@@ -93,10 +97,14 @@ var _airtucha$board$Native_Server = function(){
                   }).listen(port)
                 }
         },
-        end: sendContent(( value, res ) => value( v => res.end(v) )),
-        // sendText: function (contentType) {
-        //     return function(request)
-        // }
+        sendData: sendContent( 
+            ( value, res ) => value( v => res.end(v) ) 
+        ),
+        sendText: sendPlainText,
+        sendJson: sendPlainText("application/json"),
+        sendEmpty: sendContent(
+            ( value, res ) => res.end() 
+        ),
         close: function (server) {
             server.close();
             return { ctor: '_Tuple0' }
