@@ -83,11 +83,24 @@ result2output model req res =
 
                 StateRedirect model2str ->
                     HandleState <| redirectWithState model2str req
+                
+                StateReply model2res ->
+                    HandleState <| replyWithState model2res req
 
 
         _ ->
             Error <| url req
 
+
+replyWithState model2res req model =
+    let 
+        (newModel, res) = model2res model 
+    in 
+        ( newModel
+        , res
+            |> Task.succeed
+            |> Task.perform Output
+        )  
 
 redirectWithState model2str req model =
     let 

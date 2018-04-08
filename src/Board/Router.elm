@@ -16,6 +16,7 @@ type Answer a model
     | Reply (Response a)
     | Next (Request a)
     | StateRedirect (model -> (model, String))
+    | StateReply (model -> (model, Response a))
 
 
 type Mode a b
@@ -81,13 +82,16 @@ factory parsePath mode url cur next req =
                 Next newReq ->
                     try2Dispache parsePath mode cur url newReq
                 
-                Reply res ->
+                Reply _ ->
                     Sync result 
 
-                Redirect string ->
+                Redirect _ ->
                     Sync result 
                 
-                StateRedirect model2res ->
+                StateRedirect _ ->
+                    Sync result
+                
+                StateReply _ ->
                     Sync result
 
         Async result ->
