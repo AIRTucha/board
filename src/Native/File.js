@@ -33,7 +33,7 @@ var _airtucha$board$Native_File = function() {
                 )
             }
         },
-        fromBytes: function(str) {
+        fromString: function(str) {
             return (func) => func( new Buffer(str) )
         }
     }

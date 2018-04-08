@@ -32,10 +32,13 @@ write path data =
 
 fromBytes: Bytes -> File a
 fromBytes =
-     Native.File.fromBytes
+     Bytes.toString >> fromString
 
 
--- fromString
+fromString: String -> File a
+fromString =
+    Native.File.fromStrig
+
 
 bytes: File a -> Bytes
 bytes =
