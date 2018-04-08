@@ -2,28 +2,29 @@ module Shared exposing (..)
 
 import Bytes exposing (Bytes)
 import Dict exposing (Dict)
+import File exposing (File, Encoding)
 
 type alias Object =
     Dict String String
 
 
-type Msg
-    = Input (Request Content)
-    | Output Response
+type Msg a
+    = Input (Request a)
+    | Output (Response a)
     | Error String
 
 
-type Content 
+type Content a
     = JSON String
-    | File String Bytes
+    | Data String (File a)
     | Text String String
     | Empty
 
 
-type alias Response =
+type alias Response a =
     { cookeis : Object
     , id: String
-    , content : Content
+    , content : Content a
     , status : Int
     , header : Object
     }
@@ -34,12 +35,12 @@ type Protocol
     | HTTPS
 
 
-type alias ReqValue a =
+type alias ReqValue a b =
     { url : String
     , id : String
     , time : Int
-    , content : a
-    , cookeis : Object
+    , content : Content a
+    , cookeis : b
     , cargo : Object
     , ip : String
     , host : String
@@ -48,10 +49,10 @@ type alias ReqValue a =
 
 
 type Request a
-    = Get (ReqValue a)
-    | Post (ReqValue a)
-    | Put (ReqValue a)
-    | Delete (ReqValue a)
+    = Get (ReqValue a Object)
+    | Post (ReqValue a Object)
+    | Put (ReqValue a Object)
+    | Delete (ReqValue a Object)
 
 
 response =

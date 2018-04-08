@@ -4,33 +4,11 @@ import Native.File
 import Task exposing (Task)
 import Bytes exposing (Bytes)
 
-read : String -> Task String Bytes
-read path = 
-    Native.File.read path
-        |> Task.map bytes
-
-
-write: Data a -> Bytes -> Task String ()
-write path data = 
-    data
-        |> Bytes.toString
-        |> Native.File.write path 
-
 
 type Buffer = Buffer
 
 
-type alias Data a = (Buffer -> a) -> a
-
-
-bytes: Data a -> Bytes
-bytes =
-    Bytes.fromHex << string Hex 
-
-
-string: Encoding -> Data a -> String 
-string =
-    Native.File.string
+type alias File a = (Buffer -> a) -> a
 
 
 type Encoding
@@ -40,3 +18,30 @@ type Encoding
     | Base64
     | Binary
     | Hex
+
+
+read : String -> Task String (File a)
+read path = 
+    Native.File.read path
+
+
+write: String -> File a -> Task String ()
+write path data = 
+    Native.File.write path data
+
+
+fromBytes: Bytes -> File a
+fromBytes =
+     Native.File.fromBytes
+
+
+-- fromString
+
+bytes: File a -> Bytes
+bytes =
+    Bytes.fromHex << string Hex 
+
+
+string: Encoding -> File a -> String 
+string =
+    Native.File.string

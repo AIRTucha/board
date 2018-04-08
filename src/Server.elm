@@ -22,6 +22,7 @@ import Bytes exposing (Bytes)
 import String exposing (split)
 import List exposing (foldl)
 import Shared exposing (..)
+import File exposing (File)
 
 type RawContent
     = Raw String String
@@ -36,19 +37,6 @@ sendText str =
     , status = 200
     , header = Dict.empty
     }
-
-type alias RawRequest a =
-    { url : String
-    , id : String
-    , time : Int
-    , content : a
-    , cookeis : String
-    , ip : String
-    , host : String
-    , protocol : Protocol
-    }
-
-
 
 
 url req =
@@ -73,13 +61,11 @@ type Server
 
 {-| Respond to a given request
 -}
-send : Response -> ()
+send : Response a -> ()
 send res =
-    case res.content of 
-        File contentType data ->
-            Bytes.toString data
-                |> Native.Server.end res 
-
+    case Debug.log "res" res.content of 
+        Data contentType data ->
+            Native.Server.end res data
 
         JSON json ->
             Native.Server.end res json
@@ -99,7 +85,7 @@ type MySub msg
 
 {-| Subscribe to a port
 -}
-listen : Int -> (Message -> msg) -> (String -> msg) -> Sub msg
+-- listen : Int -> (Message -> msg) -> (String -> msg) -> Sub msg
 listen portNumber success failuer =
     subscription (Listen portNumber success failuer)
 
@@ -194,13 +180,13 @@ updateServers portNumber servers server =
 
 {-|
 -}
-type alias Settings =
-    { onRequest :  RawRequest RawContent -> (ReqValue Content -> Request Content) -> Task Never ()
-    , onClose : () -> Task Never ()
-    }
+-- type alias Settings =
+--     { onRequest :  RawRequest a -> (ReqValue a -> Request a) -> Task Never ()
+--     , onClose : () -> Task Never ()
+--     }
 
 
-setting : Platform.Router msg Msg -> Int -> Settings
+-- setting : Platform.Router msg Msg -> Int -> Settings
 setting router portNumber =
     { onRequest = \request method -> 
         request 
@@ -212,41 +198,16 @@ setting router portNumber =
     }
 
 
-processRequest: RawRequest RawContent -> ReqValue Content
+processRequest: ReqValue a String -> ReqValue a Object
 processRequest raw = 
-    { url = raw.url
-    , id = raw.id
-    , time = raw.time
-    , content = parseContent raw 
-    , cookeis = parseCookeys raw
-    , cargo = Dict.empty
-    , ip = raw.ip
-    , host = raw.host
-    , protocol = raw.protocol
-    }
+    {raw | cookeis = parseCookeys raw}
 
 
-parseCookeys: RawRequest RawContent -> Object 
+parseCookeys: ReqValue a String -> Object 
 parseCookeys req =
     req.cookeis
         |> split "; "
         |> foldl parseSinglCookey Dict.empty
-
-
-parseContent: RawRequest RawContent -> Content
-parseContent raw = 
-    case raw.content of  
-        Raw contentType data ->
-            File contentType <| Bytes.fromHex data 
-
-        UTF8 contentType data ->
-            Text contentType data
-        
-        RawJSON data ->
-            JSON data 
-        
-        NoData ->
-            Empty
 
 
 parseSinglCookey string dict =

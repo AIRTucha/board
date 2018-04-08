@@ -13,7 +13,7 @@ import Shared exposing (..)
 -- All paths
 type Answer a 
     = Redirect String
-    | Reply Response
+    | Reply (Response a)
     | Next (Request a)
     -- | StateRedirect ()
 
@@ -24,15 +24,11 @@ type Mode a b
 
 
 type alias RoutHandler a b c = 
-    (Params, ReqValue a) ->  Mode b (Answer c)
+    (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
-
-
-
-
 
 
 empty: Request a -> Mode b (Answer a)
@@ -130,7 +126,7 @@ try2Dispache parsePath mode cur url req =
             Sync <| Next req
 
 
-useHandler: Request a -> Maybe (ReqValue a, String)
+useHandler: Request a -> Maybe (ReqValue a Object, String)
 useHandler req =
     case req of
         Get body ->
@@ -146,7 +142,7 @@ useHandler req =
             Just (body, body.url)
 
 
-getHandler: Request a -> Maybe (ReqValue a, String)
+getHandler: Request a -> Maybe (ReqValue a Object, String)
 getHandler req =
     case req of
         Get body ->
@@ -162,7 +158,7 @@ getHandler req =
             Nothing
 
 
-postHandler: Request a -> Maybe (ReqValue a, String)
+postHandler: Request a -> Maybe (ReqValue a Object, String)
 postHandler req =
     case req of
         Get body ->
@@ -178,7 +174,7 @@ postHandler req =
             Nothing
 
 
-putHandler: Request a -> Maybe (ReqValue a, String)
+putHandler: Request a -> Maybe (ReqValue a Object, String)
 putHandler req =
     case req of
         Get body ->
@@ -194,7 +190,7 @@ putHandler req =
             Nothing
 
 
-deleteHandler: Request a -> Maybe (ReqValue a, String)
+deleteHandler: Request a -> Maybe (ReqValue a Object, String)
 deleteHandler req =
     case req of
         Get body ->

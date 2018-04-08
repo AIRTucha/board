@@ -22,7 +22,7 @@ board router =
         }
 
 
-subscriptions : Model -> Sub Msg
+-- subscriptions : Model -> Sub Msg
 subscriptions model =
     Server.listen 8080 Input Error
     
@@ -31,7 +31,7 @@ type alias Model =
     Int
 
 
-init : ( Model, Cmd Msg )
+-- init : ( Model, Cmd Msg )
 init =
     ( 0, Cmd.none )
 
@@ -39,7 +39,7 @@ init =
 update server message model =
     case message of
         Input request ->
-            (model, server request)
+            (model, server (log "req" request))
 
         Output response ->
             Server.send response

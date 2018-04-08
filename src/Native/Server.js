@@ -14,33 +14,42 @@ var _airtucha$board$Native_Server = function(){
             case "DELETE": return "Delete"
         }
     }
+    const sendContent = handler => request => {
+        const res = requests.get(request.id)
+        requests.delete(request.id)
+        return function( value ) {
+            if(res)
+                handler(value, res);
+            return { type: 'node', branches: { ctor: '[]' } }
+        }
+    }
     const toMethod = str => body => ({
         ctor: getMethod(str),
         _0: body
     })
     const getData = (content, contentType) => {
         if(content) {
-            const splitType = contentType ? contentType.split("/") : ["", ""]
-            if(splitType[0] == "text")
+            if ( "string" == typeof content ) {
+                if( contentType == "application/json" )
+                    return { 
+                        ctor: 'JSON',
+                        _0: (encoding) => content.toString(encoding.ctor.toLocaleLowerCase())
+                    }
+                else
+                    return {
+                        ctor: 'Text',
+                        _0: contentType,
+                        _1: content
+                    }
+            } else
                 return { 
-                    ctor: 'UTF8',
+                    ctor: 'Data',
                     _0: contentType,
-                    _1: content.toString('utf8')
-                }
-            else if(splitType[1] == "json")
-                return { 
-                    ctor: 'RawJSON',
-                    _0: content.toString('utf8')
-                }
-            else 
-                return { 
-                    ctor: 'Raw',
-                    _0: contentType,
-                    _1: content.toString('HEX')
+                    _1: func => func(content)
                 }
         } else    
             return {
-                ctor: 'NoData',
+                ctor: 'Empty',
             }
     }
     const getProtocol = (str) => ({ctor:str ? str.toUpperCase() : "HTTP"})
@@ -68,6 +77,7 @@ var _airtucha$board$Native_Server = function(){
                                 id : id,
                                 time : time,
                                 cookeis : cookeis || "",
+                                cargo: emptyDict(),
                                 content : getData(content, contentType),
                                 ip : address.address.toString(),
                                 host : req.headers.host,
@@ -83,15 +93,10 @@ var _airtucha$board$Native_Server = function(){
                   }).listen(port)
                 }
         },
-        end: function (request){
-            const res = requests.get(request.id)
-            requests.delete(request.id)
-            return function( value ) {
-                if(res)
-                    res.end(value);
-                return { type: 'node', branches: { ctor: '[]' } }
-            }
-        },
+        end: sendContent(( value, res ) => value( v => res.end(v) )),
+        // sendText: function (contentType) {
+        //     return function(request)
+        // }
         close: function (server) {
             server.close();
             return { ctor: '_Tuple0' }

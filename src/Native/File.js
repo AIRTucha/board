@@ -8,26 +8,33 @@ var _airtucha$board$Native_File = function() {
                     if (error) 
                         return callback(scheduler.fail(error))
                     else 
-                        return callback(scheduler.succeed((func) => func(content)))
+                        return callback(scheduler.succeed( func => func(content) ))
                 })
             })
         },
         write: function(path) {
-            return function(data) {
+            return function(file) {
                 return scheduler.nativeBinding(function (callback) {
-                    fs.writeFile(path, data, function( error ) {
-                        if (error) 
-                            return callback(scheduler.fail(error))
-                        else 
-                            return callback(scheduler.succeed( { ctor: '_Tuple0' }))
+                    return file( buffer => {
+                        fs.writeFile( path, buffer, function( error ) {
+                            if ( error ) 
+                                return callback(scheduler.fail(error))
+                            else 
+                                return callback(scheduler.succeed( { ctor: '_Tuple0' }))
+                        })
                     })
                 })
             }
         },
         string: function (encoding) {
             return function (data) {
-                return data( buffer => buffer.toString(encoding.ctor.toLocaleLowerCase()))
+                return data( buffer => 
+                    buffer.toString( encoding.ctor.toLocaleLowerCase() )
+                )
             }
+        },
+        fromBytes: function(str) {
+            return (func) => func( new Buffer(str) )
         }
     }
 }()

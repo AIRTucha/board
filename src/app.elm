@@ -57,6 +57,6 @@ makeResponse req file =
         res = response
     in
         { res
-        | content = File "test" file
+        | content = Data "test" file
         , id = req.id
         } 
