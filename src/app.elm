@@ -48,6 +48,9 @@ redirect str _ =
 getFile path (param, req)  =
     path
         |> read
+        -- |> Task.map (File.bytes)
+        -- |> Task.map (File.fromBytes)
+        -- |> Task.andThen (File.write <| path ++ ".txt")
         |> Task.map (makeResponse req)
         |> Task.map Reply
 

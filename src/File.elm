@@ -25,7 +25,7 @@ read path =
     Native.File.read path
 
 
-write: String -> File a -> Task String ()
+write: String -> File a -> Task String (File a)
 write path data = 
     Native.File.write path data
 
@@ -37,7 +37,7 @@ fromBytes =
 
 fromString: String -> File a
 fromString =
-    Native.File.fromStrig
+    Native.File.fromString
 
 
 bytes: File a -> Bytes

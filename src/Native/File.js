@@ -20,7 +20,7 @@ var _airtucha$board$Native_File = function() {
                             if ( error ) 
                                 return callback(scheduler.fail(error))
                             else 
-                                return callback(scheduler.succeed( { ctor: '_Tuple0' }))
+                                return callback(scheduler.succeed( file ))
                         })
                     })
                 })
