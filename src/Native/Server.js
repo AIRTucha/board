@@ -37,7 +37,7 @@ var _airtucha$board$Native_Server = function(){
                 if( contentType == "application/json" )
                     return { 
                         ctor: 'JSON',
-                        _0: (encoding) => content.toString(encoding.ctor.toLocaleLowerCase())
+                        _0: content
                     }
                 else
                     return {
@@ -80,7 +80,7 @@ var _airtucha$board$Native_Server = function(){
                                 url : req.url,
                                 id : id,
                                 time : time,
-                                cookeis : cookeis || "",
+                                cookies : cookies || "",
                                 cargo: emptyDict(),
                                 content : getData(content, contentType),
                                 ip : address.address.toString(),

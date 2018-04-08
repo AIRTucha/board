@@ -200,21 +200,26 @@ setting router portNumber =
 
 processRequest: ReqValue a String -> ReqValue a Object
 processRequest raw = 
-    {raw | cookeis = parseCookeys raw}
+    {raw | cookies = parseCookies raw}
 
 
-parseCookeys: ReqValue a String -> Object 
-parseCookeys req =
-    req.cookeis
+parseCookies: ReqValue a String -> Object 
+parseCookies req =
+    req.cookies
         |> split "; "
-        |> foldl parseSinglCookey Dict.empty
+        |> foldl parseSinglCookie Dict.empty
 
 
-parseSinglCookey string dict =
+parseSinglCookie string dict =
     case split "=" string of 
-        key :: value :: [] ->
-            dict 
-                |> insert key value
+        key :: valueWithConf :: [] ->
+            case split " " valueWithConf of 
+                value :: conf ->
+                    dict 
+                        |> insert key value
+
+                [] ->
+                    dict 
         
         _ ->
             dict

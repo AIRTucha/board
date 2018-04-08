@@ -40,7 +40,7 @@ type alias ReqValue a b =
     , id : String
     , time : Int
     , content : Content a
-    , cookeis : b
+    , cookies : b
     , cargo : Object
     , ip : String
     , host : String
