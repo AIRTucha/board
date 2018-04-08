@@ -8,10 +8,11 @@ type alias Object =
     Dict String String
 
 
-type Msg a
+type Msg a model
     = Input (Request a)
     | Output (Response a)
     | Error String
+    | HandleState (model -> (model, Cmd (Msg a model)))
 
 
 type Content a

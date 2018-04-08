@@ -15,9 +15,10 @@ import Platform.Sub exposing (none)
 board router =
     Platform.program
         { init = init
-        , update = router 
-            |> server
-            |> update
+        , update = 
+            router 
+                |> server
+                |> update
         , subscriptions = subscriptions
         }
 
@@ -39,29 +40,33 @@ init =
 update server message model =
     case message of
         Input request ->
-            (model, server (log "req" request))
+            server model (log "req" request)
 
         Output response ->
             Server.send response
                 |> (\_ -> ( model, Cmd.none) )
-            
+        
+        HandleState model2state ->
+            model2state model
+
         Error msg ->
             log msg (model, Cmd.none)
 
 
--- server : (Request a -> Mode x (Answer a1)) -> Request a -> Cmd Msg
-server router req = 
+server router model req = 
     case router req of 
         Async task ->
-            task 
-                |> Task.attempt (result2output req)
+            ( model
+            , task 
+                |> Task.attempt (result2output model req)
+            )
 
         Sync value ->
-            Cmd.none
+            (model, Cmd.none)
 
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
-result2output req res =
+result2output model req res =
     case res of
         Ok value ->
             case value of
@@ -75,9 +80,24 @@ result2output req res =
                     req
                         |> setURL path
                         |> Input
-        
+
+                StateRedirect model2str ->
+                    HandleState <| redirectWithState model2str req
+
+
         _ ->
             Error <| url req
+
+
+redirectWithState model2str req model =
+    let 
+        (newModel, path) = model2str model 
+    in 
+        ( newModel
+        , setURL path req
+            |> Task.succeed
+            |> Task.perform Input
+        )
 
 
 setURL path req =

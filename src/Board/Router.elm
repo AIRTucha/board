@@ -11,11 +11,11 @@ import Shared exposing (..)
 
 -- Model
 -- All paths
-type Answer a 
+type Answer a model
     = Redirect String
     | Reply (Response a)
     | Next (Request a)
-    -- | StateRedirect ()
+    | StateRedirect (model -> (model, String))
 
 
 type Mode a b
@@ -31,7 +31,7 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
-empty: Request a -> Mode b (Answer a)
+empty: Request a -> Mode b (Answer a model)
 empty req =
     Sync <| Next req
 
@@ -68,12 +68,12 @@ delete = factory deleteHandler Async
  
 factory 
     : (Request a -> Maybe ( b, String )) 
-    -> (c -> Mode a1 (Answer a)) 
+    -> (c -> Mode a1 (Answer a model)) 
     -> URL 
     -> (( Params, b ) -> c) 
-    -> (d -> Mode a1 (Answer a)) 
+    -> (d -> Mode a1 (Answer a model)) 
     -> d 
-    -> Mode a1 (Answer a)
+    -> Mode a1 (Answer a model)
 factory parsePath mode url cur next req =
     case next req of    
         Sync result ->
@@ -86,6 +86,9 @@ factory parsePath mode url cur next req =
 
                 Redirect string ->
                     Sync result 
+                
+                StateRedirect model2res ->
+                    Sync result
 
         Async result ->
             result 
