@@ -11,12 +11,6 @@ import Shared exposing (..)
 
 -- Model
 -- All paths
-type Answer a model
-    = Redirect String
-    | Reply (Response a)
-    | Next (Request a)
-    | StateRedirect (model -> (model, String))
-    | StateReply (model -> (model, Response a))
 
 
 type Mode a b
@@ -87,12 +81,15 @@ factory parsePath mode url cur next req =
 
                 Redirect _ ->
                     Sync result 
+
+                _ ->
+                    Sync result 
                 
-                StateRedirect _ ->
-                    Sync result
+                -- StateRedirect _ ->
+                --     Sync result
                 
-                StateReply _ ->
-                    Sync result
+                -- StateReply _ ->
+                --     Sync result
 
         Async result ->
             result 

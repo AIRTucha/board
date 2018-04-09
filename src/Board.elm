@@ -46,8 +46,15 @@ update server message model =
             Server.send response
                 |> (\_ -> ( model, Cmd.none) )
         
-        HandleState model2state ->
-            model2state model
+        HandleState model2state req ->
+            let 
+                (newModel, res) = model2state model
+            in
+                ( model
+                , res
+                    |> Task.succeed
+                    |> Task.perform (handle model req)
+                )
 
         Error msg ->
             log msg (model, Cmd.none)
@@ -62,6 +69,7 @@ server router model req =
             )
 
         Sync value ->
+            -- TODO
             (model, Cmd.none)
 
 
@@ -81,16 +89,28 @@ result2output model req res =
                         |> setURL path
                         |> Input
 
-                StateRedirect model2str ->
-                    HandleState <| redirectWithState model2str req
-                
-                StateReply model2res ->
-                    HandleState <| replyWithState model2res req
+                State model2handler -> 
+                    HandleState (model2handler) req
 
 
         _ ->
             Error <| url req
 
+handle model req value =
+    case value of
+        Next newReq ->
+            Output response
+            
+        Reply res ->
+            Output res 
+
+        Redirect path ->
+            req
+                |> setURL path
+                |> Input
+
+        State model2handler -> 
+            HandleState (model2handler) req
 
 replyWithState model2res req model =
     let 
