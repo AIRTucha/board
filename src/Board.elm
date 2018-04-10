@@ -46,15 +46,20 @@ update server message model =
             Server.send response
                 |> (\_ -> ( model, Cmd.none) )
         
-        HandleState model2state req ->
-            let 
-                (newModel, res) = model2state model
-            in
-                ( model
-                , res
-                    |> Task.succeed
-                    |> Task.perform (handle model req)
-                )
+        SyncState model2state req ->
+            (model, Cmd.none)
+            -- let 
+            --     (newModel, res) = model2state model
+            -- in
+            --     ( newModel
+            --     , res
+            --         |> Task.succeed
+            --         |> Task.perform (handle newModel req)
+            --     )
+        
+        AsyncState _ _ ->
+            (model, Cmd.none)
+
 
         Error msg ->
             log msg (model, Cmd.none)
@@ -71,6 +76,8 @@ server router model req =
         Sync value ->
             -- TODO
             (model, Cmd.none)
+
+
 
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
@@ -90,8 +97,12 @@ result2output model req res =
                         |> Input
 
                 State model2handler -> 
-                    HandleState (model2handler) req
+                    case model2handler of 
+                        Sync v ->
+                            SyncState v req
 
+                        Async v ->
+                            AsyncState v req
 
         _ ->
             Error <| url req
@@ -109,8 +120,22 @@ handle model req value =
                 |> setURL path
                 |> Input
 
-        State model2handler -> 
-            HandleState (model2handler) req
+        State packedHanlder -> 
+            case packedHanlder of
+                Sync model2handler ->
+                    SyncState model2handler req
+
+                Async taks ->
+                    AsyncState taks req
+
+
+stateResultHanler req result =
+    case  result of
+        Ok model2state ->
+            SyncState model2state req 
+        
+        Err str ->
+            Error str
 
 replyWithState model2res req model =
     let 

@@ -12,12 +12,6 @@ import Shared exposing (..)
 -- Model
 -- All paths
 
-
-type Mode a b
-    = Async (Task.Task a b)
-    | Sync b
-
-
 type alias RoutHandler a b c = 
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
@@ -81,9 +75,9 @@ factory parsePath mode url cur next req =
 
                 Redirect _ ->
                     Sync result 
-
-                _ ->
-                    Sync result 
+                
+                _->
+                    Sync result
                 
                 -- StateRedirect _ ->
                 --     Sync result
@@ -109,6 +103,25 @@ try2DispacheAsync parsePath mode cur url response =
               
         other ->
             Task.succeed (response) 
+
+
+try2DispacheState parsePath mode cur url req model =
+    case parsePath req of
+        Just (resul, path) ->
+            case parse url path of
+                Failure _ ->
+                    Sync <| Next req
+                
+                value ->
+                    case parsingResult2params value of
+                        Ok params ->
+                            mode <| cur (params, resul)
+                        
+                        Err _ -> 
+                            Sync <| Next req
+
+        Nothing ->
+            Sync <| Next req
 
 
 try2Dispache parsePath mode cur url req =

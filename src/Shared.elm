@@ -1,14 +1,19 @@
 module Shared exposing (..)
 
-import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File, Encoding)
+import Task
+
+
+type Mode a b
+    = Async (Task.Task a b)
+    | Sync b
 
 type Answer a model
     = Redirect String
     | Reply (Response a)
     | Next (Request a)
-    | State (model -> (model, Answer a model))
+    | State (Mode a (model -> (model, Answer a model)))
 
 type alias Object =
     Dict String String
@@ -18,7 +23,8 @@ type Msg a model
     = Input (Request a)
     | Output (Response a)
     | Error String
-    | HandleState (model -> (model, Answer a model)) (Request a)
+    | SyncState (model -> (model, Answer a model)) (Request a)
+    | AsyncState (Task.Task a (model -> (model, Answer a model))) (Request a)
 
 
 type Content a
