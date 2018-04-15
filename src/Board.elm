@@ -77,8 +77,6 @@ server router model req =
             -- TODO
             (model, Cmd.none)
 
-        State model2handler -> 
-            (model, Cmd.none)
 
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
