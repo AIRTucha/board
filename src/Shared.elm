@@ -5,15 +5,15 @@ import File exposing (File, Encoding)
 import Task
 
 
-type Mode a b
-    = Async (Task.Task a b)
-    | Sync b
+type Mode error value model
+    = Async (Task.Task error value)
+    | Sync value
+    | State (model -> (Mode error (model, value) model))
 
-type Answer a model
+type Answer a
     = Redirect String
     | Reply (Response a)
     | Next (Request a)
-    | State (Mode a (model -> (model, Answer a model)))
 
 type alias Object =
     Dict String String

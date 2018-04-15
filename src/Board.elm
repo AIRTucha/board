@@ -77,7 +77,8 @@ server router model req =
             -- TODO
             (model, Cmd.none)
 
-
+        State model2handler -> 
+            (model, Cmd.none)
 
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
@@ -95,38 +96,36 @@ result2output model req res =
                     req
                         |> setURL path
                         |> Input
+                    -- case model2handler of 
+                    --     Sync v ->
+                    --         SyncState v req
 
-                State model2handler -> 
-                    case model2handler of 
-                        Sync v ->
-                            SyncState v req
-
-                        Async v ->
-                            AsyncState v req
+                    --     Async v ->
+                    --         AsyncState v req
 
         _ ->
             Error <| url req
 
-handle model req value =
-    case value of
-        Next newReq ->
-            Output response
+-- handle model req value =
+--     case value of
+--         Next newReq ->
+--             Output response
             
-        Reply res ->
-            Output res 
+--         Reply res ->
+--             Output res 
 
-        Redirect path ->
-            req
-                |> setURL path
-                |> Input
+--         Redirect path ->
+--             req
+--                 |> setURL path
+--                 |> Input
 
-        State packedHanlder -> 
-            case packedHanlder of
-                Sync model2handler ->
-                    SyncState model2handler req
+--         State packedHanlder -> 
+--             case packedHanlder of
+--                 Sync model2handler ->
+--                     SyncState model2handler req
 
-                Async taks ->
-                    AsyncState taks req
+--                 Async taks ->
+--                     AsyncState taks req
 
 
 stateResultHanler req result =
