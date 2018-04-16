@@ -9,10 +9,11 @@ type Mode error value
     = Async (Task.Task error value)
     | Sync value
 
-type Answer value
+type Answer value model error
     = Redirect String
     | Reply (Response value)
     | Next (Request value)
+    | State (model -> Mode error (model, Answer value model error) )
 
 type alias Object =
     Dict String String

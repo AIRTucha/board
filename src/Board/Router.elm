@@ -20,7 +20,7 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
-empty: Request a -> Mode b (Answer a)
+empty: Request a -> Mode b (Answer a model error)
 empty req =
     Sync <| Next req
 
@@ -66,6 +66,9 @@ factory parsePath mode url cur next req =
 
                 Redirect _ ->
                     Sync result
+
+                State _ ->
+                    Sync result -- todo
 
         Async result ->
             result 

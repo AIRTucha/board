@@ -94,6 +94,9 @@ result2output model req res =
                     req
                         |> setURL path
                         |> Input
+
+                State _ ->
+                    Output response
                     -- case model2handler of 
                     --     Sync v ->
                     --         SyncState v req
