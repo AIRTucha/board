@@ -20,7 +20,7 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
-empty: Request a -> Mode b (Answer a model)
+empty: Request a -> Mode b (Answer a model error)
 empty req =
     Sync <| Next req
 
@@ -54,15 +54,6 @@ put = factory putHandler Async
 
 delete = factory deleteHandler Async
  
- 
-factory 
-    : (Request a -> Maybe ( b, String )) 
-    -> (c -> Mode a1 (Answer a model)) 
-    -> URL 
-    -> (( Params, b ) -> c) 
-    -> (d -> Mode a1 (Answer a model)) 
-    -> d 
-    -> Mode a1 (Answer a model)
 factory parsePath mode url cur next req =
     case next req of    
         Sync result ->
@@ -74,22 +65,43 @@ factory parsePath mode url cur next req =
                     Sync result 
 
                 Redirect _ ->
-                    Sync result 
-                
-                _->
                     Sync result
-                
-                -- StateRedirect _ ->
-                --     Sync result
-                
-                -- StateReply _ ->
-                --     Sync result
+
+                State toState ->
+                    Sync <| State <| state parsePath mode cur url req toState
 
         Async result ->
             result 
                 |> Task.andThen (try2DispacheAsync parsePath mode cur url)
                 |> Async
- 
+
+
+state parsePath mode cur url req toState model =
+    let
+        (newModel, answer) = toState model
+    in
+        case answer of
+            Sync result ->
+                case result of
+                    Next newReq ->
+                        try2Dispache parsePath mode cur url newReq
+                    
+                    Reply _ ->
+                        Sync result 
+
+                    Redirect _ ->
+                        Sync result
+
+                    State toState ->
+                        Sync result
+
+            Async result ->
+                result 
+                    |> Task.andThen (try2DispacheAsync parsePath mode cur url)
+                    |> Async
+
+
+
 
 try2DispacheAsync parsePath mode cur url response =
     case response of
@@ -103,25 +115,6 @@ try2DispacheAsync parsePath mode cur url response =
               
         other ->
             Task.succeed (response) 
-
-
-try2DispacheState parsePath mode cur url req model =
-    case parsePath req of
-        Just (resul, path) ->
-            case parse url path of
-                Failure _ ->
-                    Sync <| Next req
-                
-                value ->
-                    case parsingResult2params value of
-                        Ok params ->
-                            mode <| cur (params, resul)
-                        
-                        Err _ -> 
-                            Sync <| Next req
-
-        Nothing ->
-            Sync <| Next req
 
 
 try2Dispache parsePath mode cur url req =
