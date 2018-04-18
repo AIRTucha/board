@@ -46,20 +46,14 @@ update server message model =
             Server.send response
                 |> (\_ -> ( model, Cmd.none) )
         
-        SyncState model2state req ->
-            (model, Cmd.none)
-            -- let 
-            --     (newModel, res) = model2state model
-            -- in
-            --     ( newModel
-            --     , res
-            --         |> Task.succeed
-            --         |> Task.perform (handle newModel req)
-            --     )
-        
-        AsyncState _ _ ->
-            (model, Cmd.none)
-
+        Model toState req ->
+            let 
+                (newModel, answer) = toState model
+            in
+                ( newModel
+                , liftMode answer 
+                    |> Task.attempt (result2output newModel req)
+                )
 
         Error msg ->
             log msg (model, Cmd.none)
@@ -77,62 +71,43 @@ server router model req =
             -- TODO
             (model, Cmd.none)
 
-
+liftMode mode =
+    case mode of 
+        Sync answer ->
+            Task.succeed answer 
+        
+        Async task ->
+            task
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
-result2output model req res =
-    case res of
+result2output model req ans =
+    case ans of
         Ok value ->
-            case value of
-                Next newReq ->
-                    Output response
-                    
-                Reply res ->
-                    Output res 
-
-                Redirect path ->
-                    req
-                        |> setURL path
-                        |> Input
-
-                State _ ->
-                    Output response
-                    -- case model2handler of 
-                    --     Sync v ->
-                    --         SyncState v req
-
-                    --     Async v ->
-                    --         AsyncState v req
+            toOutput req value
 
         _ ->
             Error <| url req
 
--- handle model req value =
---     case value of
---         Next newReq ->
---             Output response
+toOutput req value=
+    case value of
+        Next newReq ->
+            Output response
             
---         Reply res ->
---             Output res 
+        Reply res ->
+            Output res 
 
---         Redirect path ->
---             req
---                 |> setURL path
---                 |> Input
+        Redirect path ->
+            req
+                |> setURL path
+                |> Input
 
---         State packedHanlder -> 
---             case packedHanlder of
---                 Sync model2handler ->
---                     SyncState model2handler req
-
---                 Async taks ->
---                     AsyncState taks req
-
+        State toState ->
+            Model toState req
 
 stateResultHanler req result =
     case  result of
         Ok model2state ->
-            SyncState model2state req 
+            Model model2state req 
         
         Err str ->
             Error str

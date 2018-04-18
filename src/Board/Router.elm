@@ -84,23 +84,22 @@ state parsePath mode cur url req toState model =
             Sync result ->
                 case result of
                     Next newReq ->
-                        try2Dispache parsePath mode cur url newReq
+                        (newModel, try2Dispache parsePath mode cur url newReq)
                     
                     Reply _ ->
-                        Sync result 
+                        (newModel, Sync result)
 
                     Redirect _ ->
-                        Sync result
+                        (newModel, Sync result)
 
                     State toState ->
-                        Sync result
+                        (newModel, Sync result)
 
             Async result ->
                 result 
                     |> Task.andThen (try2DispacheAsync parsePath mode cur url)
                     |> Async
-
-
+                    |> (\ t -> (newModel, t))
 
 
 try2DispacheAsync parsePath mode cur url response =

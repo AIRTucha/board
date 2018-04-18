@@ -13,18 +13,19 @@ type Answer value model error
     = Redirect String
     | Reply (Response value)
     | Next (Request value)
-    | State (model -> (model, Mode error Answer value model error) )
+    | State (ToState value model error) 
 
 type alias Object =
     Dict String String
 
+type alias ToState value model error =
+    (model -> (model, Mode error (Answer value model error)) )
 
-type Msg a model
-    = Input (Request a)
-    | Output (Response a)
+type Msg value model error
+    = Input (Request value)
+    | Output (Response value)
     | Error String
-    | SyncState (model -> (model, Answer a model)) (Request a)
-    | AsyncState (Task.Task a (model -> (model, Answer a model))) (Request a)
+    | Model (ToState value model error) (Request value)
 
 
 type Content a
