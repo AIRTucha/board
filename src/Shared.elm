@@ -13,7 +13,7 @@ type Answer value model error
     = Redirect String
     | Reply (Response value)
     | Next (Request value)
-    | State (model -> Mode error (model, Answer value model error) )
+    | State (model -> (model, Mode error Answer value model error) )
 
 type alias Object =
     Dict String String

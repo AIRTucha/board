@@ -67,13 +67,40 @@ factory parsePath mode url cur next req =
                 Redirect _ ->
                     Sync result
 
-                State _ ->
-                    Sync result -- todo
+                State toState ->
+                    Sync <| State <| state parsePath mode cur url req toState
 
         Async result ->
             result 
                 |> Task.andThen (try2DispacheAsync parsePath mode cur url)
                 |> Async
+
+
+state parsePath mode cur url req toState model =
+    let
+        (newModel, answer) = toState model
+    in
+        case answer of
+            Sync result ->
+                case result of
+                    Next newReq ->
+                        try2Dispache parsePath mode cur url newReq
+                    
+                    Reply _ ->
+                        Sync result 
+
+                    Redirect _ ->
+                        Sync result
+
+                    State toState ->
+                        Sync result
+
+            Async result ->
+                result 
+                    |> Task.andThen (try2DispacheAsync parsePath mode cur url)
+                    |> Async
+
+
 
 
 try2DispacheAsync parsePath mode cur url response =
