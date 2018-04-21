@@ -25,36 +25,124 @@ empty req =
     Sync <| Next req
 
 
-useSync = factory useHandler Sync
+useSync = factory useHandler Sync syncStateToSyncState
 
 
-getSync = factory getHandler Sync
+getSync = factory getHandler Sync syncStateToSyncState
 
 
-postSync = factory postHandler Sync
+postSync = factory postHandler Sync syncStateToSyncState
 
 
-putSync = factory putHandler Sync
+putSync = factory putHandler Sync syncStateToSyncState
 
 
-deleteSync = factory deleteHandler Sync
+deleteSync = factory deleteHandler Sync syncStateToSyncState
 
 
-use = factory useHandler Async
+use = factory useHandler Async syncStateToAsyncState
 
 
-get = factory getHandler Async
+get = factory getHandler Async syncStateToAsyncState
 
 
-post = factory postHandler Async
+post = factory postHandler Async syncStateToAsyncState
 
 
-put = factory putHandler Async
+put = factory putHandler Async syncStateToAsyncState
 
 
-delete = factory deleteHandler Async
- 
-factory parsePath mode  url cur next req =
+delete = factory deleteHandler Async syncStateToAsyncState
+
+syncStateToSyncState toState parsePath cur url req =
+    Sync <| State <| syncStateHelper toState parsePath url req cur
+
+
+syncStateHelper toState parsePath url req cur model =
+    let 
+        (newModel, answer) = toState model 
+    in
+        case answer of
+            Next newReq ->
+                ( newModel
+                , case parsePath req of
+                    Just (resul, path) ->
+                        case parse url path of
+                            Failure _ ->
+                                Next req
+                            
+                            value ->
+                                case parsingResult2params value of
+                                    Ok params ->
+                                        cur (params, resul)
+                                    
+                                    Err _ -> 
+                                        Next req
+
+                    Nothing ->
+                        Next req
+                )
+            
+            Reply _ ->
+                (newModel, answer)
+
+            Redirect _ ->
+                (newModel, answer)
+
+            State toState ->
+                (newModel, answer)
+
+syncStateToAsyncState
+    : (ToState value model error) 
+    -> (Request value -> Maybe ( a, String )) 
+    -> (( Params, a ) -> Task.Task error1 (Answer value model error)) 
+    -> URL 
+    -> Request value
+     -> Mode error1 (Answer value model error)
+syncStateToAsyncState toState parsePath cur url req =
+    Task.succeed toState
+        -- |> Task.map (syncStateHelper toState parsePath url req)
+        -- asyncStateHelper toState parsePath url req
+        |> Task.map State
+        |> Async
+
+asyncStateHelper toState parsePath url req cur model =
+    let 
+        (newModel, answer) = toState model 
+    in
+        case answer of
+            Next newReq ->
+                ( newModel
+                , case parsePath req of
+                    Just (resul, path) ->
+                        case parse url path of
+                            Failure _ ->
+                                Next req
+                            
+                            value ->
+                                case parsingResult2params value of
+                                    Ok params ->
+                                        cur (params, resul)
+                                    
+                                    Err _ -> 
+                                        Next req
+
+                    Nothing ->
+                        Next req
+                )
+            
+            Reply _ ->
+                (newModel, answer)
+
+            Redirect _ ->
+                (newModel, answer)
+
+            State toState ->
+                (newModel, answer)
+
+
+
+factory parsePath mode syncState url cur next req =
     case next req of    
         Sync result ->
             case result of
@@ -68,8 +156,7 @@ factory parsePath mode  url cur next req =
                     Sync result
 
                 State toState ->
-                    Sync result
-                    -- syncState toState parsePath mode cur url req
+                    syncState toState parsePath cur url req
 
         Async result ->
             result 
