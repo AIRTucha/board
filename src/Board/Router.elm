@@ -54,7 +54,7 @@ put = factory putHandler Async
 
 delete = factory deleteHandler Async
  
-factory parsePath mode url cur next req =
+factory parsePath mode  url cur next req =
     case next req of    
         Sync result ->
             case result of
@@ -68,7 +68,8 @@ factory parsePath mode url cur next req =
                     Sync result
 
                 State toState ->
-                    Sync <| State <| state parsePath mode cur url req toState
+                    Sync result
+                    -- syncState toState parsePath mode cur url req
 
         Async result ->
             result 

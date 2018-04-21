@@ -47,13 +47,14 @@ update server message model =
                 |> (\_ -> ( model, Cmd.none) )
         
         Model toState req ->
-            let 
-                (newModel, answer) = toState model
-            in
-                ( newModel
-                , liftMode answer 
-                    |> Task.attempt (result2output newModel req)
-                )
+            (model, Cmd.none)
+            -- let 
+            --     (newModel, answer) = toState model
+            -- in
+            --     ( newModel
+            --     , liftMode answer 
+            --         |> Task.attempt (result2output newModel req)
+            --     )
 
         Error msg ->
             log msg (model, Cmd.none)

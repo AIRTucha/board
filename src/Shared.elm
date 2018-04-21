@@ -19,7 +19,7 @@ type alias Object =
     Dict String String
 
 type alias ToState value model error =
-    (model -> (model, Mode error (Answer value model error)) )
+    (model -> (model, Answer value model error) )
 
 type Msg value model error
     = Input (Request value)
