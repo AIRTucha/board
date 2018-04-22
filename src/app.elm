@@ -20,8 +20,13 @@ router =
         |> get (p "/public/app.js") getApp
         |> get (p "/styles.css") getStyles
         |> get (p "/public/styles.css") getStyles
+        |> useSync (p "/count" ) getCount
         |> use any (redirect "/")
-
+        
+-- getCount : ( number, b ) -> Answer value number error
+getCount (param, req) =
+    (\model -> (model + 1, Sync <| Reply <| makeTextResponse req (Basics.toString model) ))
+        |> State
 
 getIndex =
     getFile "./public/index.html" 
@@ -55,5 +60,15 @@ makeResponse req file =
     in
         { res
         | content = Data "test" file
+        , id = req.id
+        } 
+
+
+makeTextResponse req text = 
+    let 
+        res = response
+    in
+        { res
+        | content = Text "text/plain" text
         , id = req.id
         } 
