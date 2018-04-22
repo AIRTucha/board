@@ -15,6 +15,14 @@ import Shared exposing (..)
 type alias RoutHandler a b c = 
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
+stateSync value =
+    State <| stateHelper value
+
+stateHelper value model =
+    let 
+        (newModel, answer) = value model 
+    in
+        (newModel, Sync answer)
 
 type alias Router a b =
     Request a -> Mode b (Answer a)

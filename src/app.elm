@@ -25,8 +25,8 @@ router =
         
 -- getCount : ( number, b ) -> Answer value number error
 getCount (param, req) =
-    (\model -> (model + 1, Sync <| Reply <| makeTextResponse req (Basics.toString model) ))
-        |> State
+    (\model -> (model + 1, Reply <| makeTextResponse req (Basics.toString model) ))
+        |> stateSync
 
 getIndex =
     getFile "./public/index.html" 
