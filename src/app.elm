@@ -20,13 +20,13 @@ router =
         |> get (p "/public/app.js") getApp
         |> get (p "/styles.css") getStyles
         |> get (p "/public/styles.css") getStyles
-        |> useSync (p "/count" ) getCount
+        -- |> useSync (p "/count" ) getCount
         |> use any (redirect "/")
         
 -- getCount : ( number, b ) -> Answer value number error
-getCount (param, req) =
-    (\model -> (model + 1, Reply <| makeTextResponse req (Basics.toString model) ))
-        |> stateSync
+-- getCount (param, req) =
+--     (\model -> (model + 1, Reply <| makeTextResponse req (Basics.toString model) ))
+--         |> stateSync
 
 getIndex =
     getFile "./public/index.html" 

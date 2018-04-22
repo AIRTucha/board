@@ -16,7 +16,7 @@ type alias RoutHandler a b c =
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
 stateSync value =
-    State <| stateHelper value
+    StateFull <| stateHelper value
 
 stateHelper value model =
     let 
@@ -28,55 +28,66 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
-empty: Request a -> Mode b (Answer a model error)
+-- empty: Request a -> Mode b (Answer a model error)/
 empty req =
-    Sync <| Next req
+    Next req
+        |> StateLess
+        |> Sync
+
+stateLessSync = 
+    Sync << StateLess
+
+stateLessAsync v = 
+    v 
+        |> Task.map StateLess
+        |> Async
+
+useSync = factory useHandler stateLessSync
 
 
-useSync = factory useHandler Sync
+getSync = factory getHandler stateLessSync
 
 
-getSync = factory getHandler Sync
+postSync = factory postHandler stateLessSync
 
 
-postSync = factory postHandler Sync
+putSync = factory putHandler stateLessSync
 
 
-putSync = factory putHandler Sync
+deleteSync = factory deleteHandler stateLessSync
 
 
-deleteSync = factory deleteHandler Sync
+use = factory useHandler stateLessAsync
 
 
-use = factory useHandler Async
+get = factory getHandler stateLessAsync
 
 
-get = factory getHandler Async
+post = factory postHandler stateLessAsync
 
 
-post = factory postHandler Async
+put = factory putHandler stateLessAsync
 
 
-put = factory putHandler Async
-
-
-delete = factory deleteHandler Async
+delete = factory deleteHandler stateLessAsync
  
 factory parsePath mode url cur next req =
     case next req of    
         Sync result ->
             case result of
-                Next newReq ->
-                    try2Dispache parsePath mode cur url newReq
-                
-                Reply _ ->
-                    Sync result 
+                StateLess value ->
+                    case value of 
+                        Next newReq ->
+                            try2Dispache parsePath mode cur url newReq
+                        
+                        Reply _ ->
+                            Sync result 
 
-                Redirect _ ->
-                    Sync result
+                        Redirect _ ->
+                            Sync result
 
-                State toState ->
-                    Sync <| State <| state parsePath mode cur url req toState
+                StateFull toState ->
+                    Sync <| StateFull <| state parsePath mode cur url req toState
 
         Async result ->
             result 
@@ -91,16 +102,18 @@ state parsePath mode cur url req toState model =
         case answer of
             Sync result ->
                 case result of
-                    Next newReq ->
-                        (newModel, try2Dispache parsePath mode cur url newReq)
-                    
-                    Reply _ ->
-                        (newModel, Sync result)
+                    StateLess value ->
+                        case value of 
+                            Next newReq ->
+                                (newModel, try2Dispache parsePath mode cur url newReq)
+                            
+                            Reply _ ->
+                                (newModel, Sync result)
 
-                    Redirect _ ->
-                        (newModel, Sync result)
+                            Redirect _ ->
+                                (newModel, Sync result)
 
-                    State toState ->
+                    StateFull toState ->
                         (newModel, Sync result)
 
             Async result ->
@@ -112,7 +125,7 @@ state parsePath mode cur url req toState model =
 
 try2DispacheAsync parsePath mode cur url response =
     case response of
-        Next req ->
+        StateLess (Next req) ->
             case try2Dispache parsePath mode cur url req of
                 Sync value ->
                     Task.succeed value
@@ -129,7 +142,7 @@ try2Dispache parsePath mode cur url req =
         Just (resul, path) ->
             case parse url path of
                 Failure _ ->
-                    Sync <| Next req
+                    Sync <| StateLess <| Next req
                 
                 value ->
                     case parsingResult2params value of
@@ -137,10 +150,10 @@ try2Dispache parsePath mode cur url req =
                             mode <| cur (params, resul)
                         
                         Err _ -> 
-                            Sync <| Next req
+                            Sync <| StateLess <| Next req
 
         Nothing ->
-            Sync <| Next req
+            Sync <| StateLess <| Next req
 
 
 useHandler: Request a -> Maybe (ReqValue a Object, String)

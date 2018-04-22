@@ -84,20 +84,22 @@ result2output model req ans =
         _ ->
             Error <| url req
 
-toOutput req value=
+toOutput req value =
     case value of
-        Next newReq ->
-            Output response
-            
-        Reply res ->
-            Output res 
+        StateLess v ->
+            case v of
+                Next newReq ->
+                    Output response
+                    
+                Reply res ->
+                    Output res 
 
-        Redirect path ->
-            req
-                |> setURL path
-                |> Input
-
-        State toState ->
+                Redirect path ->
+                    req
+                        |> setURL path
+                        |> Input
+        
+        StateFull toState ->
             Model toState req
 
 stateResultHanler req result =
