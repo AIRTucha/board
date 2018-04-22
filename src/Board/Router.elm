@@ -20,7 +20,7 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
-empty: Request a -> Mode b (Answer a model error)
+empty: Request a -> Mode b (Answer a model error) model
 empty req =
     Sync <| Next req
 
@@ -67,8 +67,8 @@ factory parsePath mode url cur next req =
                 Redirect _ ->
                     Sync result
 
-                State toState ->
-                    Sync <| State <| state parsePath mode cur url req toState
+                -- State toState ->
+                --     Sync <| State <| state parsePath mode cur url req toState
 
         Async result ->
             result 
@@ -76,30 +76,33 @@ factory parsePath mode url cur next req =
                 |> Async
 
 
-state parsePath mode cur url req toState model =
-    let
-        (newModel, answer) = toState model
-    in
-        case answer of
-            Sync result ->
-                case result of
-                    Next newReq ->
-                        (newModel, try2Dispache parsePath mode cur url newReq)
+        State _ ->
+            Sync <| Redirect "ok"
+
+-- state parsePath mode cur url req toState model =
+--     let
+--         (newModel, answer) = toState model
+--     in
+--         case answer of
+--             Sync result ->
+--                 case result of
+--                     Next newReq ->
+--                         (newModel, try2Dispache parsePath mode cur url newReq)
                     
-                    Reply _ ->
-                        (newModel, Sync result)
+--                     Reply _ ->
+--                         (newModel, Sync result)
 
-                    Redirect _ ->
-                        (newModel, Sync result)
+--                     Redirect _ ->
+--                         (newModel, Sync result)
 
-                    State toState ->
-                        (newModel, Sync result)
+--                     State toState ->
+--                         (newModel, Sync result)
 
-            Async result ->
-                result 
-                    |> Task.andThen (try2DispacheAsync parsePath mode cur url)
-                    |> Async
-                    |> (\ t -> (newModel, t))
+--             Async result ->
+--                 result 
+--                     |> Task.andThen (try2DispacheAsync parsePath mode cur url)
+--                     |> Async
+--                     |> (\ t -> (newModel, t))
 
 
 try2DispacheAsync parsePath mode cur url response =
@@ -111,6 +114,9 @@ try2DispacheAsync parsePath mode cur url response =
                 
                 Async value ->
                     value
+                
+                State _ ->
+                    Task.succeed <| Redirect "ok"
               
         other ->
             Task.succeed (response) 

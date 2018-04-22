@@ -5,21 +5,21 @@ import File exposing (File, Encoding)
 import Task
 
 
-type Mode error value
+type Mode error value model
     = Async (Task.Task error value)
     | Sync value
+    | State (ToState value model error) 
 
 type Answer value model error
     = Redirect String
     | Reply (Response value)
     | Next (Request value)
-    | State (ToState value model error) 
 
 type alias Object =
     Dict String String
 
 type alias ToState value model error =
-    (model -> (model, Mode error (Answer value model error)) )
+    Mode error (model -> (model, (Answer value model error)) )
 
 type Msg value model error
     = Input (Request value)

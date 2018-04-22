@@ -43,13 +43,14 @@ update server message model =
                 |> (\_ -> ( model, Cmd.none) )
         
         Model toState req ->
-            let 
-                (newModel, answer) = toState model
-            in
-                ( newModel
-                , liftMode answer 
-                    |> Task.attempt (result2output newModel req)
-                )
+            (model, Cmd.none)
+            -- let 
+            --     (newModel, answer) = toState model
+            -- in
+            --     ( newModel
+            --     , liftMode answer 
+            --         |> Task.attempt (result2output newModel req)
+            --     )
 
         Error msg ->
             log msg (model, Cmd.none)
@@ -67,6 +68,9 @@ server router model req =
             -- TODO
             (model, Cmd.none)
 
+        State _ ->
+            (model, Cmd.none)
+
 liftMode mode =
     case mode of 
         Sync answer ->
@@ -74,6 +78,9 @@ liftMode mode =
         
         Async task ->
             task
+        
+        State _ ->
+            Task.succeed <| Redirect "ok"
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
 result2output model req ans =
@@ -97,8 +104,8 @@ toOutput req value=
                 |> setURL path
                 |> Input
 
-        State toState ->
-            Model toState req
+        -- State toState ->
+        --     Model toState req
 
 stateResultHanler req result =
     case  result of
