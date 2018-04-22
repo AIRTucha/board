@@ -76,9 +76,20 @@ factory parsePath mode url cur next req =
                 |> Async
 
 
-        State _ ->
+        State val ->
+            parseMode mode cur val 
+
+parseMode mode cur val =
+    case val of 
+        Sync toState -> 
+            mode
+            -- case mode cur of
+
+        Async _ ->
             Sync <| Redirect "ok"
 
+        State _ ->
+            Sync <| Redirect "ok"
 -- state parsePath mode cur url req toState model =
 --     let
 --         (newModel, answer) = toState model
