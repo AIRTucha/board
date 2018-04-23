@@ -16,13 +16,13 @@ type alias RoutHandler a b c =
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
 stateSync value =
-    StateFull <| stateHelper value
+    AsyncState <| stateHelper value
 
 stateHelper value model =
     let 
         (newModel, answer) = value model 
     in
-        (newModel, Sync answer)
+        (newModel, Sync <| StateLess answer)
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
@@ -33,6 +33,43 @@ empty req =
     Next req
         |> StateLess
         |> Sync
+
+stateFullSync =
+    Sync << StateFull
+
+stateFullAsync v =
+    v 
+        |> Task.map StateFull
+        |> Async
+
+useSyncState = factory useHandler stateFullSync
+
+
+getSyncState = factory getHandler stateFullSync
+
+
+postSyncState = factory postHandler stateFullSync
+
+
+putSyncState = factory putHandler stateFullSync
+
+
+deleteSyncState = factory deleteHandler stateFullSync
+
+
+useState = factory useHandler stateFullAsync
+
+
+getState = factory getHandler stateFullAsync
+
+
+postState = factory postHandler stateFullAsync
+
+
+putState = factory putHandler stateFullAsync
+
+
+deleteState = factory deleteHandler stateFullAsync
 
 stateLessSync = 
     Sync << StateLess
@@ -87,7 +124,10 @@ factory parsePath mode url cur next req =
                             Sync result
 
                 StateFull toState ->
-                    Sync <| StateFull <| state parsePath mode cur url req toState
+                    Sync <| AsyncState <| state parsePath mode cur url req (stateHelper toState)
+
+                AsyncState toState ->
+                    Sync <| AsyncState <| state parsePath mode cur url req toState
 
         Async result ->
             result 
@@ -114,6 +154,9 @@ state parsePath mode cur url req toState model =
                                 (newModel, Sync result)
 
                     StateFull toState ->
+                        (newModel, Sync result)
+                    
+                    AsyncState toState ->
                         (newModel, Sync result)
 
             Async result ->
