@@ -109,61 +109,65 @@ put = factory putHandler stateLessAsync
 delete = factory deleteHandler stateLessAsync
  
 factory parsePath mode url cur next req =
-    case next req of    
-        Sync result ->
-            case result of
-                StateLess value ->
-                    case value of 
-                        Next newReq ->
-                            try2Dispache parsePath mode cur url newReq
-                        
-                        Reply _ ->
-                            Sync result 
+    let 
+        answer = next req
+    in
+        case answer of    
+            Sync result ->
+                case result of
+                    StateLess value ->
+                        case value of 
+                            Next newReq ->
+                                try2Dispache parsePath mode cur url newReq
+                            
+                            Reply _ ->
+                                answer
 
-                        Redirect _ ->
-                            Sync result
+                            Redirect _ ->
+                                answer
 
-                StateFull toState ->
-                    Sync <| AsyncState <| state parsePath mode cur url req (stateHelper toState)
+                    StateFull toState ->
+                        Sync <| AsyncState <| state parsePath mode cur url req (stateHelper toState)
 
-                AsyncState toState ->
-                    Sync <| AsyncState <| state parsePath mode cur url req toState
+                    AsyncState toState ->
+                        Sync <| AsyncState <| state parsePath mode cur url req toState
 
-        Async result ->
-            result 
-                |> Task.andThen (try2DispacheAsync parsePath mode cur url)
-                |> Async
+            Async result ->
+                result 
+                    |> Task.andThen (try2DispacheAsync parsePath mode cur url)
+                    |> Async
 
 
 state parsePath mode cur url req toState model =
     let
         (newModel, answer) = toState model
     in
-        case answer of
+        ( newModel
+        , case answer of
             Sync result ->
                 case result of
                     StateLess value ->
                         case value of 
                             Next newReq ->
-                                (newModel, try2Dispache parsePath mode cur url newReq)
+                                try2Dispache parsePath mode cur url newReq
                             
                             Reply _ ->
-                                (newModel, Sync result)
+                                answer
 
                             Redirect _ ->
-                                (newModel, Sync result)
+                                answer
 
                     StateFull toState ->
-                        (newModel, Sync result)
+                        Sync <| AsyncState <| state parsePath mode cur url req (stateHelper toState)
                     
                     AsyncState toState ->
-                        (newModel, Sync result)
+                        Sync <| AsyncState <| state parsePath mode cur url req toState
 
             Async result ->
                 result 
                     |> Task.andThen (try2DispacheAsync parsePath mode cur url)
                     |> Async
-                    |> (\ t -> (newModel, t))
+        )
 
 
 try2DispacheAsync parsePath mode cur url response =
