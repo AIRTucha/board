@@ -100,9 +100,6 @@ toOutput req value =
                         |> setURL path
                         |> Input
         
-        StateFull toState ->
-             Model (stateHelper toState) req
-        
         AsyncState toState ->
              Model toState req
 

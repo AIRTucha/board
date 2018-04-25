@@ -17,8 +17,7 @@ type Answer value model error
 type State value model error
     = AsyncState (ToState value model error) 
     | StateLess (Answer value model error)
-    | StateFull (model -> (model, Answer value model error) )
-
+   
 type alias Object =
     Dict String String
 

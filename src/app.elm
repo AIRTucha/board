@@ -24,8 +24,8 @@ router =
         |> use any (redirect "/")
         
 -- getCount : ( number, b ) -> Answer value number error
-getCount (param, req) =
-    (\model -> (model + 1, Reply <| makeTextResponse req (Basics.toString model) ))
+getCount (param, req) model =
+    (model + 1, Reply <| makeTextResponse req (Basics.toString model) )
 
 
 getIndex =
