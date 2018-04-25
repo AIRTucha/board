@@ -82,8 +82,8 @@ result2output model req ans =
         Ok value ->
             toOutput req value
 
-        _ ->
-            Error <| url req
+        Err msg ->
+            Error msg
 
 toOutput req value =
     case value of
@@ -101,11 +101,10 @@ toOutput req value =
                         |> Input
         
         StateFull toState ->
-             Output response
-            -- Model toState req
+             Model (stateHelper toState) req
         
         AsyncState toState ->
-             Output response
+             Model toState req
 
 stateResultHanler req result =
     case  result of

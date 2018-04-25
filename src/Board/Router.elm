@@ -159,12 +159,15 @@ state parsePath mode cur url toState model =
                                 answer
 
                     StateFull toState ->
-                        state parsePath mode cur url (stateHelper toState)
+                        toState
+                            |> stateHelper
+                            |> state parsePath mode cur url 
                             |> AsyncState
                             |> Sync
 
                     AsyncState toState ->
-                        state parsePath mode cur url toState
+                        toState
+                            |> state parsePath mode cur url 
                             |> AsyncState
                             |> Sync
 
@@ -188,17 +191,19 @@ try2DispacheAsync parsePath mode cur url answer =
                             dispacheValue
                 
                 other ->
-                    answer
-                        |> Task.succeed
-
+                    Task.succeed answer
+                        
               
         StateFull toState ->
-            state parsePath mode cur url (stateHelper toState)
+            toState
+                |> stateHelper
+                |> state parsePath mode cur url
                 |> AsyncState
                 |> Task.succeed
 
         AsyncState toState ->
-            state parsePath mode cur url toState
+            toState
+                |> state parsePath mode cur url 
                 |> AsyncState
                 |> Task.succeed
 

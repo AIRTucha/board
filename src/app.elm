@@ -12,6 +12,7 @@ main = board router
 
 router =
     empty 
+        |> useSyncState (p "/count" ) getCount
         |> get (p "/") getIndex
         |> get (p "/public/") getIndex
         |> get (p "/public") getIndex
@@ -20,7 +21,6 @@ router =
         |> get (p "/public/app.js") getApp
         |> get (p "/styles.css") getStyles
         |> get (p "/public/styles.css") getStyles
-        |> useSyncState (p "/count" ) getCount
         |> use any (redirect "/")
         
 -- getCount : ( number, b ) -> Answer value number error
