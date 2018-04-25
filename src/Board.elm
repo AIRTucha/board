@@ -100,7 +100,7 @@ toOutput req value =
                         |> setURL path
                         |> Input
         
-        AsyncState toState ->
+        StateFull toState ->
              Model toState req
 
 stateResultHanler req result =

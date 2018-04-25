@@ -16,7 +16,7 @@ type alias RoutHandler a b c =
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
 stateSync value =
-    AsyncState <| stateHelper value
+    StateFull <| stateHelper value
 
 stateHelper value model =
     let 
@@ -25,7 +25,7 @@ stateHelper value model =
         (newModel, Sync <| StateLess answer)
 
 
-toAsyncState handler model =
+toStateFull handler model =
     let 
         (newModel, answer) = handler model   
     in
@@ -42,12 +42,12 @@ empty req =
         |> Sync
 
 stateFullSync =
-    Sync << AsyncState << toAsyncState
+    Sync << StateFull << toStateFull
     
 stateFullAsync v =
     v 
-        |> Task.map toAsyncState
-        |> Task.map AsyncState
+        |> Task.map toStateFull
+        |> Task.map StateFull
         |> Async
 
 useSyncState = factory useHandler stateFullSync
@@ -131,9 +131,9 @@ factory parsePath mode url cur next req =
                             other ->
                                 answer
 
-                    AsyncState toState ->
+                    StateFull toState ->
                         state parsePath mode cur url toState
-                            |> AsyncState
+                            |> StateFull
                             |> Sync
 
             Async result ->
@@ -161,10 +161,10 @@ state parsePath mode cur url toState model =
                             Redirect _ ->
                                 answer
 
-                    AsyncState toState ->
+                    StateFull toState ->
                         toState
                             |> state parsePath mode cur url 
-                            |> AsyncState
+                            |> StateFull
                             |> Sync
 
             Async result ->
@@ -189,10 +189,10 @@ try2DispacheAsync parsePath mode cur url answer =
                 other ->
                     Task.succeed answer
 
-        AsyncState toState ->
+        StateFull toState ->
             toState
                 |> state parsePath mode cur url 
-                |> AsyncState
+                |> StateFull
                 |> Task.succeed
 
 

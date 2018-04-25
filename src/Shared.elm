@@ -15,7 +15,7 @@ type Answer value model error
     | Next (Request value)
 
 type State value model error
-    = AsyncState (ToState value model error) 
+    = StateFull (ToState value model error) 
     | StateLess (Answer value model error)
    
 type alias Object =
