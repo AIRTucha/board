@@ -15,8 +15,10 @@ import Shared exposing (..)
 type alias RoutHandler a b c = 
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
+
 stateSync value =
     StateFull <| stateHelper value
+
 
 stateHelper value model =
     let 
@@ -25,11 +27,16 @@ stateHelper value model =
         (newModel, Sync <| StateLess answer)
 
 
-toStateFull handler model =
+toStateLess handler model =
     let 
         (newModel, answer) = handler model   
     in
         (newModel, Sync << StateLess <| answer)
+
+
+toStateFull =
+    StateFull << toStateLess
+
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
@@ -41,14 +48,16 @@ empty req =
         |> StateLess
         |> Sync
 
+
 stateFullSync =
-    Sync << StateFull << toStateFull
+    Sync << toStateFull
     
+
 stateFullAsync v =
     v 
         |> Task.map toStateFull
-        |> Task.map StateFull
         |> Async
+
 
 useSyncState = factory useHandler stateFullSync
 
