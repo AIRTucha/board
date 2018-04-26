@@ -13,6 +13,7 @@ main = board router
 router =
     empty 
         |> useSyncState (p "/count" ) getCount
+        |> useState (p "/async/count" ) getAsyncCount
         |> get (p "/") getIndex
         |> get (p "/public/") getIndex
         |> get (p "/public") getIndex
@@ -24,6 +25,10 @@ router =
         |> use any (redirect "/")
         
 -- getCount : ( number, b ) -> Answer value number error
+getAsyncCount (param, req) =
+    Task.succeed(\ model -> (model + 1, Reply <| makeTextResponse req (Basics.toString model) ))
+
+
 getCount (param, req) model =
     (model + 1, Reply <| makeTextResponse req (Basics.toString model) )
 
