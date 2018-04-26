@@ -79,3 +79,7 @@ response =
     , status = 200
     , header = Dict.empty
     }
+
+(=>) : a -> b -> b
+(=>) t1 t2 =
+    (\_ -> t2) t1

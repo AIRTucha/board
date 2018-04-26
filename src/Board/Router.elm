@@ -8,6 +8,8 @@ import Task
 import Server exposing (url)
 import Debug exposing (log)
 import Shared exposing (..)
+import Date exposing (..)
+import Basics exposing (..)
 
 -- Model
 -- All paths
@@ -48,6 +50,42 @@ empty req =
         |> StateLess
         |> Sync
 
+logger req =
+    req
+        |> logUrl
+        |> Next
+        |> StateLess
+        |> Sync
+
+
+logUrl: Request a -> Request a
+logUrl req =
+    Debug.log "Input: " (reqToMgs req)
+        => req
+
+reqToMgs: Request a -> String
+reqToMgs req =
+    case req of 
+        Get body ->
+            "GET " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+        
+        Post body ->
+            "POST " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+        
+        Put body ->
+            "PUT " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+        
+        Delete body ->
+            "DELETE " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+
+
+fromatDate req =    
+    req.time
+        |> toFloat
+        |> fromTime
+        |> Basics.toString
+
+       
 
 stateFullSync =
     Sync << toStateFull

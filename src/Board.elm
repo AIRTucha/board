@@ -1,15 +1,10 @@
 module Board exposing (..)
 
-import Pathfinder exposing (..)
-import Dict exposing (..)
 import Result
-import List exposing (map, reverse)
 import Task
 import Server exposing (url)
-import Debug exposing (log)
-import Board.Router exposing(..)
+import Debug exposing (..)
 import Shared exposing (..)
-import Platform.Sub exposing (none)
 
 
 board router state =
@@ -31,7 +26,7 @@ subscriptions model =
 update server message model =
     case message of
         Input request ->
-            server model (log "req" request)
+            server model request
 
         Output response ->
             Server.send response
@@ -47,7 +42,7 @@ update server message model =
                 )
 
         Error msg ->
-            log msg (model, Cmd.none)
+            Debug.log msg (model, Cmd.none)
 
 
 server router model req = 

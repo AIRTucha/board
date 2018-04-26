@@ -11,7 +11,7 @@ main = board router 0
 
 
 router =
-    empty 
+    logger 
         |> useSyncState (p "/count" ) getCount
         |> useState (p "/async/count" ) getAsyncCount
         |> get (p "/") getIndex

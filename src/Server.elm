@@ -63,7 +63,7 @@ type Server
 -}
 send : Response a -> ()
 send res =
-    case Debug.log "res" res.content of 
+    case res.content of 
         Data contentType data ->
             Native.Server.sendData res data
 
@@ -118,11 +118,6 @@ init =
 
 
 -- HANDLE APP MESSAGES
-
-(=>) : a -> b -> b
-(=>) t1 t2 =
-    (\_ -> t2) t1
-
 
 onEffects :
     Platform.Router msg Msg
