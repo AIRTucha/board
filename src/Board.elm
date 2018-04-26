@@ -12,9 +12,9 @@ import Shared exposing (..)
 import Platform.Sub exposing (none)
 
 
-board router =
+board router state =
     Platform.program
-        { init = init
+        { init = ( state, Cmd.none )
         , update = 
             router 
                 |> server
@@ -25,12 +25,7 @@ board router =
 
 -- subscriptions : Model -> Sub Msg
 subscriptions model =
-    Server.listen 8080 Input Error
-
-
--- init : ( Model, Cmd Msg )
-init =
-    ( 0, Cmd.none )
+    Server.listen 8080 Input Error    
 
 
 update server message model =

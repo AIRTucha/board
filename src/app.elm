@@ -7,7 +7,7 @@ import Board exposing (..)
 import Board.Router exposing (..)
 import Shared exposing (..)
 
-main = board router
+main = board router 0
 
 
 router =
