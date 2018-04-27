@@ -10,7 +10,7 @@ import Shared exposing (..)
 config = 
     { state = 0
     , portNumber = 8081 
-    , errorPrefix = "Warning"
+    , errorPrefix = Just "Warning"
     }
     
 

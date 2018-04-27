@@ -49,8 +49,13 @@ update conf router message model =
                 )
 
         Error msg ->
-            Debug.log conf.errorPrefix msg
-                => (model, Cmd.none)
+            case conf.errorPrefix of
+                Just prefix ->
+                    Debug.log prefix msg
+                        => (model, Cmd.none)
+                
+                Nothing ->
+                    (model, Cmd.none)
 
 liftMode mode =
     case mode of 
