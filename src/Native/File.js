@@ -6,7 +6,7 @@ var _airtucha$board$Native_File = function() {
             return scheduler.nativeBinding(function (callback) {
                 fs.readFile(path, function( error, content ) {
                     if (error) 
-                        return callback(scheduler.fail(error))
+                        return callback(scheduler.fail(error.toString()))
                     else 
                         return callback(scheduler.succeed( func => func(content) ))
                 })

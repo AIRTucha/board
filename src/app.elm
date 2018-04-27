@@ -7,7 +7,14 @@ import Board exposing (..)
 import Board.Router exposing (..)
 import Shared exposing (..)
 
-main = board router 0
+config = 
+    { state = 0
+    , portNumber = 8081 
+    , errorPrefix = "Warning"
+    }
+    
+
+main = board router config
 
 
 router =

@@ -7,30 +7,37 @@ import Debug exposing (..)
 import Shared exposing (..)
 
 
-board router state =
+board router conf =
     Platform.program
-        { init = ( state, Cmd.none )
-        , update = 
-            router 
-                |> server
-                |> update
-        , subscriptions = subscriptions
+        { init = ( conf.state, Cmd.none )
+        , update = update conf router 
+        , subscriptions = subscriptions conf
         }
 
 
 -- subscriptions : Model -> Sub Msg
-subscriptions model =
-    Server.listen 8080 Input Error    
+subscriptions conf _ =
+    Server.listen conf.portNumber Input Error    
 
 
-update server message model =
+update conf router message model =
     case message of
         Input request ->
-            server model request
+            ( model
+            , case router request of 
+                Async task ->
+                    task 
+                        |> Task.attempt (result2output request)
+        
+                Sync value ->
+                    Task.succeed value 
+                        |> Task.perform (toOutput request)
+            )
+
 
         Output response ->
             Server.send response
-                |> (\_ -> ( model, Cmd.none) )
+                => ( model, Cmd.none)
         
         Model toState req ->
             let 
@@ -38,26 +45,12 @@ update server message model =
             in
                 ( newModel
                 , liftMode answer 
-                    |> Task.attempt (result2output newModel req)
+                    |> Task.attempt (result2output req)
                 )
 
         Error msg ->
-            Debug.log msg (model, Cmd.none)
-
-
-server router model req = 
-    case router req of 
-        Async task ->
-            ( model
-            , task 
-                |> Task.attempt (result2output model req)
-            )
-
-        Sync value ->
-            ( model
-            , Task.succeed value 
-                |> Task.perform (toOutput req)
-            )
+            Debug.log conf.errorPrefix msg
+                => (model, Cmd.none)
 
 liftMode mode =
     case mode of 
@@ -68,7 +61,7 @@ liftMode mode =
             task
 
 -- result2output : Request a -> Result x (Answer a1) -> Msg
-result2output model req ans =
+result2output req ans =
     case ans of
         Ok value ->
             toOutput req value

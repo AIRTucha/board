@@ -5,7 +5,6 @@ import Dict exposing (..)
 import Result
 import List exposing (map, reverse)
 import Task
-import Server exposing (url)
 import Debug exposing (log)
 import Shared exposing (..)
 import Date exposing (..)
@@ -60,11 +59,11 @@ logger req =
 
 logUrl: Request a -> Request a
 logUrl req =
-    Debug.log "Input: " (reqToMgs req)
+    Debug.log "Request" (reqToMsg req)
         => req
 
-reqToMgs: Request a -> String
-reqToMgs req =
+reqToMsg: Request a -> String
+reqToMsg req =
     case req of 
         Get body ->
             "GET " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
