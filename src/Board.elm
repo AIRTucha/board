@@ -57,15 +57,6 @@ update conf router message model =
                     (model, Cmd.none)
 
 
-liftToAsync value =
-    case value of 
-        Sync answer ->
-            Task.succeed answer 
-        
-        Async task ->
-            task
-
-
 resultToOutput req result =
     case result of
         Ok value ->

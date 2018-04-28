@@ -47,7 +47,7 @@ stateFullSync =
 
 toStateFullSync =
     Sync << toStateFull
-    
+
 
 stateLessAsync v = 
     v 
@@ -234,104 +234,79 @@ put = factory putHandler stateLessAsync
 delete = factory deleteHandler stateLessAsync
  
 
-factory parsePath mode url cur next req =
-    let 
-        answer = next req
-    in
-        case answer of    
-            Sync result ->
-                case result of
-                    StateLess value ->
-                        case value of 
-                            Next newReq ->
-                                try2Dispache parsePath mode cur url newReq
-                            
-                            other ->
-                                answer
-
-                    StateFull toState ->
-                        state parsePath mode cur url toState
-                            |> stateFullSync
-            Async result ->
-                result 
-                    |> Task.andThen (try2DispacheAsync parsePath mode cur url)
-                    |> Async
+factory parsePath mode url handler router request =
+    request
+        |> router 
+        |> processModeAnswer parsePath mode url handler
 
 
-state parsePath mode cur url toState model =
+processModeAnswer parsePath mode url handler modeAnswer =
+    case modeAnswer of    
+        Sync answer ->
+            case answer of
+                StateLess value ->
+                    case value of 
+                        Next newRequest ->
+                            tryToProcessRequest parsePath mode handler url newRequest
+                        
+                        _ ->
+                            modeAnswer
+
+                StateFull stateHandler ->
+                    stateHandler
+                        |> toStateHandler parsePath mode handler url 
+                        |> stateFullSync
+
+        Async taskAnswer ->
+            taskAnswer 
+                |> Task.andThen (processAsyncAnswer parsePath mode handler url)
+                |> Async
+
+
+toStateHandler parsePath mode handler url stateHandler model =
     let
-        (newModel, answer) = toState model
+        (newModel, answer) = stateHandler model
     in
         ( newModel
-        , case answer of
-            Sync result ->
-                case result of
-                    StateLess value ->
-                        case value of 
-                            Next newReq ->
-                                try2Dispache parsePath mode cur url newReq
-                            
-                            Reply _ ->
-                                answer
-
-                            Redirect _ ->
-                                answer
-
-                    StateFull toState ->
-                        toState
-                            |> state parsePath mode cur url 
-                            |> stateFullSync
-
-            Async result ->
-                result 
-                    |> Task.andThen (try2DispacheAsync parsePath mode cur url)
-                    |> Async
+        , processModeAnswer parsePath mode url handler answer
         )
 
 
-try2DispacheAsync parsePath mode cur url answer =
+processAsyncAnswer parsePath mode handler url answer =
     case answer of
         StateLess value ->
             case value of 
-                Next req ->
-                    case try2Dispache parsePath mode cur url req of
-                        Sync dispacheValue ->
-                            Task.succeed dispacheValue
-                        
-                        Async dispacheValue ->
-                            dispacheValue
+                Next request ->
+                    request
+                        |> tryToProcessRequest parsePath mode handler url
+                        |> liftToAsync
                 
-                other ->
+                _ ->
                     Task.succeed answer
 
-        StateFull toState ->
-            toState
-                |> state parsePath mode cur url 
+        StateFull stateHandler ->
+            stateHandler
+                |> toStateHandler parsePath mode handler url 
                 |> StateFull
                 |> Task.succeed
 
 
-try2Dispache parsePath mode cur url req =
-    case parsePath req of
-        Just (resul, path) ->
+tryToProcessRequest parsePath mode handler url request =
+    case parsePath request of
+        Just (newReq, path) ->
             case parse url path of
                 Failure _ ->
-                    Next req
-                        |> StateLess
-                        |> Sync
+                    nextStateLessSync request
                 
                 value ->
                     case parsingResult2params value of
                         Ok params ->
-                            cur (params, resul)
+                            (params, newReq)
+                                |> handler
                                 |> mode
                         
                         Err _ -> 
-                            Next req
-                                |> StateLess
-                                |> Sync
+                            nextStateLessSync request
 
         Nothing ->
-            Next req
-                |> StateLess
-                |> Sync
+            nextStateLessSync request

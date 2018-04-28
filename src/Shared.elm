@@ -10,15 +10,15 @@ type Mode error value
     | Sync value
 
 
-type Answer value model error
+type AnswerValue value model error
     = Redirect String
     | Reply (Response value)
     | Next (Request value)
 
 
-type State value model error
+type Answer value model error
     = StateFull (StateHandler value model error) 
-    | StateLess (Answer value model error)
+    | StateLess (AnswerValue value model error)
    
 
 type alias Object =
@@ -26,7 +26,7 @@ type alias Object =
 
 
 type alias StateHandler value model error =
-    (model -> (model, Mode error (State value model error)) )
+    (model -> (model, Mode error (Answer value model error)) )
 
 
 type Msg value model error
@@ -90,3 +90,11 @@ response =
 (=>) t1 t2 =
     (\_ -> t2) t1
 
+
+liftToAsync value =
+    case value of 
+        Sync answer ->
+            Task.succeed answer 
+        
+        Async task ->
+            task
