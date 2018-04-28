@@ -18,7 +18,7 @@ main = board router config
 
 
 router =
-    logger 
+    logger "Request"
         |> useSyncState (p "/count" ) getCount
         |> useState (p "/async/count" ) getAsyncCount
         |> get (p "/") getIndex
@@ -31,7 +31,7 @@ router =
         |> get (p "/public/styles.css") getStyles
         |> use any (redirect "/")
         
--- getCount : ( number, b ) -> Answer value number error
+
 getAsyncCount (param, req) =
     Task.succeed(\ model -> (model + 1, Reply <| makeTextResponse req (Basics.toString model) ))
 

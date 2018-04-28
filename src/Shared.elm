@@ -9,26 +9,31 @@ type Mode error value
     = Async (Task.Task error value)
     | Sync value
 
+
 type Answer value model error
     = Redirect String
     | Reply (Response value)
     | Next (Request value)
 
+
 type State value model error
-    = StateFull (ToState value model error) 
+    = StateFull (StateHandler value model error) 
     | StateLess (Answer value model error)
    
+
 type alias Object =
     Dict String String
 
-type alias ToState value model error =
+
+type alias StateHandler value model error =
     (model -> (model, Mode error (State value model error)) )
+
 
 type Msg value model error
     = Input (Request value)
     | Output (Response value)
     | Error String
-    | Model (ToState value model error) (Request value)
+    | Model (StateHandler value model error) (Request value)
 
 
 type Content a
@@ -80,6 +85,8 @@ response =
     , header = Dict.empty
     }
 
+
 (=>) : a -> b -> b
 (=>) t1 t2 =
     (\_ -> t2) t1
+

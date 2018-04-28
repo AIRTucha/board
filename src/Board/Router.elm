@@ -1,31 +1,16 @@
 module Board.Router exposing (..)
 
 import Pathfinder exposing (..)
-import Dict exposing (..)
 import Result
-import List exposing (map, reverse)
 import Task
 import Debug exposing (log)
 import Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
-
--- Model
--- All paths
+import Board.Param exposing (..)
 
 type alias RoutHandler a b c = 
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
-
-
-stateSync value =
-    StateFull <| stateHelper value
-
-
-stateHelper value model =
-    let 
-        (newModel, answer) = value model 
-    in
-        (newModel, Sync <| StateLess answer)
 
 
 toStateLess handler model =
@@ -43,24 +28,25 @@ type alias Router a b =
     Request a -> Mode b (Answer a)
 
 
--- empty: Request a -> Mode b (Answer a model error)/
+nextStateLessSync =
+    stateLessSync << Next
+
+
 empty req =
-    Next req
-        |> StateLess
-        |> Sync
+    nextStateLessSync req
 
-logger req =
+
+logger tag req =
     req
-        |> logUrl
-        |> Next
-        |> StateLess
-        |> Sync
+        |> logUrl tag
+        |> nextStateLessSync
 
 
-logUrl: Request a -> Request a
-logUrl req =
-    Debug.log "Request" (reqToMsg req)
+logUrl: String -> Request a -> Request a
+logUrl tag req =
+    Debug.log tag (reqToMsg req)
         => req
+
 
 reqToMsg: Request a -> String
 reqToMsg req =
@@ -84,7 +70,6 @@ fromatDate req =
         |> fromTime
         |> Basics.toString
 
-       
 
 stateFullSync =
     Sync << toStateFull
@@ -125,13 +110,16 @@ putState = factory putHandler stateFullAsync
 
 deleteState = factory deleteHandler stateFullAsync
 
+
 stateLessSync = 
     Sync << StateLess
+
 
 stateLessAsync v = 
     v 
         |> Task.map StateLess
         |> Async
+
 
 useSync = factory useHandler stateLessSync
 
@@ -162,6 +150,7 @@ put = factory putHandler stateLessAsync
 
 delete = factory deleteHandler stateLessAsync
  
+
 factory parsePath mode url cur next req =
     let 
         answer = next req
@@ -346,52 +335,3 @@ deleteHandler req =
         
         Delete body ->
             Just (body, body.url)
-
-
-type Params
-    = IntParam Int
-    | FloatParam Float
-    | StrParam String
-    | MultiParam (List Params)
-    | QueryParam (Dict String String)
-    | EmptyParam
-
-
-parsingResult2params: ParsingResult -> Result String Params
-parsingResult2params result =
-    case result of 
-       Integer int ->
-         Ok <| IntParam int
-
-       Floating float ->
-         Ok <| FloatParam float 
-
-       Str str ->
-         Ok <| StrParam str 
-    
-       Failure str ->
-         Err str
-
-       MultiValue list ->
-         multiValue2Param list []
-
-       Query dict ->
-         Ok <| QueryParam dict
-
-       Succes ->
-         Ok EmptyParam
-
-
-multiValue2Param: List ParsingResult -> List Params -> Result String Params
-multiValue2Param list params =
-    case list of
-        [] -> 
-            Ok <| MultiParam (reverse params)
-        
-        head :: tail ->
-            case parsingResult2params head of
-                Ok value ->
-                    value :: params
-                        |> multiValue2Param tail
-                
-                Err err -> Err err
