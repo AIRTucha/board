@@ -13,6 +13,10 @@ type alias RoutHandler a b c =
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
 
 
+type alias Router a b =
+    Request a -> Mode b (Answer a)
+
+
 toStateLess handler model =
     let 
         (newModel, answer) = handler model   
@@ -24,12 +28,28 @@ toStateFull =
     StateFull << toStateLess
 
 
-type alias Router a b =
-    Request a -> Mode b (Answer a)
-
-
 nextStateLessSync =
     stateLessSync << Next
+
+
+stateFullSync =
+    Sync << toStateFull
+    
+
+stateFullAsync stateHandler =
+    stateHandler
+        |> Task.map toStateFull
+        |> Async
+
+
+stateLessSync = 
+    Sync << StateLess
+
+
+stateLessAsync v = 
+    v 
+        |> Task.map StateLess
+        |> Async
 
 
 empty req =
@@ -69,16 +89,86 @@ fromatDate req =
         |> toFloat
         |> fromTime
         |> Basics.toString
+        
+
+useHandler: Request a -> Maybe (ReqValue a Object, String)
+useHandler req =
+    case req of
+        Get body ->
+            Just (body, body.url)
+        
+        Post body ->
+            Just (body, body.url)
+        
+        Put body ->
+            Just (body, body.url)
+        
+        Delete body ->
+            Just (body, body.url)
 
 
-stateFullSync =
-    Sync << toStateFull
-    
+getHandler: Request a -> Maybe (ReqValue a Object, String)
+getHandler req =
+    case req of
+        Get body ->
+            Just (body, body.url)
+        
+        Post body ->
+            Nothing
+        
+        Put body ->
+            Nothing
+        
+        Delete body ->
+            Nothing
 
-stateFullAsync v =
-    v 
-        |> Task.map toStateFull
-        |> Async
+
+postHandler: Request a -> Maybe (ReqValue a Object, String)
+postHandler req =
+    case req of
+        Get body ->
+            Nothing
+        
+        Post body ->
+            Just (body, body.url)
+        
+        Put body ->
+            Nothing
+        
+        Delete body ->
+            Nothing
+
+
+putHandler: Request a -> Maybe (ReqValue a Object, String)
+putHandler req =
+    case req of
+        Get body ->
+            Nothing
+        
+        Post body ->
+            Nothing
+        
+        Put body ->
+            Just (body, body.url)
+        
+        Delete body ->
+            Nothing
+
+
+deleteHandler: Request a -> Maybe (ReqValue a Object, String)
+deleteHandler req =
+    case req of
+        Get body ->
+            Nothing
+        
+        Post body ->
+            Nothing
+        
+        Put body ->
+            Nothing
+        
+        Delete body ->
+            Just (body, body.url)
 
 
 useSyncState = factory useHandler stateFullSync
@@ -109,16 +199,6 @@ putState = factory putHandler stateFullAsync
 
 
 deleteState = factory deleteHandler stateFullAsync
-
-
-stateLessSync = 
-    Sync << StateLess
-
-
-stateLessAsync v = 
-    v 
-        |> Task.map StateLess
-        |> Async
 
 
 useSync = factory useHandler stateLessSync
@@ -255,83 +335,3 @@ try2Dispache parsePath mode cur url req =
             Next req
                 |> StateLess
                 |> Sync
-
-
-useHandler: Request a -> Maybe (ReqValue a Object, String)
-useHandler req =
-    case req of
-        Get body ->
-            Just (body, body.url)
-        
-        Post body ->
-            Just (body, body.url)
-        
-        Put body ->
-            Just (body, body.url)
-        
-        Delete body ->
-            Just (body, body.url)
-
-
-getHandler: Request a -> Maybe (ReqValue a Object, String)
-getHandler req =
-    case req of
-        Get body ->
-            Just (body, body.url)
-        
-        Post body ->
-            Nothing
-        
-        Put body ->
-            Nothing
-        
-        Delete body ->
-            Nothing
-
-
-postHandler: Request a -> Maybe (ReqValue a Object, String)
-postHandler req =
-    case req of
-        Get body ->
-            Nothing
-        
-        Post body ->
-            Just (body, body.url)
-        
-        Put body ->
-            Nothing
-        
-        Delete body ->
-            Nothing
-
-
-putHandler: Request a -> Maybe (ReqValue a Object, String)
-putHandler req =
-    case req of
-        Get body ->
-            Nothing
-        
-        Post body ->
-            Nothing
-        
-        Put body ->
-            Just (body, body.url)
-        
-        Delete body ->
-            Nothing
-
-
-deleteHandler: Request a -> Maybe (ReqValue a Object, String)
-deleteHandler req =
-    case req of
-        Get body ->
-            Nothing
-        
-        Post body ->
-            Nothing
-        
-        Put body ->
-            Nothing
-        
-        Delete body ->
-            Just (body, body.url)
