@@ -22,21 +22,9 @@ toStateLess handler model =
         (newModel, answer) = handler model   
     in
         (newModel, Sync << StateLess <| answer)
-
-
-toStateFull =
-    StateFull << toStateLess
-
-
-nextStateLessSync =
-    stateLessSync << Next
-
-
-stateFullSync =
-    Sync << toStateFull
     
 
-stateFullAsync stateHandler =
+toStateFullAsync stateHandler =
     stateHandler
         |> Task.map toStateFull
         |> Async
@@ -45,6 +33,21 @@ stateFullAsync stateHandler =
 stateLessSync = 
     Sync << StateLess
 
+nextStateLessSync =
+    stateLessSync << Next
+
+
+toStateFull =
+    StateFull << toStateLess
+
+
+stateFullSync =
+    Sync << StateFull
+
+
+toStateFullSync =
+    Sync << toStateFull
+    
 
 stateLessAsync v = 
     v 
@@ -171,34 +174,34 @@ deleteHandler req =
             Just (body, body.url)
 
 
-useSyncState = factory useHandler stateFullSync
+useSyncState = factory useHandler toStateFullSync
 
 
-getSyncState = factory getHandler stateFullSync
+getSyncState = factory getHandler toStateFullSync
 
 
-postSyncState = factory postHandler stateFullSync
+postSyncState = factory postHandler toStateFullSync
 
 
-putSyncState = factory putHandler stateFullSync
+putSyncState = factory putHandler toStateFullSync
 
 
-deleteSyncState = factory deleteHandler stateFullSync
+deleteSyncState = factory deleteHandler toStateFullSync
 
 
-useState = factory useHandler stateFullAsync
+useState = factory useHandler toStateFullAsync
 
 
-getState = factory getHandler stateFullAsync
+getState = factory getHandler toStateFullAsync
 
 
-postState = factory postHandler stateFullAsync
+postState = factory postHandler toStateFullAsync
 
 
-putState = factory putHandler stateFullAsync
+putState = factory putHandler toStateFullAsync
 
 
-deleteState = factory deleteHandler stateFullAsync
+deleteState = factory deleteHandler toStateFullAsync
 
 
 useSync = factory useHandler stateLessSync
@@ -248,9 +251,7 @@ factory parsePath mode url cur next req =
 
                     StateFull toState ->
                         state parsePath mode cur url toState
-                            |> StateFull
-                            |> Sync
-
+                            |> stateFullSync
             Async result ->
                 result 
                     |> Task.andThen (try2DispacheAsync parsePath mode cur url)
@@ -279,8 +280,7 @@ state parsePath mode cur url toState model =
                     StateFull toState ->
                         toState
                             |> state parsePath mode cur url 
-                            |> StateFull
-                            |> Sync
+                            |> stateFullSync
 
             Async result ->
                 result 
