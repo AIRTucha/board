@@ -41,11 +41,11 @@ fromString =
 
 -- TODO: refactor
 
-bytes: File a -> Bytes
+bytes: Buffer -> Bytes
 bytes =
     Bytes.fromHex << string Hex 
 
 
-string: Encoding -> File a -> String 
+string: Encoding -> Buffer -> String 
 string =
     Native.File.string

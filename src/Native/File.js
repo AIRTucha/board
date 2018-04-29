@@ -27,14 +27,10 @@ var _airtucha$board$Native_File = function() {
             }
         },
         string: function (encoding) {
-            return function (data) {
-                return data( buffer => 
-                    buffer.toString( encoding.ctor.toLocaleLowerCase() )
-                )
-            }
+            return  buffer => buffer.toString( encoding.ctor.toLocaleLowerCase() )
         },
         fromString: function(str) {
-            return (func) => func( new Buffer(str) )
+            return func => func( new Buffer(str) )
         }
     }
 }()
