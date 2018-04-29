@@ -11,6 +11,12 @@ config =
     { state = 0
     , portNumber = 8081 
     , errorPrefix = Just "Warning"
+    , httpsOptions = Just {
+        key = Just "ok",
+        cert = Nothing,
+        pfx = Just "shit",
+        passphrase = Nothing
+    }
     }
     
 
@@ -59,9 +65,6 @@ redirect str _ =
 getFile path (param, req)  =
     path
         |> read
-        -- |> Task.map (File.bytes)
-        -- |> Task.map (File.fromBytes)
-        -- |> Task.andThen (File.write <| path ++ ".txt")
         |> Task.map (makeResponse req)
         |> Task.map Reply
 

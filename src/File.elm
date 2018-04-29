@@ -39,6 +39,7 @@ fromString: String -> File a
 fromString =
     Native.File.fromString
 
+-- TODO: refactor
 
 bytes: File a -> Bytes
 bytes =
