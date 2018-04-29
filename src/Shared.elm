@@ -90,6 +90,8 @@ response =
 (=>) t1 t2 =
     (\_ -> t2) t1
 
+(&>) task v =
+    Task.map (\_ -> v) task
 
 liftToAsync value =
     case value of 

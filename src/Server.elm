@@ -14,15 +14,12 @@ effect module Server
 import Dict
 import Task exposing (Task)
 import Native.Server
-import Json.Encode as Json
-import Result
-import Debug 
+
 import Dict exposing (Dict, insert)
-import Bytes exposing (Bytes)
 import String exposing (split)
 import List exposing (foldl)
 import Shared exposing (..)
-import File exposing (File)
+import Dict.Extra exposing (fromListDedupe)
 
 type RawContent
     = Raw String String
@@ -80,58 +77,53 @@ send res =
 -- SUBSCRIPTIONS
 
 type MySub msg
-    = Listen Int HTTPSOptions (Message -> msg) (String -> msg)
+    = Listener (Int, HTTPSOptions)
 
 
 {-| Subscribe to a port
 -}
-listen portNumber options success failuer =
-    subscription (Listen portNumber options success failuer)
+listen portNumber options =
+    subscription <| Listener (portNumber, options)
 
 
-subMap func (Listen portNumber options success failuer) =
-    Listen portNumber options (success >> func) (failuer >> func)
+subMap func (portNumber, options) =
+    (portNumber, options)
 
 
 -- MANAGER
 
 
-type alias State msg =
-    { servers : Servers
-    , subs : Subs msg
-    }
+type alias State = Servers
 
 
 type alias Servers =
     Dict.Dict Int Server
 
 
-type alias Subs msg =
-    Dict.Dict Int ( List ( HTTPSOptions, (Message -> msg), (String -> msg) ) )
-
+type alias Subs =
+    Dict.Dict Int ( HTTPSOptions )
 
 init =
-    Task.succeed (State Dict.empty Dict.empty)
+    Task.succeed (Dict.empty)
 
 
 -- HANDLE APP MESSAGES
 -- onEffects : Platform.Router a Msg -> List (MySub msg) -> { b | servers : Dict Int Server } -> Task x (State msg)
-onEffects router subs state =
-    Task.succeed( updateSubs router (groupSubs subs Dict.empty) state.servers )
+onEffects router subs servers =
+    subs
+        |> List.map (\ (Listener v)-> v)
+        |> fromListDedupe (\ first second -> first) 
+        |> updateSubs router servers 
+        |> Task.succeed
     
+
 -- updateSubs : Platform.Router a Msg -> Dict Int (List ( Message -> msg, String -> msg )) -> Dict Int Server -> State msg
-updateSubs router subs servers =
+updateSubs router servers subs =
     Dict.merge (addNew router) keepAll removeOld subs servers Dict.empty
-        |> (\newServers -> State newServers subs)
 
 
-addNew router portNumber subs servers =
-    case subs of
-        (options, _, _) :: _ ->
-            serve router portNumber servers options
-
-        [] ->
-           servers
+addNew router portNumber options servers =
+    serve router portNumber options servers
 
 keepAll portNumber _ server servers =
     Dict.insert portNumber server servers
@@ -139,12 +131,11 @@ keepAll portNumber _ server servers =
 
 removeOld portNumber server servers =
     close server 
-        => servers
+        => Dict.remove portNumber servers
 
 -- serve : Platform.Router a Msg -> Int -> Dict Int b -> Dict Int b
-serve router portNumber servers options =
-    open router portNumber options
-        |> updateServers portNumber servers
+serve router portNumber options servers =
+    Dict.insert portNumber (open router portNumber options) servers
 
 
 {-| Open server which listens to a particular port.
@@ -152,11 +143,7 @@ serve router portNumber servers options =
 -- open : Platform.Router a Msg -> Int -> HTTPSOptions -> b
 open router portNumber option =
     Native.Server.open portNumber option (setting router portNumber option)
-
-
-updateServers portNumber servers server =
-    Dict.insert portNumber server servers
-
+   
 
 {-|
 -}
@@ -172,7 +159,7 @@ setting router portNumber options =
         request 
             |> processRequest
             |> method
-            |> Input portNumber
+            |> OnRequest portNumber
             |> Platform.sendToSelf router
     , onClose = \_ -> Platform.sendToSelf router (Close portNumber options)
     }
@@ -180,7 +167,6 @@ setting router portNumber options =
 
 processRequest raw = 
     {raw | cookies = parseCookies raw}
-
 
  
 parseCookies req =
@@ -208,62 +194,29 @@ parseSinglCookie string dict =
 close =
     Native.Server.close
 
-
-groupSubs subs dict =
-    case subs of
-        (Listen portNumber option success failuer) :: tail ->
-            dict
-                |> Dict.update portNumber 
-                    (\ list -> 
-                        case list of
-                            Nothing ->
-                                Just [ (option, success, failuer) ]
-
-                            Just list ->
-                                Just ((option, success, failuer) :: list)
-                    ) 
-                |> groupSubs tail
-
-        [] ->
-            dict
-
+-- f Listener v
 
 -- HANDLE SELF MESSAGES
 
 
 type Msg
-    = Input Int (Request Content)
+    = OnRequest Int (Request Content)
     | Close Int HTTPSOptions
 
 
-onSelfMsg router selfMsg state =
+onSelfMsg router selfMsg servers =
     case selfMsg of
-        Input portNumber request ->
-            case Dict.get portNumber state.subs of 
-                Maybe.Just taggers ->
-                    case taggers of
-                        (options, success, failuer) :: [] ->
-                            Platform.sendToApp router (success request)
-                                |> Task.map (\_ -> state) 
-
-                        (options, success, failuer) :: tail ->
-                            Platform.sendToApp router (success request)
-                            :: List.map (\tagger -> Platform.sendToApp router (failuer  "Too many subscribers")) tail
-                                |> Task.sequence
-                                |> Task.map (\_ -> state) 
-
-                        _ -> 
-                            Task.succeed state
-
-                _ ->
-                    Task.succeed state
-                
+        OnRequest portNumber request ->
+            Platform.sendToApp router (Input request)
+                &> servers
             
         Close portNumber options ->
-            case Dict.get portNumber state.servers of
+            case Dict.get portNumber servers of
                 Nothing ->
-                    Task.succeed state
+                    Task.succeed servers
 
                 Just _ ->
-                    serve router portNumber state.servers options
-                        |> (\servers -> Task.succeed { state | servers = servers} )
+                    servers
+                        |> Dict.remove portNumber 
+                        |> serve router portNumber options 
+                        |> Task.succeed
