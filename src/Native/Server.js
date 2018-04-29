@@ -99,12 +99,12 @@ var _airtucha$board$Native_Server = function(){
                                 }
                                 requests.set( id, res )
                                 _elm_lang$core$Native_Scheduler.rawSpawn(
-                                    settings.onRequest(body)(toMethod(req.method))
+                                    settings.onRequest(body)(toMethod(req.method))(port)
                                 );
                             })
                     }
                     const closeHandler = function () {
-                        _elm_lang$core$Native_Scheduler.rawSpawn(settings.onClose());
+                        _elm_lang$core$Native_Scheduler.rawSpawn(settings.onClose(port)(maybeOptions));
                     }
                     if(maybeOptions.ctor == "Nothing")
                         return createServer(port, http, reqHandler, closeHandler)

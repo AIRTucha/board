@@ -108,7 +108,6 @@ init =
 
 
 -- HANDLE APP MESSAGES
--- onEffects : Platform.Router a Msg -> List (MySub msg) -> { b | servers : Dict Int Server } -> Task x (State msg)
 onEffects router subs servers =
     subs
         |> List.map (\ (Listener v)-> v)
@@ -117,7 +116,6 @@ onEffects router subs servers =
         |> Task.succeed
     
 
--- updateSubs : Platform.Router a Msg -> Dict Int (List ( Message -> msg, String -> msg )) -> Dict Int Server -> State msg
 updateSubs router servers subs =
     Dict.merge (addNew router) keepAll removeOld subs servers Dict.empty
 
@@ -133,16 +131,15 @@ removeOld portNumber server servers =
     close server 
         => Dict.remove portNumber servers
 
--- serve : Platform.Router a Msg -> Int -> Dict Int b -> Dict Int b
+
 serve router portNumber options servers =
     Dict.insert portNumber (open router portNumber options) servers
 
 
 {-| Open server which listens to a particular port.
 -}
--- open : Platform.Router a Msg -> Int -> HTTPSOptions -> b
 open router portNumber option =
-    Native.Server.open portNumber option (setting router portNumber option)
+    Native.Server.open portNumber option (setting router)
    
 
 {-|
@@ -151,17 +148,14 @@ open router portNumber option =
 --     { onRequest :  RawRequest a -> (ReqValue a -> Request a) -> Task Never ()
 --     , onClose : () -> Task Never ()
 --     }
-
-
--- setting : Platform.Router msg Msg -> Int -> Settings
-setting router portNumber options =
-    { onRequest = \request method -> 
+setting router =
+    { onRequest = \request method portNumber-> 
         request 
             |> processRequest
             |> method
             |> OnRequest portNumber
             |> Platform.sendToSelf router
-    , onClose = \_ -> Platform.sendToSelf router (Close portNumber options)
+    , onClose = \portNumber options-> Platform.sendToSelf router (Close portNumber options)
     }
 
 
