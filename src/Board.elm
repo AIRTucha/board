@@ -24,12 +24,13 @@ update conf router message model =
         Input request ->
             ( model
             , case router request of 
-                Async task ->
-                    task 
+                Async taskAnswer ->
+                    taskAnswer 
                         |> Task.attempt (resultToOutput request)
         
-                Sync value ->
-                    Task.succeed value 
+                Sync answer ->
+                    answer
+                        |> Task.succeed  
                         |> Task.perform (toOutput request)
             )
 
@@ -57,16 +58,16 @@ update conf router message model =
                     (model, Cmd.none)
 
 
-resultToOutput req result =
+resultToOutput request result =
     case result of
-        Ok value ->
-            toOutput req value
+        Ok answer ->
+            toOutput request answer
 
         Err msg ->
             Error msg
 
 
-toOutput req state =
+toOutput request state =
     case state of
         StateLess answer ->
             case answer of
@@ -77,16 +78,16 @@ toOutput req state =
                     Output res
 
                 Redirect path ->
-                    req
+                    request
                         |> setURL path
                         |> Input
         
         StateFull stateHandler ->
-             Model stateHandler req
+             Model stateHandler request
 
 
-setURL path req =
-    case req of 
+setURL path request =
+    case request of 
         Get value ->
             Get { value | url = path }
 
