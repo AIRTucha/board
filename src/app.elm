@@ -6,7 +6,7 @@ import Pathfinder exposing (..)
 import Board exposing (..)
 import Board.Router exposing (..)
 import Shared exposing (..)
-
+import Debug exposing (log)
 config = 
     { state = 0
     , portNumber = 8081 
@@ -34,7 +34,9 @@ router =
         |> get (p "/app.js") getApp
         |> get (p "/public/app.js") getApp
         |> get (p "/styles.css") getStyles
+        |> get (p "/style.css") getStyle
         |> get (p "/public/styles.css") getStyles
+        |> get (p "/public/style.css") getStyle
         |> use any (redirect "/")
         
 
@@ -56,6 +58,9 @@ getApp =
 
 getStyles =
     getFile "./public/styles.css" 
+
+getStyle =
+    getFile "./public/style.css" 
 
 
 redirect str _ =
