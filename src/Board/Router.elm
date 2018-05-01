@@ -8,6 +8,7 @@ import Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
 import Board.Param exposing (..)
+import File exposing(read)
 
 type alias RoutHandler a b c = 
     (Params, ReqValue a Object ) ->  Mode b (Answer c)
@@ -233,6 +234,46 @@ put = factory putHandler stateLessAsync
 
 delete = factory deleteHandler stateLessAsync
  
+static basePath prefix router =
+    router
+        |> get (basePath </> str) (getFile prefix)
+
+
+getFile prefix (param, req) =
+    let 
+        next = Task.succeed <| Next <| Get req
+    in
+        case param of 
+            StrParam path ->
+                prefix ++ path
+                    |> read
+                    |> Task.map (makeResponse req)
+                    |> Task.map Reply
+                    |> Task.onError (\ _ -> next)
+            
+            _ ->
+                next
+
+
+makeResponse req file = 
+    let 
+        res = response
+    in
+        { res
+        | content = Data "test" file
+        , id = req.id
+        } 
+
+
+makeTextResponse req text = 
+    let 
+        res = response
+    in
+        { res
+        | content = Text "text/plain" text
+        , id = req.id
+        } 
+
 
 factory parsePath mode url handler router request =
     request

@@ -28,16 +28,18 @@ router =
         |> useSyncState (p "/count" ) getCount
         |> useState (p "/async/count" ) getAsyncCount
         |> get (p "/") getIndex
-        |> get (p "/public/") getIndex
-        |> get (p "/public") getIndex
-        |> get (p "/public/index.html") getIndex
-        |> get (p "/app.js") getApp
-        |> get (p "/public/app.js") getApp
-        |> get (p "/styles.css") getStyles
-        |> get (p "/style.css") getStyle
-        |> get (p "/public/styles.css") getStyles
-        |> get (p "/public/style.css") getStyle
-        |> use any (redirect "/")
+        -- |> useSync ( p "" </> any) (\ _ -> Debug.log "Ok" Redirect "ok")
+        |> static (p "") "./public/"
+        -- |> get (p "/public/") getIndex
+        -- |> get (p "/public") getIndex
+        -- |> get (p "/public/index.html") getIndex
+        -- |> get (p "/app.js") getApp
+        -- |> get (p "/public/app.js") getApp
+        -- |> get (p "/styles.css") getStyles
+        -- |> get (p "/style.css") getStyle
+        -- |> get (p "/public/styles.css") getStyles
+        -- |> get (p "/public/style.css") getStyle
+        -- |> use any (redirect "/")
         
 
 getAsyncCount (param, req) =
