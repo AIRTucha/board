@@ -4,7 +4,6 @@ effect module Server
         ( send
         , listen
         , Message
-        , url
         , RawContent(..)
         )
 {-|
@@ -34,21 +33,6 @@ sendText str =
     , status = 200
     , header = Dict.empty
     }
-
--- TODO: map
-url req =
-     case req of 
-        Get val ->
-            val.url
-
-        Post val ->
-            val.url
-
-        Put val ->
-            val.url
-
-        Delete val ->
-            val.url
 
 type alias Message = (Request Content)
 
@@ -97,7 +81,7 @@ type alias State = Servers
 
 
 type alias Servers =
-    Dict.Dict Int Server
+    Dict.Dict Int  Server
 
 
 type alias Subs =
@@ -145,14 +129,13 @@ open router portNumber option =
 {-|
 -}
 -- type alias Settings =
---     { onRequest :  RawRequest a -> (ReqValue a -> Request a) -> Task Never ()
+--     { onRequest :  RawRequest a -> (Request a -> Request a) -> Task Never ()
 --     , onClose : () -> Task Never ()
 --     }
 setting router =
-    { onRequest = \request method portNumber-> 
+    { onRequest = \request portNumber-> 
         request 
             |> processRequest
-            |> method
             |> OnRequest portNumber
             |> Platform.sendToSelf router
     , onClose = \portNumber options-> Platform.sendToSelf router (Close portNumber options)
@@ -160,7 +143,7 @@ setting router =
 
 
 processRequest raw = 
-    {raw | cookies = parseCookies raw}
+    { raw | cookies = parseCookies raw} 
 
  
 parseCookies req =

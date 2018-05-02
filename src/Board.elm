@@ -2,7 +2,7 @@ module Board exposing (..)
 
 import Result
 import Task
-import Server exposing (url)
+import Server exposing (..)
 import Debug exposing (..)
 import Shared exposing (..)
 
@@ -78,24 +78,8 @@ toOutput request state =
                     Output res
 
                 Redirect path ->
-                    request
-                        |> setURL path
+                    { request | url = path }
                         |> Input
         
         StateFull stateHandler ->
              Model stateHandler request
-
-
-setURL path request =
-    case request of 
-        Get value ->
-            Get { value | url = path }
-
-        Post value ->
-            Post { value | url = path }
-
-        Put value ->
-            Put { value | url = path }
-
-        Delete value ->
-            Delete { value | url = path }

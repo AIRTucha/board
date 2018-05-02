@@ -9,9 +9,10 @@ import Date exposing (..)
 import Basics exposing (..)
 import Board.Param exposing (..)
 import File exposing(read)
+import Native.Console exposing(..)
 
 type alias RoutHandler a b c = 
-    (Params, ReqValue a Object ) ->  Mode b (Answer c)
+    (Params, Request a ) ->  Mode b (Answer c)
 
 
 type alias Router a b =
@@ -74,18 +75,18 @@ logUrl tag req =
 
 reqToMsg: Request a -> String
 reqToMsg req =
-    case req of 
-        Get body ->
-            "GET " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+    case req.method of 
+        Get ->
+            "GET " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
         
-        Post body ->
-            "POST " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+        Post ->
+            "POST " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
         
-        Put body ->
-            "PUT " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+        Put ->
+            "PUT " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
         
-        Delete body ->
-            "DELETE " ++ body.url ++ " ip" ++ body.ip ++ " " ++ (fromatDate body)
+        Delete ->
+            "DELETE " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
 
 
 fromatDate req =    
@@ -95,84 +96,29 @@ fromatDate req =
         |> Basics.toString
         
 
-useHandler: Request a -> Maybe (ReqValue a Object, String)
+useHandler: Request a -> Bool
 useHandler req =
-    case req of
-        Get body ->
-            Just (body, body.url)
-        
-        Post body ->
-            Just (body, body.url)
-        
-        Put body ->
-            Just (body, body.url)
-        
-        Delete body ->
-            Just (body, body.url)
+    True
 
 
-getHandler: Request a -> Maybe (ReqValue a Object, String)
+getHandler: Request a -> Bool
 getHandler req =
-    case req of
-        Get body ->
-            Just (body, body.url)
-        
-        Post body ->
-            Nothing
-        
-        Put body ->
-            Nothing
-        
-        Delete body ->
-            Nothing
+    req.method == Get
 
 
-postHandler: Request a -> Maybe (ReqValue a Object, String)
+postHandler: Request a -> Bool
 postHandler req =
-    case req of
-        Get body ->
-            Nothing
-        
-        Post body ->
-            Just (body, body.url)
-        
-        Put body ->
-            Nothing
-        
-        Delete body ->
-            Nothing
+    req.method == Post
 
 
-putHandler: Request a -> Maybe (ReqValue a Object, String)
+putHandler: Request a -> Bool
 putHandler req =
-    case req of
-        Get body ->
-            Nothing
-        
-        Post body ->
-            Nothing
-        
-        Put body ->
-            Just (body, body.url)
-        
-        Delete body ->
-            Nothing
+    req.method == Put
 
 
-deleteHandler: Request a -> Maybe (ReqValue a Object, String)
+deleteHandler: Request a -> Bool
 deleteHandler req =
-    case req of
-        Get body ->
-            Nothing
-        
-        Post body ->
-            Nothing
-        
-        Put body ->
-            Nothing
-        
-        Delete body ->
-            Just (body, body.url)
+    req.method == Delete
 
 
 useSyncState = factory useHandler toStateFullSync
@@ -241,7 +187,9 @@ static basePath prefix router =
 
 getFile prefix (param, req) =
     let 
-        next = Task.succeed <| Next <| Get req
+        next = req
+            |> Next
+            |> Task.succeed
     in
         case param of 
             StrParam path ->
@@ -249,10 +197,13 @@ getFile prefix (param, req) =
                     |> read
                     |> Task.map (makeResponse req)
                     |> Task.map Reply
-                    |> Task.onError (\ _ -> next)
+                    |> Task.onError (onGetFileError next)
             
             _ ->
                 next
+
+onGetFileError value _ =
+    value
 
 
 makeResponse req file = 
@@ -333,21 +284,20 @@ processAsyncAnswer parsePath mode handler url answer =
 
 
 tryToProcessRequest parsePath mode handler url request =
-    case parsePath request of
-        Just (newReq, path) ->
-            case parse url path of
-                Failure _ ->
-                    nextStateLessSync request
-                
-                value ->
-                    case parsingResult2params value of
-                        Ok params ->
-                            (params, newReq)
-                                |> handler
-                                |> mode
-                        
-                        Err _ -> 
-                            nextStateLessSync request
+    if parsePath request then
+        case parse url request.url of
+            Failure _ ->
+                nextStateLessSync request
+            
+            value ->
+                case parsingResult2params value of
+                    Ok params ->
+                        (params, request)
+                            |> handler
+                            |> mode
+                    
+                    Err _ -> 
+                        nextStateLessSync request
 
-        Nothing ->
-            nextStateLessSync request
+    else
+        nextStateLessSync request

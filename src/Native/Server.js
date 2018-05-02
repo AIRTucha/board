@@ -8,10 +8,10 @@ var _airtucha$board$Native_Server = function(){
     const empty = () => ( {ctor: 'Empty'})
     const getMethod = (str) => {
         switch(str){
-            case "GET": return "Get"
-            case "POST": return "Post"
-            case "PUT": return "Put"
-            case "DELETE": return "Delete"
+            case "GET": return { ctor: "Get" }
+            case "POST": return { ctor: "Post" }
+            case "PUT": return { ctor: "Put" }
+            case "DELETE": return { ctor: "Delete" }
         }
     }
     const sendContent = handler => request => {
@@ -28,10 +28,6 @@ var _airtucha$board$Native_Server = function(){
         sendContent(
             ( value, res ) => res.end(value) 
         )
-    const toMethod = str => body => ({
-        ctor: getMethod(str),
-        _0: body
-    })
     const getData = (content, contentType) => {
         if(content) {
             if ( "string" == typeof content ) {
@@ -95,11 +91,12 @@ var _airtucha$board$Native_Server = function(){
                                     content : getData(content, contentType),
                                     ip : address.address.toString(),
                                     host : req.headers.host,
-                                    protocol : getProtocol(req.protocol)
+                                    protocol : getProtocol(req.protocol),
+                                    method: getMethod(req.method)
                                 }
                                 requests.set( id, res )
                                 _elm_lang$core$Native_Scheduler.rawSpawn(
-                                    settings.onRequest(body)(toMethod(req.method))(port)
+                                    settings.onRequest(body)(port)
                                 );
                             })
                     }

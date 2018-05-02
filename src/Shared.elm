@@ -57,24 +57,25 @@ type Protocol
     | HTTPS
 
 
-type alias ReqValue a b =
+type alias Request a =
     { url : String
     , id : String
     , time : Int
     , content : Content a
-    , cookies : b
+    , cookies : Object
     , cargo : Object
     , ip : String
     , host : String
     , protocol : Protocol
+    , method: Method
     }
 
 
-type Request a
-    = Get (ReqValue a Object)
-    | Post (ReqValue a Object)
-    | Put (ReqValue a Object)
-    | Delete (ReqValue a Object)
+type Method
+    = Get
+    | Post
+    | Put
+    | Delete
 
 
 response =
