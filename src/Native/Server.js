@@ -16,9 +16,8 @@ var _airtucha$board$Native_Server = function(){
     }
     const sendContent = handler => request => {
         const res = requests.get(request.id)
-        if(!res)
-            console.log('\x1b[33m%s\x1b[0m', "Error: " + request.id)
         requests.delete(request.id)
+        console.log("Reqs: " + requests.size)
         return function( value ) {
             if(res)
                 handler(value, res);
@@ -64,15 +63,19 @@ var _airtucha$board$Native_Server = function(){
                 protocol.createServer(options, reqHandler)
         ).on('close', closeHandler)
          .listen(port)
-    // setInterval(() => {
-
-    // }, 1000)
     return {
         open: function (port){
             return function(maybeOptions) {
                 return function(settings) {
+                    const timeToLive = 1
+                    setInterval(() => {
+                        const currentTime = (new Date).getTime()
+                        for(var [id, req] of requests) {
+                            if(req.ttl < currentTime)
+                                requests.delete(id)
+                        }
+                    }, timeToLive * 1000)
                     const reqHandler = function (req, res) {
-                        const timeToLive = 1000
                         const time = (new Date).getTime()
                         const id = hash( {
                             path: req.url, 
@@ -86,8 +89,6 @@ var _airtucha$board$Native_Server = function(){
                         let content = undefined
                         res.ttl = timeToLive * 1000 + time
                         requests.set( id, res )
-                        // console.log('\x1b[33m%s\x1b[0m', "Req :" +id)
-                        // console.log(req.url)
                         req
                             .on("data", data => {
                                 content = data
