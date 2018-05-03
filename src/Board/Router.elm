@@ -202,28 +202,16 @@ getFile prefix (param, req) =
             _ ->
                 next
 
+
 onGetFileError value _ =
     value
 
 
 makeResponse req file = 
-    let 
-        res = response
-    in
-        { res
-        | content = Data "test" file
-        , id = req.id
-        } 
-
-
-makeTextResponse req text = 
-    let 
-        res = response
-    in
-        { res
-        | content = Text "text/plain" text
-        , id = req.id
-        } 
+    { response
+    | content = Data "test" file
+    , id = req.id
+    }
 
 
 factory parsePath mode url handler router request =

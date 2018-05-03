@@ -24,7 +24,8 @@ main = board router config
 
 
 router =
-    logger "Request"
+    -- logger "Request"
+    empty
         |> useSyncState (p "/count" ) getCount
         |> useState (p "/async/count" ) getAsyncCount
         |> get (p "/") getIndex
@@ -36,7 +37,7 @@ router =
         -- |> get (p "/app.js") getApp
         -- |> get (p "/public/app.js") getApp
         -- |> get (p "/styles.css") getStyles
-        -- |> get (p "/style.css") getStyle
+        |> get (p "/style.css") getStyle
         -- |> get (p "/public/styles.css") getStyles
         -- |> get (p "/public/style.css") getStyle
         -- |> use any (redirect "/")

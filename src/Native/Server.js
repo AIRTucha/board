@@ -16,6 +16,8 @@ var _airtucha$board$Native_Server = function(){
     }
     const sendContent = handler => request => {
         const res = requests.get(request.id)
+        if(!res)
+            console.log('\x1b[33m%s\x1b[0m', "Error: " + request.id)
         requests.delete(request.id)
         return function( value ) {
             if(res)
@@ -62,21 +64,30 @@ var _airtucha$board$Native_Server = function(){
                 protocol.createServer(options, reqHandler)
         ).on('close', closeHandler)
          .listen(port)
+    // setInterval(() => {
+
+    // }, 1000)
     return {
         open: function (port){
             return function(maybeOptions) {
                 return function(settings) {
                     const reqHandler = function (req, res) {
+                        const timeToLive = 1000
                         const time = (new Date).getTime()
                         const id = hash( {
-                            path: req.path, 
+                            path: req.url, 
                             ip: req.connection.remoteAddress,
-                            time: time
+                            time: time,
+                            ip: req.ip
                         } )
                         const address = req.connection.address()
                         const contentType = req.headers['content-type']
                         const cookies = req.headers['cookies']
                         let content = undefined
+                        res.ttl = timeToLive * 1000 + time
+                        requests.set( id, res )
+                        // console.log('\x1b[33m%s\x1b[0m', "Req :" +id)
+                        // console.log(req.url)
                         req
                             .on("data", data => {
                                 content = data
@@ -94,7 +105,6 @@ var _airtucha$board$Native_Server = function(){
                                     protocol : getProtocol(req.protocol),
                                     method: getMethod(req.method)
                                 }
-                                requests.set( id, res )
                                 _elm_lang$core$Native_Scheduler.rawSpawn(
                                     settings.onRequest(body)(port)
                                 );
