@@ -70,8 +70,8 @@ listen options =
     subscription <| Listener (options.portNumber, options)
 
 
-subMap func (portNumber, httpOptions) =
-    (portNumber, httpOptions)
+subMap func subs =
+    func subs
 
 
 -- MANAGER

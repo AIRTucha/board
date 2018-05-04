@@ -115,6 +115,6 @@ type alias HTTPSOptions = Maybe
 
 type alias Options =
     { portNumber: Int
-    , timeOut: Int
+    , timeout: Int
     , https: HTTPSOptions
     }
