@@ -61,34 +61,35 @@ send res =
 -- SUBSCRIPTIONS
 
 type MySub msg
-    = Listener (Int, HTTPSOptions)
+    = Listener (Int, Options)
 
 
 {-| Subscribe to a port
 -}
-listen portNumber options =
-    subscription <| Listener (portNumber, options)
+listen options =
+    subscription <| Listener (options.portNumber, options)
 
 
-subMap func (portNumber, options) =
-    (portNumber, options)
+subMap func (portNumber, httpOptions) =
+    (portNumber, httpOptions)
 
 
 -- MANAGER
 
 
-type alias State = Servers
+type alias State = 
+    Servers
 
 
 type alias Servers =
-    Dict.Dict Int  Server
+    Dict.Dict Int Server
 
 
 type alias Subs =
-    Dict.Dict Int ( HTTPSOptions )
+    Dict.Dict Int Options
 
 init =
-    Task.succeed (Dict.empty)
+    Task.succeed Dict.empty
 
 
 -- HANDLE APP MESSAGES
@@ -104,8 +105,8 @@ updateSubs router servers subs =
     Dict.merge (addNew router) keepAll removeOld subs servers Dict.empty
 
 
-addNew router portNumber options servers =
-    serve router portNumber options servers
+addNew router portNumber httpOptions servers =
+    serve router portNumber httpOptions servers
 
 keepAll portNumber _ server servers =
     Dict.insert portNumber server servers
@@ -116,8 +117,8 @@ removeOld portNumber server servers =
         => Dict.remove portNumber servers
 
 
-serve router portNumber options servers =
-    Dict.insert portNumber (open router portNumber options) servers
+serve router portNumber httpOptions servers =
+    Dict.insert portNumber (open router portNumber httpOptions) servers
 
 
 {-| Open server which listens to a particular port.
@@ -128,17 +129,13 @@ open router portNumber option =
 
 {-|
 -}
--- type alias Settings =
---     { onRequest :  RawRequest a -> (Request a -> Request a) -> Task Never ()
---     , onClose : () -> Task Never ()
---     }
 setting router =
     { onRequest = \request portNumber-> 
         request 
             |> processRequest
             |> OnRequest portNumber
             |> Platform.sendToSelf router
-    , onClose = \portNumber options-> Platform.sendToSelf router (Close portNumber options)
+    , onClose = \portNumber httpOptions-> Platform.sendToSelf router (Close portNumber httpOptions)
     }
 
 
@@ -171,14 +168,13 @@ parseSinglCookie string dict =
 close =
     Native.Server.close
 
--- f Listener v
 
 -- HANDLE SELF MESSAGES
 
 
 type Msg
     = OnRequest Int (Request Content)
-    | Close Int HTTPSOptions
+    | Close Int Options
 
 
 onSelfMsg router selfMsg servers =
@@ -187,7 +183,7 @@ onSelfMsg router selfMsg servers =
             Platform.sendToApp router (Input request)
                 &> servers
             
-        Close portNumber options ->
+        Close portNumber httpOptions ->
             case Dict.get portNumber servers of
                 Nothing ->
                     Task.succeed servers
@@ -195,5 +191,5 @@ onSelfMsg router selfMsg servers =
                 Just _ ->
                     servers
                         |> Dict.remove portNumber 
-                        |> serve router portNumber options 
+                        |> serve router portNumber httpOptions 
                         |> Task.succeed

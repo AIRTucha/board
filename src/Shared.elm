@@ -105,11 +105,16 @@ liftToAsync value =
             task
 
 
-type alias HTTPSOptions
-    = Maybe  
-        { key: Maybe String
-        , cert: Maybe String
-        , pfx: Maybe String
-        , passphrase: Maybe String 
-        }
+type alias HTTPSOptions = Maybe
+    { key: Maybe String
+    , cert: Maybe String
+    , pfx: Maybe String
+    , passphrase: Maybe String 
+    }
 
+
+type alias Options =
+    { portNumber: Int
+    , timeOut: Int
+    , https: HTTPSOptions
+    }

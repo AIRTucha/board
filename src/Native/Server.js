@@ -17,7 +17,6 @@ var _airtucha$board$Native_Server = function(){
     const sendContent = handler => request => {
         const res = requests.get(request.id)
         requests.delete(request.id)
-        console.log("Reqs: " + requests.size)
         return function( value ) {
             if(res)
                 handler(value, res);
@@ -65,16 +64,16 @@ var _airtucha$board$Native_Server = function(){
          .listen(port)
     return {
         open: function (port){
-            return function(maybeOptions) {
+            return function(option) {
+                const maybeOptions = option.https
                 return function(settings) {
-                    const timeToLive = 1
-                    setInterval(() => {
+                    const intervalId = setInterval(() => {
                         const currentTime = (new Date).getTime()
                         for(var [id, req] of requests) {
                             if(req.ttl < currentTime)
                                 requests.delete(id)
                         }
-                    }, timeToLive * 1000)
+                    }, option.timeout)
                     const reqHandler = function (req, res) {
                         const time = (new Date).getTime()
                         const id = hash( {
@@ -87,7 +86,7 @@ var _airtucha$board$Native_Server = function(){
                         const contentType = req.headers['content-type']
                         const cookies = req.headers['cookies']
                         let content = undefined
-                        res.ttl = timeToLive * 1000 + time
+                        res.ttl = option.timeout + time
                         requests.set( id, res )
                         req
                             .on("data", data => {
@@ -112,6 +111,7 @@ var _airtucha$board$Native_Server = function(){
                             })
                     }
                     const closeHandler = function () {
+                        clearInterval(intervalId)
                         _elm_lang$core$Native_Scheduler.rawSpawn(settings.onClose(port)(maybeOptions));
                     }
                     if(maybeOptions.ctor == "Nothing")

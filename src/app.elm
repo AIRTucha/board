@@ -10,15 +10,15 @@ import Debug exposing (log)
 config = 
     { state = 0
     , errorPrefix = Just "Warning"
-    , httpsOptions = Just 
-        { key = Just "ok"
-        , cert = Nothing
-        , pfx = Just "shit"
-        , passphrase = Nothing
-        }
     , options = 
         { portNumber = 8081
         , timeOut = 100
+        , https = Just 
+            { key = Just "ok"
+            , cert = Nothing
+            , pfx = Just "shit"
+            , passphrase = Nothing
+            }
         }
     }
     

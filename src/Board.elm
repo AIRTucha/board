@@ -16,7 +16,7 @@ board router conf =
 
 
 subscriptions conf _ =
-    Server.listen conf.options.portNumber conf.httpsOptions
+    Server.listen conf.options
 
 
 update conf router message model =
