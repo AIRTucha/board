@@ -9,14 +9,17 @@ import Shared exposing (..)
 import Debug exposing (log)
 config = 
     { state = 0
-    , portNumber = 8081 
     , errorPrefix = Just "Warning"
-    , httpsOptions = Just {
-        key = Just "ok",
-        cert = Nothing,
-        pfx = Just "shit",
-        passphrase = Nothing
-    }
+    , httpsOptions = Just 
+        { key = Just "ok"
+        , cert = Nothing
+        , pfx = Just "shit"
+        , passphrase = Nothing
+        }
+    , options = 
+        { portNumber = 8081
+        , timeOut = 100
+        }
     }
     
 
