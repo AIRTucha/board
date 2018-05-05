@@ -61,228 +61,281 @@ type Status
     | CustomStatus Int
 
 
+accepted : Status
 accepted = 
     Status202
 
 
+badGatway : Status
 badGatway = 
     Status502
 
 
+badRequest : Status
 badRequest =
     Status400
 
 
+conflict : Status
 conflict =
     Status409
 
 
+continue : Status
 continue =
     Status100 
 
 
+created : Status
 created =
     Status201
 
 
+expectationFailed : Status
 expectationFailed =
     Status417
 
 
+failedDependency : Status
 failedDependency =
     Status423
 
 
+faildDependency : Status
 faildDependency =
     Status424 
 
 
+forbidden : Status
 forbidden =
     Status403
 
 
+gatewayTimeout : Status
 gatewayTimeout =
     Status504
 
 
+gone : Status
 gone =
     Status410 
 
 
+httpVersionNotSupported : Status
 httpVersionNotSupported =
     Status505
 
 
+imateapot : Status
 imateapot =
     Status418
     
 
+insufficientSpaceOnResource : Status
 insufficientSpaceOnResource =
     Status419
 
 
+insufficientStorage : Status
 insufficientStorage =
     Status507
 
 
+internalServerError : Status
 internalServerError =
     Status500 
 
 
+lengthRequired : Status
 lengthRequired =
     Status411
 
 
+locked : Status
 locked =
     Status423
 
 
+methodFaiure : Status
 methodFaiure =
     Status420
 
 
+methodNotAllowed : Status
 methodNotAllowed = 
     Status405 
 
 
+movedPemanently : Status
 movedPemanently = 
     Status301
 
 
+movedtemporarily : Status
 movedtemporarily =
     Status302 
 
 
+multiStatus : Status
 multiStatus =
     Status207 
 
 
+multipleChoice : Status
 multipleChoice =
     Status300
 
 
+networkAuthenticationRequired : Status
 networkAuthenticationRequired =
     Status511 
 
 
+noContent : Status
 noContent =
     Status204
 
 
+nonAuthoritativeInformation : Status
 nonAuthoritativeInformation =
     Status203
 
 
+notAcceptable : Status
 notAcceptable =
     Status406
 
 
+notFound : Status
 notFound =
     Status404
 
 
+notImplemented : Status
 notImplemented =
     Status501 
 
 
+notModified : Status
 notModified =
     Status304
 
 
+ok : Status
 ok = 
     Status200
 
 
+partialContent : Status
 partialContent =
     Status206
 
 
+paymentRequired : Status
 paymentRequired =
     Status402
 
 
-
+parmanentRedurect : Status
 parmanentRedurect =
     Status308
 
 
+preconditionFailed : Status
 preconditionFailed =
     Status412 
 
 
+preconditionRequired : Status
 preconditionRequired =
     Status428
 
 
+processing : Status
 processing =
     Status102
 
 
-
+proxyAuthenticationRequired : Status
 proxyAuthenticationRequired =
     Status407
 
 
+requestHeaderFieldsTooLarge : Status
 requestHeaderFieldsTooLarge =
     Status431
 
 
+requestTimeout : Status
 requestTimeout =
     Status408 
 
 
+requestTooLong : Status
 requestTooLong =
     Status413 
 
 
+requestUriTooLong : Status
 requestUriTooLong =
     Status414 
 
 
+requestedRangeNotSatisfaible : Status
 requestedRangeNotSatisfaible =
     Status416 
 
 
+resetContent : Status
 resetContent =
     Status205 
 
 
+seeOther : Status
 seeOther =
     Status303 
 
 
+serviceUnavaible : Status
 serviceUnavaible =
     Status503
 
 
+switchingProtocols : Status
 switchingProtocols =
     Status101 
 
 
-
+temporaryRedirect : Status
 temporaryRedirect =
     Status307
 
 
+tooManyRequests : Status
 tooManyRequests =
     Status429
 
 
+unauthorized : Status
 unauthorized =
     Status401
 
 
+unprocessableEntity : Status
 unprocessableEntity =
     Status422
 
 
+unsupportedMediaType : Status
 unsupportedMediaType =
     Status415
 
 
+useProxy : Status
 useProxy =
     Status305
 
 
+custom : Int -> Status
 custom =
     CustomStatus
