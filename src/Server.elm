@@ -34,6 +34,7 @@ sendText str =
     , header = Dict.empty
     }
 
+
 type alias Message = (Request Content)
 
 
@@ -88,6 +89,7 @@ type alias Servers =
 type alias Subs =
     Dict.Dict Int Options
 
+
 init =
     Task.succeed Dict.empty
 
@@ -107,6 +109,7 @@ updateSubs router servers subs =
 
 addNew router portNumber httpOptions servers =
     serve router portNumber httpOptions servers
+
 
 keepAll portNumber _ server servers =
     Dict.insert portNumber server servers
@@ -162,6 +165,7 @@ parseSinglCookie string dict =
         
         _ ->
             dict
+
 
 {-| Close a server's connection
 -}
