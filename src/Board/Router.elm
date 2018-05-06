@@ -11,7 +11,7 @@ import Board.Param exposing (..)
 import File exposing(read)
 import Native.Console exposing(..)
 import Status exposing (..)
-
+import Dict
 type alias RoutHandler a b c = 
     (Params, Request a ) ->  Mode b (Answer c)
 
@@ -212,6 +212,7 @@ makeResponse req file =
     { response
     | content = Data "test" file
     , status = custom 200
+    , header =  Dict.insert "Server" "test" <| Dict.insert "Cache-Control" "public" response.header
     , id = req.id
     }
 

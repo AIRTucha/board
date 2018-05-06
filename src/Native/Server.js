@@ -20,11 +20,19 @@ var _airtucha$board$Native_Server = function(){
         else 
             return status.ctor.slice(6)
     }
+    const setHeaders = (dict, res) => {
+        if(dict.ctor == 'RBNode_elm_builtin'){
+            res.setHeader(dict._1, dict._2)
+            return setHeaders(dict._4, res)
+        } else 
+            return res
+    }
     const sendContent = handler => response => {
         const res = requests.get(response.id)
         requests.delete(response.id)
         return function( value ) {
             if(res) {
+                setHeaders(response.header, res)
                 res.statusCode = getStatus(response.status)
                 handler(value, res);
             }
