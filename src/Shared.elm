@@ -2,6 +2,7 @@ module Shared exposing (..)
 
 import Dict exposing (Dict)
 import File exposing (File, Encoding)
+import Status exposing (..)
 import Task
 
 
@@ -47,7 +48,7 @@ type alias Response a =
     { cookeis : Object
     , id: String
     , content : Content a
-    , status : Int
+    , status : Status
     , header : Object
     }
 
@@ -82,7 +83,7 @@ response =
     { cookeis = Dict.empty
     , id = ""
     , content = Empty 
-    , status = 200
+    , status = notFound
     , header = Dict.empty
     }
 

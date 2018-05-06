@@ -14,12 +14,20 @@ var _airtucha$board$Native_Server = function(){
             case "DELETE": return { ctor: "Delete" }
         }
     }
-    const sendContent = handler => request => {
-        const res = requests.get(request.id)
-        requests.delete(request.id)
+    const getStatus = status => {
+        if(status.ctor == "CustomStatus")
+            return status._0
+        else 
+            return status.ctor.slice(6)
+    }
+    const sendContent = handler => response => {
+        const res = requests.get(response.id)
+        requests.delete(response.id)
         return function( value ) {
-            if(res)
+            if(res) {
+                res.statusCode = getStatus(response.status)
                 handler(value, res);
+            }
             return { type: 'node', branches: { ctor: '[]' } }
         }
     }

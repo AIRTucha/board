@@ -10,6 +10,7 @@ import Basics exposing (..)
 import Board.Param exposing (..)
 import File exposing(read)
 import Native.Console exposing(..)
+import Status exposing (..)
 
 type alias RoutHandler a b c = 
     (Params, Request a ) ->  Mode b (Answer c)
@@ -210,6 +211,7 @@ onGetFileError value _ =
 makeResponse req file = 
     { response
     | content = Data "test" file
+    , status = custom 200
     , id = req.id
     }
 
