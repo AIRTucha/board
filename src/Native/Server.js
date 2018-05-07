@@ -27,14 +27,16 @@ var _airtucha$board$Native_Server = function(){
         } else 
             return res
     }
-    const sendContent = handler => response => {
+    const sendContent = setContent => contentType => response => {
         const res = requests.get(response.id)
         requests.delete(response.id)
         return function( value ) {
             if(res) {
+                res.setHeader('Content-Type', contentType)
                 setHeaders(response.header, res)
                 res.statusCode = getStatus(response.status)
-                handler(value, res);
+                setContent(value, res);
+                res.end()
             }
             return { type: 'node', branches: { ctor: '[]' } }
         }
@@ -42,8 +44,8 @@ var _airtucha$board$Native_Server = function(){
     const https = require('https')
     const sendPlainText = contentType => 
         sendContent(
-            ( value, res ) => res.end(value) 
-        )
+            ( value, res ) => res.write(value) 
+        )(contentType)
     const getData = (content, contentType) => {
         if(content) {
             if ( "string" == typeof content ) {
@@ -144,13 +146,13 @@ var _airtucha$board$Native_Server = function(){
             }
         },
         sendData: sendContent( 
-            ( value, res ) => value( v => res.end(v) ) 
+            ( value, res ) => value( v => res.write(v) ) 
         ),
         sendText: sendPlainText,
         sendJson: sendPlainText("application/json"),
         sendEmpty: sendContent(
-            ( value, res ) => res.end() 
-        ),
+            ( value, res ) => value
+        )(undefined),
         close: function (server) {
             server.close();
             return { ctor: '_Tuple0' }

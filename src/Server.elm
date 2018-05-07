@@ -48,7 +48,7 @@ send : Response a -> ()
 send res =
     case res.content of 
         Data contentType data ->
-            Native.Server.sendData res data
+            Native.Server.sendData contentType res data
 
         JSON json ->
             Native.Server.sendJson res json
