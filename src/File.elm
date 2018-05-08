@@ -347,340 +347,324 @@ contentTypes =
         , ( "mpg"       ,	"audio/mpeg" )
         , ( "mpg"       ,	"video/mpeg" )
         , ( "mpga"	    ,   "audio/mpeg" )
-        , ( "mpp	application/vnd.ms-project
-        , ( "mpt	application/x-project
-        , ( "mpv	application/x-project
-        , ( "mpx	application/x-project
-        , ( "mrc	application/marc
-        , ( "ms	application/x-troff-ms
-        , ( "mv	video/x-sgi-movie
-        , ( "my	audio/make
-        , ( "mzz	application/x-vnd.audioexplosion.mzz
-        , ( "nap	image/naplps
-        , ( "naplps	image/naplps
-        , ( "nc	application/x-netcdf
-        , ( "ncm	application/vnd.nokia.configuration-message
-        , ( "nif	image/x-niff
-        , ( "niff	image/x-niff
-        , ( "nix	application/x-mix-transfer
-        , ( "nsc	application/x-conference
-        , ( "nvd	application/x-navidoc
-        , ( "o	application/octet-stream
-        , ( "oda	application/oda
-        , ( "omc	application/x-omc
-        , ( "omcd	application/x-omcdatamaker
-        , ( "omcr	application/x-omcregerator
-        , ( "p	text/x-pascal
-        , ( "p10	application/pkcs10
-        , ( "p10	application/x-pkcs10
-        , ( "p12	application/pkcs-12
-        , ( "p12	application/x-pkcs12
-        , ( "p7a	application/x-pkcs7-signature
-        , ( "p7c	application/pkcs7-mime
-        , ( "p7c	application/x-pkcs7-mime
-        , ( "p7m	application/pkcs7-mime
-        , ( "p7m	application/x-pkcs7-mime
-        , ( "p7r	application/x-pkcs7-certreqresp
-        , ( "p7s	application/pkcs7-signature
-        , ( "part	application/pro_eng
-        , ( "pas	text/pascal
-        , ( "pbm	image/x-portable-bitmap
-        , ( "pcl	application/vnd.hp-pcl
-        , ( "pcl	application/x-pcl
-        , ( "pct	image/x-pict
-        , ( "pcx	image/x-pcx
-        , ( "pdb	chemical/x-pdb
-        , ( "pdf	application/pdf
-        , ( "pfunk	audio/make
-        , ( "pfunk	audio/make.my.funk
-        , ( "pgm	image/x-portable-graymap
-        , ( "pgm	image/x-portable-greymap
-        , ( "pic	image/pict
-        , ( "pict	image/pict
-        , ( "pkg	application/x-newton-compatible-pkg
-        , ( "pko	application/vnd.ms-pki.pko
-        , ( "pl	text/plain
-        , ( "pl	text/x-script.perl
-        , ( "plx	application/x-pixclscript
-        , ( "pm	image/x-xpixmap
-        , ( "pm	text/x-script.perl-module
-        , ( "pm4	application/x-pagemaker
-        , ( "pm5	application/x-pagemaker
-        , ( "png	image/png
-        , ( "pnm	application/x-portable-anymap
-        , ( "pnm	image/x-portable-anymap
-        , ( "pot	application/mspowerpoint
-        , ( "pot	application/vnd.ms-powerpoint
-        , ( "pov	model/x-pov
-        , ( "ppa	application/vnd.ms-powerpoint
-        , ( "ppm	image/x-portable-pixmap
-        , ( "pps	application/mspowerpoint
-        , ( "pps	application/vnd.ms-powerpoint
-        , ( "ppt	application/mspowerpoint
-        , ( "ppt	application/powerpoint
-        , ( "ppt	application/vnd.ms-powerpoint
-        , ( "ppt	application/x-mspowerpoint
-        , ( "ppz	application/mspowerpoint
-        , ( "pre	application/x-freelance
-        , ( "prt	application/pro_eng
-        , ( "ps	application/postscript
-        , ( "psd	application/octet-stream
-        , ( "pvu	paleovu/x-pv
-        , ( "pwz	application/vnd.ms-powerpoint
-        , ( "py	text/x-script.phyton
-        , ( "pyc	application/x-bytecode.python
-        , ( "qcp	audio/vnd.qcelp
-        , ( "qd3	x-world/x-3dmf
-        , ( "qd3d	x-world/x-3dmf
-        , ( "qif	image/x-quicktime
-        , ( "qt	video/quicktime
-        , ( "qtc	video/x-qtc
-        , ( "qti	image/x-quicktime
-        , ( "qtif	image/x-quicktime
-        , ( "ra	audio/x-pn-realaudio
-        , ( "ra	audio/x-pn-realaudio-plugin
-        , ( "ra	audio/x-realaudio
-        , ( "ram	audio/x-pn-realaudio
-        , ( "ras	application/x-cmu-raster
-        , ( "ras	image/cmu-raster
-        , ( "ras	image/x-cmu-raster
-        , ( "rast	image/cmu-raster
-        , ( "rexx	text/x-script.rexx
-        , ( "rf	image/vnd.rn-realflash
-        , ( "rgb	image/x-rgb
-        , ( "rm	application/vnd.rn-realmedia
-        , ( "rm	audio/x-pn-realaudio
-        , ( "rmi	audio/mid
-        , ( "rmm	audio/x-pn-realaudio
-        , ( "rmp	audio/x-pn-realaudio
-        , ( "rmp	audio/x-pn-realaudio-plugin
-        , ( "rng	application/ringing-tones
-        , ( "rng	application/vnd.nokia.ringing-tone
-        , ( "rnx	application/vnd.rn-realplayer
-        , ( "roff	application/x-troff
-        , ( "rp	image/vnd.rn-realpix
-        , ( "rpm	audio/x-pn-realaudio-plugin
-        , ( "rt	text/richtext
-        , ( "rt	text/vnd.rn-realtext
-        , ( "rtf	application/rtf
-        , ( "rtf	application/x-rtf
-        , ( "rtf	text/richtext
-        , ( "rtx	application/rtf
-        , ( "rtx	text/richtext
-        , ( "rv	video/vnd.rn-realvideo
-        , ( "s	text/x-asm
-        , ( "s3m	audio/s3m
-        , ( "saveme	application/octet-stream
-        , ( "sbk	application/x-tbook
-        , ( "scm	application/x-lotusscreencam
-        , ( "scm	text/x-script.guile
-        , ( "scm	text/x-script.scheme
-        , ( "scm	video/x-scm
-        , ( "sdml	text/plain
-        , ( "sdp	application/sdp
-        , ( "sdp	application/x-sdp
-        , ( "sdr	application/sounder
-        , ( "sea	application/sea
--- .sea	application/x-sea
--- .set	application/set
--- .sgm	text/sgml
--- .sgm	text/x-sgml
--- .sgml	text/sgml
--- .sgml	text/x-sgml
--- .sh	application/x-bsh
--- .sh	application/x-sh
--- .sh	application/x-shar
--- .sh	text/x-script.sh
--- .shar	application/x-bsh
--- .shar	application/x-shar
--- .shtml	text/html
--- .shtml	text/x-server-parsed-html
--- .sid	audio/x-psid
--- .sit	application/x-sit
--- .sit	application/x-stuffit
--- .skd	application/x-koan
--- .skm	application/x-koan
--- .skp	application/x-koan
--- .skt	application/x-koan
--- .sl	application/x-seelogo
--- .smi	application/smil
--- .smil	application/smil
--- .snd	audio/basic
--- .snd	audio/x-adpcm
--- .sol	application/solids
--- .spc	application/x-pkcs7-certificates
--- .spc	text/x-speech
--- .spl	application/futuresplash
--- .spr	application/x-sprite
--- .sprite	application/x-sprite
--- .src	application/x-wais-source
--- .ssi	text/x-server-parsed-html
--- .ssm	application/streamingmedia
--- .sst	application/vnd.ms-pki.certstore
--- .step	application/step
--- .stl	application/sla
--- .stl	application/vnd.ms-pki.stl
--- .stl	application/x-navistyle
--- .stp	application/step
--- .sv4cpio	application/x-sv4cpio
--- .sv4crc	application/x-sv4crc
--- .svf	image/vnd.dwg
--- .svf	image/x-dwg
--- .svr	application/x-world
--- .svr	x-world/x-svr
--- .swf	application/x-shockwave-flash
--- .t	application/x-troff
--- .talk	text/x-speech
--- .tar	application/x-tar
--- .tbk	application/toolbook
--- .tbk	application/x-tbook
--- .tcl	application/x-tcl
--- .tcl	text/x-script.tcl
--- .tcsh	text/x-script.tcsh
--- .tex	application/x-tex
--- .texi	application/x-texinfo
--- .texinfo	application/x-texinfo
--- .text	application/plain
--- .text	text/plain
--- .tgz	application/gnutar
--- .tgz	application/x-compressed
--- .tif	image/tiff
--- .tif	image/x-tiff
--- .tiff	image/tiff
--- .tiff	image/x-tiff
--- .tr	application/x-troff
--- .tsi	audio/tsp-audio
--- .tsp	application/dsptype
--- .tsp	audio/tsplayer
--- .tsv	text/tab-separated-values
--- .turbot	image/florian
--- .txt	text/plain
--- .uil	text/x-uil
--- .uni	text/uri-list
--- .unis	text/uri-list
--- .unv	application/i-deas
--- .uri	text/uri-list
--- .uris	text/uri-list
--- .ustar	application/x-ustar
--- .ustar	multipart/x-ustar
--- .uu	application/octet-stream
--- .uu	text/x-uuencode
--- .uue	text/x-uuencode
--- .vcd	application/x-cdlink
--- .vcs	text/x-vcalendar
--- .vda	application/vda
--- .vdo	video/vdo
--- .vew	application/groupwise
--- .viv	video/vivo
--- .viv	video/vnd.vivo
--- .vivo	video/vivo
--- .vivo	video/vnd.vivo
--- .vmd	application/vocaltec-media-desc
--- .vmf	application/vocaltec-media-file
--- .voc	audio/voc
--- .voc	audio/x-voc
--- .vos	video/vosaic
--- .vox	audio/voxware
--- .vqe	audio/x-twinvq-plugin
--- .vqf	audio/x-twinvq
--- .vql	audio/x-twinvq-plugin
--- .vrml	application/x-vrml
--- .vrml	model/vrml
--- .vrml	x-world/x-vrml
--- .vrt	x-world/x-vrt
--- .vsd	application/x-visio
--- .vst	application/x-visio
--- .vsw	application/x-visio
--- .w60	application/wordperfect6.0
--- .w61	application/wordperfect6.1
--- .w6w	application/msword
--- .wav	audio/wav
--- .wav	audio/x-wav
--- .wb1	application/x-qpro
--- .wbmp	image/vnd.wap.wbmp
--- .web	application/vnd.xara
--- .wiz	application/msword
--- .wk1	application/x-123
--- .wmf	windows/metafile
--- .wml	text/vnd.wap.wml
--- .wmlc	application/vnd.wap.wmlc
--- .wmls	text/vnd.wap.wmlscript
--- .wmlsc	application/vnd.wap.wmlscriptc
--- .word	application/msword
--- .wp	application/wordperfect
--- .wp5	application/wordperfect
--- .wp5	application/wordperfect6.0
--- .wp6	application/wordperfect
--- .wpd	application/wordperfect
--- .wpd	application/x-wpwin
--- .wq1	application/x-lotus
--- .wri	application/mswrite
--- .wri	application/x-wri
--- .wrl	application/x-world
--- .wrl	model/vrml
--- .wrl	x-world/x-vrml
--- .wrz	model/vrml
--- .wrz	x-world/x-vrml
--- .wsc	text/scriplet
--- .wsrc	application/x-wais-source
--- .wtk	application/x-wintalk
--- .xbm	image/x-xbitmap
--- .xbm	image/x-xbm
--- .xbm	image/xbm
--- .xdr	video/x-amt-demorun
--- .xgz	xgl/drawing
--- .xif	image/vnd.xiff
--- .xl	application/excel
--- .xla	application/excel
--- .xla	application/x-excel
--- .xla	application/x-msexcel
--- .xlb	application/excel
--- .xlb	application/vnd.ms-excel
--- .xlb	application/x-excel
--- .xlc	application/excel
--- .xlc	application/vnd.ms-excel
--- .xlc	application/x-excel
--- .xld	application/excel
--- .xld	application/x-excel
--- .xlk	application/excel
--- .xlk	application/x-excel
--- .xll	application/excel
--- .xll	application/vnd.ms-excel
--- .xll	application/x-excel
--- .xlm	application/excel
--- .xlm	application/vnd.ms-excel
--- .xlm	application/x-excel
--- .xls	application/excel
--- .xls	application/vnd.ms-excel
--- .xls	application/x-excel
--- .xls	application/x-msexcel
--- .xlt	application/excel
--- .xlt	application/x-excel
--- .xlv	application/excel
--- .xlv	application/x-excel
--- .xlw	application/excel
--- .xlw	application/vnd.ms-excel
--- .xlw	application/x-excel
--- .xlw	application/x-msexcel
--- .xm	audio/xm
--- .xml	application/xml
--- .xml	text/xml
--- .xmz	xgl/movie
--- .xpix	application/x-vnd.ls-xpix
--- .xpm	image/x-xpixmap
--- .xpm	image/xpm
--- .x-png	image/png
--- .xsr	video/x-amt-showrun
--- .xwd	image/x-xwd
--- .xwd	image/x-xwindowdump
--- .xyz	chemical/x-pdb
--- .z	application/x-compress
--- .z	application/x-compressed
--- .zip	application/x-compressed
--- .zip	application/x-zip-compressed
--- .zip	application/zip
--- .zip	multipart/x-zip
--- .zoo	application/octet-stream
--- .zsh	text/x-script.zsh
+        , ( "mpp"       ,   "application/vnd.ms-project" )
+        , ( "mpt"       ,	"application/x-project" )
+        , ( "mpv"       ,	"application/x-project" )
+        , ( "mpx"       ,	"application/x-project" )
+        , ( "mrc"       ,	"application/marc" )
+        , ( "ms"        ,	"application/x-troff-ms" )
+        , ( "mv"        ,	"video/x-sgi-movie" )
+        , ( "my"        ,	"audio/make" )
+        , ( "mzz"       ,	"application/x-vnd.audioexplosion.mzz" )
+        , ( "nap"       ,	"image/naplps" )
+        , ( "naplps"    ,	"image/naplps" )
+        , ( "nc"        ,	"application/x-netcdf" )
+        , ( "ncm"       ,	"application/vnd.nokia.configuration-message" )
+        , ( "nif"       ,	"image/x-niff" )
+        , ( "niff"      ,	"image/x-niff" )
+        , ( "nix"       ,	"application/x-mix-transfer" )
+        , ( "nsc"       ,	"application/x-conference" )
+        , ( "nvd"       ,	"application/x-navidoc" )
+        , ( "o"         ,	"application/octet-stream" )
+        , ( "oda"       ,   "application/oda" )
+        , ( "omc"       ,   "application/x-omc" )
+        , ( "omcd"      ,	"application/x-omcdatamaker" )
+        , ( "omcr"      ,	"application/x-omcregerator" )
+        , ( "p"         ,	"text/x-pascal" )
+        , ( "p10"       ,  	"application/pkcs10" )
+        , ( "p10"       ,  	"application/x-pkcs10" )
+        , ( "p12"       ,  	"application/pkcs-12" )
+        , ( "p12"       ,  	"application/x-pkcs12" )
+        , ( "p7a"       ,  	"application/x-pkcs7-signature" )
+        , ( "p7c"       ,  	"application/pkcs7-mime" )
+        , ( "p7c"       ,  	"application/x-pkcs7-mime" )
+        , ( "p7m"       ,  	"application/pkcs7-mime" )
+        , ( "p7m"       ,  	"application/x-pkcs7-mime" )
+        , ( "p7r"       ,  	"application/x-pkcs7-certreqresp" )
+        , ( "p7s"       ,  	"application/pkcs7-signature" )
+        , ( "part"      ,	"application/pro_eng" )
+        , ( "pas"       ,	"text/pascal" )
+        , ( "pbm"       ,	"image/x-portable-bitmap" )
+        , ( "pcl"       ,	"application/vnd.hp-pcl" )
+        , ( "pcl"       ,	"application/x-pcl" )
+        , ( "pct"       ,	"image/x-pict" )
+        , ( "pcx"       ,	"image/x-pcx" )
+        , ( "pdb"       ,	"chemical/x-pdb" )
+        , ( "pdf"       ,	"application/pdf" )
+        , ( "pfunk"     ,	"audio/make" )
+        , ( "pfunk"     ,	"audio/make.my.funk" )
+        , ( "pgm"       ,	"image/x-portable-graymap" )
+        , ( "pgm"       ,	"image/x-portable-greymap" )
+        , ( "pic"       ,	"image/pict" )
+        , ( "pict"      ,	"image/pict" )
+        , ( "pkg"	    ,   "application/x-newton-compatible-pkg" )
+        , ( "pko"	    ,   "application/vnd.ms-pki.pko" )
+        , ( "pl"	    ,   "text/plain" )
+        , ( "pl"	    ,   "text/x-script.perl" )
+        , ( "plx"       ,	"application/x-pixclscript" )
+        , ( "pm"        ,	"image/x-xpixmap" )
+        , ( "pm"        ,	"text/x-script.perl-module" )
+        , ( "pm4"       ,	"application/x-pagemaker" )
+        , ( "pm5"       ,	"application/x-pagemaker" )
+        , ( "png"       ,	"image/png" )
+        , ( "pnm"       ,	"application/x-portable-anymap" )
+        , ( "pnm"       ,	"image/x-portable-anymap" )
+        , ( "pot"       ,	"application/mspowerpoint" )
+        , ( "pot"       ,	"application/vnd.ms-powerpoint" )
+        , ( "pov"       ,	"model/x-pov" )
+        , ( "ppa"       ,	"application/vnd.ms-powerpoint" )
+        , ( "ppm"       ,	"image/x-portable-pixmap" )
+        , ( "pps"       ,	"application/mspowerpoint" )
+        , ( "pps"       ,	"application/vnd.ms-powerpoint" )
+        , ( "ppt"       ,	"application/mspowerpoint" )
+        , ( "ppt"       ,	"application/powerpoint" )
+        , ( "ppt"       ,	"application/vnd.ms-powerpoint" )
+        , ( "ppt"       ,	"application/x-mspowerpoint" )
+        , ( "ppz"       ,	"application/mspowerpoint" )
+        , ( "pre"       ,	"application/x-freelance" )
+        , ( "prt"       ,	"application/pro_eng" )
+        , ( "ps"        ,	"application/postscript" )
+        , ( "psd"       ,	"application/octet-stream" )
+        , ( "pvu"       ,	"paleovu/x-pv" )
+        , ( "pwz"       ,	"application/vnd.ms-powerpoint" )
+        , ( "py"        ,	"text/x-script.phyton" )
+        , ( "pyc"       ,	"application/x-bytecode.python" )
+        , ( "qcp"       ,	"audio/vnd.qcelp" )
+        , ( "qd3"       ,	"x-world/x-3dmf" )
+        , ( "qd3d"      ,	"x-world/x-3dmf" )
+        , ( "qif"       ,	"image/x-quicktime" )
+        , ( "qt"        ,	"video/quicktime" )
+        , ( "qtc"       ,	"video/x-qtc" )
+        , ( "qti"       ,	"image/x-quicktime" )
+        , ( "qtif"      ,	"image/x-quicktime" )
+        , ( "ra"        ,	"audio/x-pn-realaudio" )
+        , ( "ra"        ,	"audio/x-pn-realaudio-plugin" )
+        , ( "ra"        ,	"audio/x-realaudio" )
+        , ( "ram"       ,	"audio/x-pn-realaudio" )
+        , ( "ras"       ,	"application/x-cmu-raster" )
+        , ( "ras"       ,	"image/cmu-raster" )
+        , ( "ras"       ,	"image/x-cmu-raster" )
+        , ( "rast"      ,	"image/cmu-raster" )
+        , ( "rexx"      ,	"text/x-script.rexx" )
+        , ( "rf"	    ,   "image/vnd.rn-realflash" )
+        , ( "rgb"       ,	"image/x-rgb" )
+        , ( "rm"        ,	"application/vnd.rn-realmedia" )
+        , ( "rm"        ,	"audio/x-pn-realaudio" )
+        , ( "rmi"       ,	"audio/mid" )
+        , ( "rmm"       ,	"audio/x-pn-realaudio" )
+        , ( "rmp"       ,	"audio/x-pn-realaudio" )
+        , ( "rmp"       ,	"audio/x-pn-realaudio-plugin" )
+        , ( "rng"       ,	"application/ringing-tones" )
+        , ( "rng"       ,	"application/vnd.nokia.ringing-tone" )
+        , ( "rnx"       ,	"application/vnd.rn-realplayer" )
+        , ( "roff"      ,	"application/x-troff" )
+        , ( "rp"        ,	"image/vnd.rn-realpix" )
+        , ( "rpm"       ,	"audio/x-pn-realaudio-plugin" )
+        , ( "rt"        ,	"text/richtext" )
+        , ( "rt"        ,	"text/vnd.rn-realtext" )
+        , ( "rtf"       ,	"application/rtf" )
+        , ( "rtf"       ,	"application/x-rtf" )
+        , ( "rtf"       ,	"text/richtext" )
+        , ( "rtx"       ,	"application/rtf" )
+        , ( "rtx"       ,	"text/richtext" )
+        , ( "rv"        ,	"video/vnd.rn-realvideo" )
+        , ( "s"         ,	"text/x-asm" )
+        , ( "s3m"       ,	"audio/s3m" )
+        , ( "saveme"    ,	"application/octet-stream" )
+        , ( "sbk"       ,   "application/x-tbook" )
+        , ( "scm"       ,   "application/x-lotusscreencam" )
+        , ( "scm"       ,   "text/x-script.guile" )
+        , ( "scm"       ,   "text/x-script.scheme" )
+        , ( "scm"       ,   "video/x-scm" )
+        , ( "sdml"      ,	"text/plain" )
+        , ( "sdp"       ,	"application/sdp" )
+        , ( "sdp"       ,	"application/x-sdp" )
+        , ( "sdr"       ,	"application/sounder" )
+        , ( "sea"       ,	"application/sea" )
+        , ( "sea"       ,	"application/x-sea" )
+        , ( "set"       ,	"application/set" )
+        , ( "sgm"       ,	"text/sgml" )
+        , ( "sgm"       ,	"text/x-sgml" )
+        , ( "sgml"      ,	"text/sgml" )
+        , ( "sgml"      ,	"text/x-sgml" )
+        , ( "sh"        ,	"application/x-bsh" )
+        , ( "sh"        ,	"application/x-sh" )
+        , ( "sh"        ,	"application/x-shar" )
+        , ( "sh"        ,	"text/x-script.sh" )
+        , ( "shar"	    ,   "application/x-shar" )
+        , ( "shtml"     ,	"text/html" )
+        , ( "shtml"     ,	"text/x-server-parsed-html" )
+        , ( "sid"       ,	"audio/x-psid" )
+        , ( "sit"       ,	"application/x-sit" )
+        , ( "sit"       ,	"application/x-stuffit" )
+        , ( "skd"       ,	"application/x-koan" )
+        , ( "skm"       ,	"application/x-koan" )
+        , ( "skp"       ,	"application/x-koan" )
+        , ( "skt"       ,	"application/x-koan" )
+        , ( "sl"        ,	"application/x-seelogo" )
+        , ( "smi"       ,	"application/smil" )
+        , ( "smil"	    ,   "application/smil" )
+        , ( "snd"	    ,   "audio/basic" ) 
+        , ( "snd"	    ,   "audio/x-adpcm" )
+        , ( "sol"	    ,   "application/solids" )
+        , ( "spc"	    ,   "application/x-pkcs7-certificates" )
+        , ( "spc"	    ,   "text/x-speech" )
+        , ( "spl"	    ,   "application/futuresplash" )
+        , ( "spr"	    ,   "application/x-sprite" )
+        , ( "sprite"    ,	"application/x-sprite" )
+        , ( "src"       ,	"application/x-wais-source" )
+        , ( "ssi"       ,	"text/x-server-parsed-html" )
+        , ( "ssm"       ,	"application/streamingmedia" )
+        , ( "sst"       ,	"application/vnd.ms-pki.certstore" )
+        , ( "step"	    ,   "application/step" )
+        , ( "stl"       ,	"application/sla" )
+        , ( "stl"       ,	"application/vnd.ms-pki.stl" )
+        , ( "stl"       ,	"application/x-navistyle" )
+        , ( "stp"       ,	"application/step" )
+        , ( "sv4cpio"   ,	"application/x-sv4cpio" )
+        , ( "sv4crc"    ,	"application/x-sv4crc" )
+        , ( "svf"       ,	"image/vnd.dwg" )
+        , ( "svf"       ,	"image/x-dwg" )
+        , ( "svr"       ,	"application/x-world" )
+        , ( "svr"       ,	"x-world/x-svr" )
+        , ( "swf"       ,	"application/x-shockwave-flash" )
+        , ( "t"         ,	"application/x-troff" )
+        , ( "talk"    	,   "text/x-speech" )
+        , ( "tar"       ,	"application/x-tar" )
+        , ( "tbk"       ,	"application/toolbook" )
+        , ( "tbk"       ,	"application/x-tbook" )
+        , ( "tcl"       ,	"application/x-tcl" )
+        , ( "tcl"       ,	"text/x-script.tcl" )
+        , ( "tcsh"      ,	"text/x-script.tcsh" )
+        , ( "tex"       ,	"application/x-tex" )
+        , ( "texi"      ,	"application/x-texinfo" )
+        , ( "texinfo"	,   "application/x-texinfo" )
+        , ( "text"      ,	"text/plain" )
+        , ( "tgz"       ,	"application/gnutar" )
+        , ( "tgz"       ,	"application/x-compressed" )
+        , ( "tif"       ,	"image/tiff" )
+        , ( "tif"       ,	"image/x-tiff" )
+        , ( "tiff"      ,	"image/tiff" )
+        , ( "tr"        ,	"application/x-troff" )
+        , ( "tsi"       ,	"audio/tsp-audio" )
+        , ( "tsp"       ,	"application/dsptype" )
+        , ( "tsp"       ,	"audio/tsplayer" )
+        , ( "tsv"       ,	"text/tab-separated-values" )
+        , ( "turbot"    ,	"image/florian" )
+        , ( "txt"       ,	"text/plain" )
+        , ( "uil"       ,	"text/x-uil" )
+        , ( "uni"       ,	"text/uri-list" )
+        , ( "unis"	    ,   "text/uri-list" )
+        , ( "unv"       ,   "application/i-deas" )
+        , ( "uri"       ,   "text/uri-list" )
+        , ( "uris"      ,	"text/uri-list" )
+        , ( "ustar"     ,	"application/x-ustar" )
+        , ( "uu"	    ,   "text/x-uuencode" )
+        , ( "uue"       ,	"text/x-uuencode" )
+        , ( "vcd"       ,	"application/x-cdlink" )
+        , ( "vcs"       ,	"text/x-vcalendar" )
+        , ( "vda"       ,	"application/vda" )
+        , ( "vdo"       ,	"video/vdo" )
+        , ( "vew"       ,	"application/groupwise" )
+        , ( "viv"       ,	"video/vivo" )
+        , ( "vivo"      ,	"video/vivo" )
+        , ( "vmd"       ,	"application/vocaltec-media-desc" )
+        , ( "vmf"       ,	"application/vocaltec-media-file" )
+        , ( "voc"       ,	"audio/voc" )
+        , ( "voc"       ,	"audio/x-voc" )
+        , ( "vos"       ,	"video/vosaic" )
+        , ( "vox"       ,	"audio/voxware" )
+        , ( "vqe"       ,	"audio/x-twinvq-plugin" )
+        , ( "vqf"       ,	"audio/x-twinvq" )
+        , ( "vql"       ,	"audio/x-twinvq-plugin" )
+        , ( "vrml"      ,	"application/x-vrml" )
+        , ( "vrt"       ,	"x-world/x-vrt" )
+        , ( "vsd"       ,	"application/x-visio" )
+        , ( "vst"       ,	"application/x-visio" )
+        , ( "vsw"       ,	"application/x-visio" )
+        , ( "w60"       ,	"application/wordperfect6.0" )
+        , ( "w61"       ,	"application/wordperfect6.1" )
+        , ( "w6w"       ,	"application/msword" )
+        , ( "wav"       ,	"audio/wav" )
+        , ( "wav"       ,	"audio/x-wav" )
+        , ( "wb1"       ,	"application/x-qpro" )
+        , ( "wbmp"      ,	"image/vnd.wap.wbmp" )
+        , ( "web"       ,	"application/vnd.xara" )
+        , ( "wiz"       ,	"application/msword" )
+        , ( "wk1"       ,	"application/x-123" )
+        , ( "wmf"       ,	"windows/metafile" )
+        , ( "wml"       ,	"text/vnd.wap.wml" )
+        , ( "wmlc"      ,	"application/vnd.wap.wmlc" )
+        , ( "wmls"      ,	"text/vnd.wap.wmlscript" )
+        , ( "wmlsc"     ,	"application/vnd.wap.wmlscriptc" )
+        , ( "word"      ,	"application/msword" )
+        , ( "wp"        ,   "application/wordperfect" )
+        , ( "wp5"       ,	"application/wordperfect" )
+        , ( "wp5"       ,	"application/wordperfect6.0" )
+        , ( "wp6"       ,	"application/wordperfect" )
+        , ( "wpd"       ,	"application/wordperfect" )
+        , ( "wpd"       ,	"application/x-wpwin" )
+        , ( "wq1"       ,	"application/x-lotus" )
+        , ( "wri"       ,	"application/mswrite" )
+        , ( "wri"       ,	"application/x-wri" )
+        , ( "wrl"       ,	"application/x-world" )
+        , ( "wrl"       ,	"model/vrml" )
+        , ( "wrl"       ,	"x-world/x-vrml" )
+        , ( "wrz"       ,	"model/vrml" )
+        , ( "wrz"       ,	"x-world/x-vrml" )
+        , ( "wsc"       ,	"text/scriplet" )
+        , ( "wsrc"      ,	"application/x-wais-source" )
+        , ( "wtk"       ,	"application/x-wintalk" )
+        , ( "xbm"       ,	"image/x-xbitmap" )
+        , ( "xbm"       ,	"image/x-xbm" )
+        , ( "xbm"       ,	"image/xbm" )
+        , ( "xdr"       ,	"video/x-amt-demorun" )
+        , ( "xgz"       ,	"xgl/drawing" )
+        , ( "xif"       ,	"image/vnd.xiff" )
+        , ( "xl"        ,	"application/excel" )
+        , ( "xla"       ,	"application/excel" )
+        , ( "xla"       ,	"application/x-excel" )
+        , ( "xla"       ,	"application/x-msexcel" )
+        , ( "xlb"       ,	"application/excel" )
+        , ( "xlb"       ,	"application/vnd.ms-excel" )
+        , ( "xlb"       ,	"application/x-excel" )
+        , ( "xlc"       ,	"application/excel" )
+        , ( "xlc"       ,	"application/vnd.ms-excel" )
+        , ( "xlc"       ,	"application/x-excel" )
+        , ( "xld"       ,	"application/excel" )
+        , ( "xld"       ,	"application/x-excel" )
+        , ( "xlk"       ,	"application/excel" )
+        , ( "xlk"       ,	"application/x-excel" )
+        , ( "xll"       ,	"application/excel" )
+        , ( "xll"       ,	"application/vnd.ms-excel" )
+        , ( "xll"       ,	"application/x-excel" )
+        , ( "xlm"       ,	"application/excel" )
+        , ( "xlm"       ,	"application/vnd.ms-excel" )
+        , ( "xlm"       ,	"application/x-excel" )
+        , ( "xls"       ,	"application/excel" )
+        , ( "xls"       ,	"application/vnd.ms-excel" )
+        , ( "xls"       ,	"application/x-excel" )
+        , ( "xls"       ,	"application/x-msexcel" )
+        , ( "xlt"       ,	"application/excel" )
+        , ( "xlt"       ,	"application/x-excel" )
+        , ( "xlv"       ,	"application/excel" )
+        , ( "xlv"       ,	"application/x-excel" )
+        , ( "xlw"       ,	"application/excel" )
+        , ( "xlw"       ,	"application/vnd.ms-excel" )
+        , ( "xlw"       ,	"application/x-excel" )
+        , ( "xlw"       ,	"application/x-msexcel" )
+        , ( "xm"        ,   "audio/xm" )
+        , ( "xml"       ,	"application/xml" )
+        , ( "xmz"       ,	"xgl/movie" )
+        , ( "xpix"      ,	"application/x-vnd.ls-xpix" )
+        , ( "xpm"       ,	"image/xpm" )
+        , ( "x-png"     ,	"image/png" )
+        , ( "xsr"       ,	"video/x-amt-showrun" )
+        , ( "xwd"       ,	"image/x-xwd" )
+        , ( "xyz"       ,	"chemical/x-pdb" )
+        , ( "z"         ,	"application/x-compress" )
+        , ( "zip"       ,	"application/zip" )
+        , ( "zoo"       ,	"application/octet-stream" )
+        , ( "zsh"       ,	"text/x-script.zsh" )
         ]
 
