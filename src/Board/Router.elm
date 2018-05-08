@@ -8,7 +8,7 @@ import Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
 import Board.Param exposing (..)
-import File exposing(read)
+import File exposing(read, getContentType)
 import Native.Console exposing(..)
 import Status exposing (..)
 import Dict
@@ -196,7 +196,7 @@ getFile prefix (param, req) =
             StrParam path ->
                 prefix ++ path
                     |> read
-                    |> Task.map (makeResponse req)
+                    |> Task.map (makeResponse path req)
                     |> Task.map Reply
                     |> Task.onError (onGetFileError next)
             
@@ -208,9 +208,9 @@ onGetFileError value _ =
     value
 
 
-makeResponse req file = 
+makeResponse path req file = 
     { response
-    | content = Data "test" file
+    | content = Data (getContentType path) file
     , status = custom 200
     , header =  Dict.insert "Server" "test" <| Dict.insert "Cache-Control" "public" response.header
     , id = req.id
