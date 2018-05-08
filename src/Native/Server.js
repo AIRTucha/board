@@ -42,10 +42,6 @@ var _airtucha$board$Native_Server = function(){
         }
     }
     const https = require('https')
-    const sendPlainText = contentType => 
-        sendContent(
-            ( value, res ) => res.write(value) 
-        )(contentType)
     const getData = (content, contentType) => {
         if(content) {
             if ( "string" == typeof content ) {
@@ -148,8 +144,10 @@ var _airtucha$board$Native_Server = function(){
         sendData: sendContent( 
             ( value, res ) => value( v => res.write(v) ) 
         ),
-        sendText: sendPlainText,
-        sendJson: sendPlainText("application/json"),
+        sendText: contentType => 
+            sendContent(
+                ( value, res ) => res.write(value) 
+            )(contentType),
         sendEmpty: sendContent(
             ( value, res ) => value
         )(undefined),

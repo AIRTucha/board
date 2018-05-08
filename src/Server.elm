@@ -51,7 +51,7 @@ send res =
             Native.Server.sendData contentType res data
 
         JSON json ->
-            Native.Server.sendJson res json
+            Native.Server.sendText "application/json" res json
     
         Text contentType data ->
             Native.Server.sendText contentType res data
