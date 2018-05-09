@@ -155,14 +155,9 @@ parseCookies req =
 
 parseSinglCookie string dict =
     case split "=" string of 
-        key :: valueWithConf :: [] ->
-            case split " " valueWithConf of 
-                value :: conf ->
-                    dict 
-                        |> insert key value
-
-                [] ->
-                    dict 
+        key :: value :: _ ->
+            dict 
+                |> insert key value
         
         _ ->
             dict

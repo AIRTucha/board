@@ -119,3 +119,13 @@ type alias Options =
     , timeout: Int
     , https: HTTPSOptions
     }
+
+
+type alias Cookie =
+    { value: String
+    , httpOnly: Bool
+    , secure: Bool 
+    , timespan: Maybe Int
+    , domain: Maybe String
+    , path: Maybe String
+    }
