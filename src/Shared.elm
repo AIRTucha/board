@@ -45,7 +45,7 @@ type Content a
 
 
 type alias Response a =
-    { cookeis : Object
+    { cookeis : Dict String Cookie
     , id: String
     , content : Content a
     , status : Status
@@ -78,7 +78,7 @@ type Method
     | Put
     | Delete
 
-
+response: Response a
 response =
     { cookeis = Dict.empty
     , id = ""

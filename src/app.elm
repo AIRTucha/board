@@ -7,6 +7,7 @@ import Board exposing (..)
 import Board.Router exposing (..)
 import Shared exposing (..)
 import Debug exposing (log)
+import Dict exposing(insert)
 config = 
     { state = 0
     , errorPrefix = Just "Warning"
@@ -65,6 +66,7 @@ getApp =
 getStyles =
     getFile "./public/styles.css" 
 
+
 getStyle =
     getFile "./public/style.css" 
 
@@ -87,6 +89,7 @@ makeResponse req file =
         { res
         | content = Data "test" file
         , id = req.id
+        , cookeis = insert "test" cookei res.cookeis
         } 
 
 
@@ -97,4 +100,14 @@ makeTextResponse req text =
         { res
         | content = Text "text/plain" text
         , id = req.id
+        , cookeis = insert "test" cookei res.cookeis
         } 
+
+cookei = 
+    { value = "testValue"
+    , httpOnly = True
+    , secure = False 
+    , timespan = Just 1000
+    , domain = Just "localhost"
+    , path = Just "count"
+    }

@@ -23,9 +23,16 @@ var _airtucha$board$Native_Server = function(){
     const setHeaders = (dict, res) => {
         if(dict.ctor == 'RBNode_elm_builtin'){
             res.setHeader(dict._1, dict._2)
-            return setHeaders(dict._4, res)
+            return setHeaders(dict._3, setHeaders(dict._4, res))
         } else 
             return res
+    }
+    const dictToTupleArray = (dict, array) => {
+        if(dict.ctor == 'RBNode_elm_builtin'){
+            array.push([dict._1, dict._2])
+            return dictToTupleArray(dict._3, dictToTupleArray(dict._4, array))
+        } else 
+            return array
     }
     const sendContent = setContent => contentType => response => {
         const res = requests.get(response.id)
@@ -33,6 +40,8 @@ var _airtucha$board$Native_Server = function(){
         return function( value ) {
             if(res) {
                 res.setHeader('Content-Type', contentType)
+                console.log(dictToTupleArray(response.cookeis, []))
+            // res.setHeader('Set-Cookie', )
                 setHeaders(response.header, res)
                 res.statusCode = getStatus(response.status)
                 setContent(value, res);
