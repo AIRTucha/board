@@ -125,7 +125,7 @@ type alias Cookie =
     { value: String
     , httpOnly: Bool
     , secure: Bool 
-    , timespan: Maybe Int
+    , lifetime: Maybe Int
     , domain: Maybe String
     , path: Maybe String
     }

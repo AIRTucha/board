@@ -117,7 +117,7 @@ cookei str =
     { value = str
     , httpOnly = True
     , secure = False 
-    , timespan = Just 1000000000
+    , lifetime = Just 1000000000
     , domain = Just "test.localhost"
     , path = Just "/count"
     }
