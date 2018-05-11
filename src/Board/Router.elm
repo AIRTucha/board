@@ -9,9 +9,9 @@ import Date exposing (..)
 import Basics exposing (..)
 import Board.Param exposing (..)
 import File exposing(read, getContentType)
-import Native.Console exposing(..)
 import Status exposing (..)
 import Dict
+
 type alias RoutHandler a b c = 
     (Params, Request a ) ->  Mode b (Answer c)
 
