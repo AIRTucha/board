@@ -8,6 +8,7 @@ import Board.Router exposing (..)
 import Shared exposing (..)
 import Debug exposing (log)
 import Dict exposing(insert)
+import Status exposing (..)
 config = 
     { state = 0
     , errorPrefix = Just "Warning"
@@ -89,7 +90,12 @@ makeResponse req file =
         { res
         | content = Data "test" file
         , id = req.id
-        , cookeis = insert "test" cookei res.cookeis
+        , status = ok
+        , cookeis = res.cookeis
+            |> insert "test1" (cookei "testvalue1") 
+            -- |> insert "test2" (cookei "testvalue2") 
+            -- |> insert "test3" (cookei "testvalue3") 
+            -- |> insert "test4" (cookei "testvalue4") 
         } 
 
 
@@ -100,14 +106,18 @@ makeTextResponse req text =
         { res
         | content = Text "text/plain" text
         , id = req.id
-        , cookeis = insert "test" cookei res.cookeis
+        , cookeis = res.cookeis
+            |> insert "test1" (cookei "testvalue1") 
+            |> insert "test2" (cookei "testvalue2") 
+            |> insert "test3" (cookei "testvalue3") 
+            |> insert "test4" (cookei "testvalue4") 
         } 
 
-cookei = 
-    { value = "testValue"
+cookei str = 
+    { value = str
     , httpOnly = True
     , secure = False 
-    , timespan = Just 1000
-    , domain = Just "localhost"
-    , path = Just "count"
+    , timespan = Just 1000000000
+    , domain = Just "test.localhost"
+    , path = Just "/count"
     }

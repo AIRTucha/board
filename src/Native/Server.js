@@ -27,21 +27,43 @@ var _airtucha$board$Native_Server = function(){
         } else 
             return res
     }
+    const maybeToString = prefix => maybe => 
+        maybe.ctor == "Just" ? prefix + maybe._0 : ""
+    const stringIfTrue = string => predicate =>
+        predicate = true ? string : ""
+    const getDate = timespan => {
+        if(timespan.ctor == "Just") {
+            const date = (new Date).getTime() + timespan._0
+            return `Expires=${new Date(date).toUTCString()}`
+        } else 
+            return ""
+    }
+    const createCookie = (name, value) => 
+        [
+            `${name}=${value.value}`,
+            getDate(value.timespan),
+            // maybeToString("Path=")(value.path),
+            // maybeToString("Domain=")(value.domain),
+            // stringIfTrue("HttpOnly")(value.httpOnly),
+            stringIfTrue("Secure")(value.secure)
+        ].join("; ")
+
     const dictToTupleArray = (dict, array) => {
         if(dict.ctor == 'RBNode_elm_builtin'){
-            array.push([dict._1, dict._2])
+            array.push(createCookie(dict._1, dict._2))
             return dictToTupleArray(dict._3, dictToTupleArray(dict._4, array))
         } else 
             return array
     }
+
     const sendContent = setContent => contentType => response => {
         const res = requests.get(response.id)
         requests.delete(response.id)
         return function( value ) {
             if(res) {
-                res.setHeader('Content-Type', contentType)
-                console.log(dictToTupleArray(response.cookeis, []))
-            // res.setHeader('Set-Cookie', )
+                if(contentType)
+                    res.setHeader('Content-Type', contentType)
+                res.setHeader('Set-Cookie',  dictToTupleArray(response.cookeis, []))
                 setHeaders(response.header, res)
                 res.statusCode = getStatus(response.status)
                 setContent(value, res);
@@ -107,7 +129,7 @@ var _airtucha$board$Native_Server = function(){
                         } )
                         const address = req.connection.address()
                         const contentType = req.headers['content-type']
-                        const cookies = req.headers['cookies']
+                        const cookies = req.headers['cookie']
                         let content = undefined
                         res.ttl = option.timeout + time
                         requests.set( id, res )
