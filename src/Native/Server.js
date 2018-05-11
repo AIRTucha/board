@@ -42,9 +42,9 @@ var _airtucha$board$Native_Server = function(){
         [
             `${name}=${value.value}`,
             getDate(value.timespan),
-            // maybeToString("Path=")(value.path),
-            // maybeToString("Domain=")(value.domain),
-            // stringIfTrue("HttpOnly")(value.httpOnly),
+            maybeToString("Path=")(value.path),
+            maybeToString("Domain=")(value.domain),
+            stringIfTrue("HttpOnly")(value.httpOnly),
             stringIfTrue("Secure")(value.secure)
         ].join("; ")
 
