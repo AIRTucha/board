@@ -2,8 +2,14 @@ const http = require('http');
 const https = require('https')
 const hash = require('object-hash');
 const requests = new Map()
-
+/**
+ * 
+ */
 const emptyDict = { ctor: 'RBEmpty_elm_builtin', _0: { ctor: 'LBlack' } }
+/**
+ * 
+ * @param {*} str 
+ */
 const getMethod = str => {
     switch( str ) {
         case "GET": return { ctor: "Get" }
@@ -12,8 +18,17 @@ const getMethod = str => {
         case "DELETE": return { ctor: "Delete" }
     }
 }
+/**
+ * 
+ * @param {*} status 
+ */
 const getStatus = status => 
     status.ctor == "CustomStatus" ? status._0 : status.ctor.slice(6)
+/**
+ * 
+ * @param {*} dict 
+ * @param {*} res 
+ */
 const setHeaders = ( dict, res ) => {
     if(dict.ctor == 'RBNode_elm_builtin'){
         res.setHeader(dict._1, dict._2)
@@ -21,10 +36,24 @@ const setHeaders = ( dict, res ) => {
     } else 
         return res
 }
+/**
+ * 
+ * @param {*} prefix 
+ * @param {*} maybe 
+ */
 const maybeToString = ( prefix, maybe ) =>
     maybe.ctor == "Just" ? prefix + maybe._0 : ""
+/**
+ * 
+ * @param {*} string 
+ * @param {*} predicate 
+ */
 const stringIfTrue = (string, predicate) => 
     predicate = true ? string : ""
+/**
+ * 
+ * @param {*} lifetime 
+ */
 const getDate = lifetime => {
     if(lifetime.ctor == "Just") {
         const date = ( new Date ).getTime() + lifetime._0
@@ -32,6 +61,11 @@ const getDate = lifetime => {
     } else 
         return ""
 }
+/**
+ * 
+ * @param {*} name 
+ * @param {*} value 
+ */
 const createCookie = ( name, value ) => 
     [
         `${ name }=${ value.value}`,
@@ -41,6 +75,11 @@ const createCookie = ( name, value ) =>
         stringIfTrue( "HttpOnly", value.httpOnly ),
         stringIfTrue( "Secure", value.secure )
     ].join("; ")
+/**
+ * 
+ * @param {*} dict 
+ * @param {*} array 
+ */
 const dictToTupleArray = ( dict, array ) => {
     if( dict.ctor == 'RBNode_elm_builtin' ){
         array.push( createCookie( dict._1, dict._2 ) )
@@ -48,6 +87,10 @@ const dictToTupleArray = ( dict, array ) => {
     } else 
         return array
 }
+/**
+ * 
+ * @param {*} setContent 
+ */
 const sendContent = setContent => contentType => response => {
     const res = requests.get( response.id )
     requests.delete(response.id)
@@ -64,6 +107,11 @@ const sendContent = setContent => contentType => response => {
         return { type: 'node', branches: { ctor: '[]' } }
     }
 }
+/**
+ * 
+ * @param {*} content 
+ * @param {*} contentType 
+ */
 const getData = ( content, contentType ) => {
     if( content ) {
         if ( "string" == typeof content ) {
@@ -89,7 +137,19 @@ const getData = ( content, contentType ) => {
             ctor: 'Empty',
         }
 }
+/**
+ * 
+ * @param {*} str 
+ */
 const getProtocol = str => { ctor:str ? str.toUpperCase() : "HTTP" }
+/**
+ * 
+ * @param {*} port 
+ * @param {*} protocol 
+ * @param {*} reqHandler 
+ * @param {*} closeHandler 
+ * @param {*} options 
+ */
 const createServer = ( port, protocol, reqHandler, closeHandler, options ) => 
     (
         options ? 
@@ -98,8 +158,14 @@ const createServer = ( port, protocol, reqHandler, closeHandler, options ) =>
             protocol.createServer( options, reqHandler )
     ).on( 'close', closeHandler )
      .listen( port )
+/**
+ * 
+ */
 const _airtucha$board$Native_Server = function(){
     return {
+        /**
+         * 
+         */
         open: port => option => settings => {
             const maybeOptions = option.https
             const intervalId = setInterval(
@@ -158,16 +224,28 @@ const _airtucha$board$Native_Server = function(){
                 return createServer( port, http, reqHandler, closeHandler, options )
             }   
         },
+        /**
+         * 
+         */
         sendData: sendContent( 
             ( value, res ) => value( v => res.write( v ) ) 
         ),
+        /**
+         * 
+         */
         sendText: contentType => 
             sendContent(
                 ( value, res ) => res.write( value ) 
             )(contentType),
+        /**
+         * 
+         */
         sendEmpty: sendContent(
             ( value, res ) => value
         )(undefined),
+        /**
+         * 
+         */
         close: server => {
             server.close()
             return { ctor: '_Tuple0' }
