@@ -148,10 +148,9 @@ processRequest raw =
 
  
 parseCookies req =
-    Debug.log "Raw Cookies" req.cookies
+    req.cookies
         |> split "; "
         |> foldl parseSinglCookie Dict.empty
-        |> Debug.log "cookies"
 
 
 parseSinglCookie string dict =
