@@ -78,10 +78,11 @@ type Method
     | Put
     | Delete
 
-response: Response a
-response =
+
+getResponse: Request a -> Response a
+getResponse request =
     { cookeis = Dict.empty
-    , id = ""
+    , id = request.id
     , content = Empty 
     , status = notFound
     , header = Dict.empty

@@ -85,7 +85,7 @@ getFile path (param, req)  =
 
 makeResponse req file = 
     let 
-        res = response
+        res = getResponse req
     in
         { res
         | content = Data "test" file
@@ -101,7 +101,7 @@ makeResponse req file =
 
 makeTextResponse req text = 
     let 
-        res = response
+        res = getResponse req
     in
         { res
         | content = Text "text/plain" text

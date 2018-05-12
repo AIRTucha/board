@@ -209,12 +209,15 @@ onGetFileError value _ =
 
 
 makeResponse path req file = 
-    { response
-    | content = Data (getContentType path) file
-    , status = custom 200
-    , header =  Dict.insert "Server" "test" <| Dict.insert "Cache-Control" "public" response.header
-    , id = req.id
-    }
+    let 
+        res = getResponse req
+    in
+        { res
+        | content = Data (getContentType path) file
+        , status = custom 200
+        , header =  Dict.insert "Server" "test" <| Dict.insert "Cache-Control" "public" res.header
+        , id = req.id
+        }
 
 
 factory parsePath mode url handler router request =

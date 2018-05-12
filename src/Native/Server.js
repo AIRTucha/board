@@ -91,7 +91,7 @@ const dictToTupleArray = ( dict, array ) => {
  * 
  * @param {*} setContent 
  */
-const sendContent = setContent => contentType => response => {
+const sendContent = setContent => contentType => getResponse => {
     const res = requests.get( response.id )
     requests.delete(response.id)
     return function( value ) {

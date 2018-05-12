@@ -72,7 +72,10 @@ toOutput request state =
         StateLess answer ->
             case answer of
                 Next newReq ->
-                    Output { response | id = newReq.id }
+                    let 
+                        res = getResponse newReq 
+                    in
+                        Output { res| id = newReq.id }
                     
                 Reply res ->
                     Output res
