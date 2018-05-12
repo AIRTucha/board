@@ -7,15 +7,7 @@
         "../src",
         "."
     ],
-    "exposed-modules": [
-        "Status",
-        "Shared",
-        "Server",
-        "File",
-        "Board",
-        "Board.Param",
-        "Board.Router"
-    ],
+    "exposed-modules": [],
     "dependencies": {
         "AIRTucha/pathfinder": "1.0.0 <= v < 2.0.0",
         "elm-community/elm-test": "4.0.0 <= v < 5.0.0",

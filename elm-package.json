@@ -7,7 +7,15 @@
         "src",
         "tests"
     ],
-    "exposed-modules": [],
+    "exposed-modules": [
+        "Status",
+        "Shared",
+        "Server",
+        "File",
+        "Board",
+        "Board.Param",
+        "Board.Router"
+    ],
     "native-modules": true,
     "dependencies": {
         "AIRTucha/pathfinder": "1.0.0 <= v < 2.0.0",
