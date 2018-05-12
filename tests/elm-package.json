@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Test Suites",
-    "repository": "https://github.com/airtucha/board.git",
+    "repository": "https://github.com/AIRTucha/board.git",
     "license": "MIT",
     "source-directories": [
         "../src",

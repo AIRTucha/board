@@ -3,7 +3,7 @@ const fs = require('fs');
 /**
  * 
  */
-const _airtucha$board$Native_File = function() {
+const _AIRTucha$board$Native_File = function() {
     return {
         /**
          * 

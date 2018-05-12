@@ -161,7 +161,7 @@ const createServer = ( port, protocol, reqHandler, closeHandler, options ) =>
 /**
  * 
  */
-const _airtucha$board$Native_Server = function(){
+const _AIRTucha$board$Native_Server = function(){
     return {
         /**
          * 

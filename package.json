@@ -10,7 +10,7 @@
     "elm": "elm",
     "test": "elm-test --watch"
   },
-  "author": "airtucha",
+  "author": "AIRTucha",
   "license": "ISC",
   "dependencies": {
     "elm": "^0.18.0",

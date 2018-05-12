@@ -5,6 +5,7 @@ import Task exposing (Task)
 import Bytes exposing (Bytes)
 import Dict exposing(..)
 import String exposing(split)
+import Debug 
 type Buffer = Buffer
 
 

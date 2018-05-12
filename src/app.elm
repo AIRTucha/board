@@ -79,16 +79,16 @@ redirect str _ =
 getFile path (param, req)  =
     path
         |> read
-        |> Task.map (makeResponse req)
+        |> Task.map (makeResponse req path)
         |> Task.map Reply
 
 
-makeResponse req file = 
+makeResponse req path file = 
     let 
         res = getResponse req
     in
         { res
-        | content = Data "test" file
+        | content = Data (File.getContentType path) file
         , id = req.id
         , status = ok
         , cookeis = res.cookeis

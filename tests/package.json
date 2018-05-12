@@ -5,7 +5,7 @@
   "scripts": {
     "install": "elm-package install"
   },
-  "author": "airtucha",
+  "author": "AIRTucha",
   "license": "ISC",
   "dependencies": {
     "elm": "^0.18.0"

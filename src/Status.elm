@@ -1,8 +1,5 @@
 module Status exposing (..)
-{-| HTTP status codes.
 
-Defined by RFC1945 (HTTP/1.0), RFC2616 (HTTP/1.1), RFC2518 (WebDAV), RFC6585 (Additional HTTP Status Codes), and RFC7538 (Permanent Redirect).
--}
 type Status
     = Status202
     | Status502
@@ -339,3 +336,8 @@ useProxy =
 custom : Int -> Status
 custom =
     CustomStatus
+
+{- HTTP status codes.
+
+Defined by RFC1945 (HTTP/1.0), RFC2616 (HTTP/1.1), RFC2518 (WebDAV), RFC6585 (Additional HTTP Status Codes), and RFC7538 (Permanent Redirect).
+-}
