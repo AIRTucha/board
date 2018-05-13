@@ -45,51 +45,51 @@ stateLessAsync v =
         |> Task.map StateLess
         |> Async
 
-router parsePath mode url handler router request =
+router checkMethod mode url handler router request =
     request
         |> router 
-        |> processModeAnswer parsePath mode url handler
+        |> processModeAnswer checkMethod mode url handler
 
 
-processModeAnswer parsePath mode url handler modeAnswer =
+processModeAnswer checkMethod mode url handler modeAnswer =
     case modeAnswer of    
         Sync answer ->
             case answer of
                 StateLess value ->
                     case value of 
                         Next newRequest ->
-                            tryToProcessRequest parsePath mode handler url newRequest
+                            tryToProcessRequest checkMethod mode handler url newRequest
                         
                         _ ->
                             modeAnswer
 
                 StateFull stateHandler ->
                     stateHandler
-                        |> toStateHandler parsePath mode handler url 
+                        |> toStateHandler checkMethod mode handler url 
                         |> stateFullSync
 
         Async taskAnswer ->
             taskAnswer 
-                |> Task.andThen (processAsyncAnswer parsePath mode handler url)
+                |> Task.andThen (processAsyncAnswer checkMethod mode handler url)
                 |> Async
 
 
-toStateHandler parsePath mode handler url stateHandler model =
+toStateHandler checkMethod mode handler url stateHandler model =
     let
         (newModel, answer) = stateHandler model
     in
         ( newModel
-        , processModeAnswer parsePath mode url handler answer
+        , processModeAnswer checkMethod mode url handler answer
         )
 
 
-processAsyncAnswer parsePath mode handler url answer =
+processAsyncAnswer checkMethod mode handler url answer =
     case answer of
         StateLess value ->
             case value of 
                 Next request ->
                     request
-                        |> tryToProcessRequest parsePath mode handler url
+                        |> tryToProcessRequest checkMethod mode handler url
                         |> liftToAsync
                 
                 _ ->
@@ -97,13 +97,13 @@ processAsyncAnswer parsePath mode handler url answer =
 
         StateFull stateHandler ->
             stateHandler
-                |> toStateHandler parsePath mode handler url 
+                |> toStateHandler checkMethod mode handler url 
                 |> StateFull
                 |> Task.succeed
 
 
-tryToProcessRequest parsePath mode handler url request =
-    if parsePath request then
+tryToProcessRequest checkMethod mode handler url request =
+    if checkMethod request then
         case parse url request.url of
             Failure _ ->
                 nextStateLessSync request

@@ -12,7 +12,7 @@ type alias RoutHandler a b c =
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
-
+    
 
 empty req =
     nextStateLessSync req
@@ -51,88 +51,63 @@ fromatDate req =
         |> toFloat
         |> fromTime
         |> Basics.toString
-        
-
-useHandler: Request a -> Bool
-useHandler req =
-    True
 
 
-getHandler: Request a -> Bool
-getHandler req =
-    req.method == Get
+useSyncState = router anyMethod toStateFullSync
 
 
-postHandler: Request a -> Bool
-postHandler req =
-    req.method == Post
+getSyncState = router isGet toStateFullSync
 
 
-putHandler: Request a -> Bool
-putHandler req =
-    req.method == Put
+postSyncState = router isPost toStateFullSync
 
 
-deleteHandler: Request a -> Bool
-deleteHandler req =
-    req.method == Delete
+putSyncState = router isPut toStateFullSync
 
 
-useSyncState = router useHandler toStateFullSync
+deleteSyncState = router isDelete toStateFullSync
 
 
-getSyncState = router getHandler toStateFullSync
+useState = router anyMethod toStateFullAsync
 
 
-postSyncState = router postHandler toStateFullSync
+getState = router isGet toStateFullAsync
 
 
-putSyncState = router putHandler toStateFullSync
+postState = router isPost toStateFullAsync
 
 
-deleteSyncState = router deleteHandler toStateFullSync
+putState = router isPut toStateFullAsync
 
 
-useState = router useHandler toStateFullAsync
+deleteState = router isDelete toStateFullAsync
 
 
-getState = router getHandler toStateFullAsync
+useSync = router anyMethod stateLessSync
 
 
-postState = router postHandler toStateFullAsync
+getSync = router isGet stateLessSync
 
 
-putState = router putHandler toStateFullAsync
+postSync = router isPost stateLessSync
 
 
-deleteState = router deleteHandler toStateFullAsync
+putSync = router isPut stateLessSync
 
 
-useSync = router useHandler stateLessSync
+deleteSync = router isDelete stateLessSync
 
 
-getSync = router getHandler stateLessSync
+use = router anyMethod stateLessAsync
 
 
-postSync = router postHandler stateLessSync
+get = router isGet stateLessAsync
 
 
-putSync = router putHandler stateLessSync
+post = router isPost stateLessAsync
 
 
-deleteSync = router deleteHandler stateLessSync
+put = router isPut stateLessAsync
 
 
-use = router useHandler stateLessAsync
-
-
-get = router getHandler stateLessAsync
-
-
-post = router postHandler stateLessAsync
-
-
-put = router putHandler stateLessAsync
-
-
-delete = router deleteHandler stateLessAsync
+delete = router isDelete stateLessAsync

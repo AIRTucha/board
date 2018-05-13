@@ -79,6 +79,30 @@ type Method
     | Delete
 
 
+isGet: Request a -> Bool
+isGet req =
+    req.method == Get
+
+
+isPost: Request a -> Bool
+isPost req =
+    req.method == Post
+
+
+isPut: Request a -> Bool
+isPut req =
+    req.method == Put
+
+
+isDelete: Request a -> Bool
+isDelete req =
+    req.method == Delete
+
+
+anyMethod: Request a -> Bool
+anyMethod req =
+    True
+
 getResponse: Request a -> Response a
 getResponse request =
     { cookeis = Dict.empty
