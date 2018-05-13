@@ -7,13 +7,11 @@ import Debug exposing (log)
 import Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
-import Board.Param exposing (parsingResult2params, Params(..))
+import Board.Param exposing (parsingResult2params)
 import File exposing(read, getContentType)
 import Status exposing (..)
 import Dict
 
-type Params = 
-    Params
 
 type alias RoutHandler a b c = 
     (Params, Request a ) ->  Mode b (Answer c)

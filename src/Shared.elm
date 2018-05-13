@@ -130,3 +130,11 @@ type alias Cookie =
     , domain: Maybe String
     , path: Maybe String
     }
+
+type Params
+    = IntParam Int
+    | FloatParam Float
+    | StrParam String
+    | MultiParam (List Params)
+    | QueryParam (Dict String String)
+    | EmptyParam

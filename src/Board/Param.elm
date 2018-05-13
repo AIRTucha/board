@@ -1,20 +1,11 @@
-module Board.Param exposing (parsingResult2params, Params(..))
+module Board.Param exposing (parsingResult2params)
 
  {- Convert Pathfinder parsing values to Result Params which are used for routing.
  -}
 import Pathfinder exposing (..)
 import Dict exposing (..)
 import List exposing (map, reverse)
-
-
-type Params
-    = IntParam Int
-    | FloatParam Float
-    | StrParam String
-    | MultiParam (List Params)
-    | QueryParam (Dict String String)
-    | EmptyParam
-
+import Shared exposing (Params(..))
 
 {-|
 -}
