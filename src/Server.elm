@@ -13,7 +13,6 @@ effect module Server
 import Dict
 import Task exposing (Task)
 import Native.Server
-
 import Dict exposing (Dict, insert)
 import String exposing (split)
 import List exposing (foldl)
@@ -21,6 +20,7 @@ import Shared exposing (..)
 import Dict.Extra exposing (fromListDedupe)
 import Json.Encode exposing (..)
 import Array 
+
 type RawContent
     = Raw String String
     | UTF8 String String
