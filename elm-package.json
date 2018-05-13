@@ -10,7 +10,6 @@
     "exposed-modules": [
         "Status",
         "Shared",
-        "Server",
         "File",
         "Board",
         "Board.Param",
