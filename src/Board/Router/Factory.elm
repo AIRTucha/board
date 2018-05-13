@@ -1,11 +1,11 @@
-module Board.RouterFactory exposing (..)
+module Board.Router.Factory exposing (..)
 
 import Pathfinder exposing (..)
 import Result
 import Task
 import Board.Shared exposing (..)
 import Basics exposing (..)
-import Board.Param exposing (parsingResult2params)
+import Board.Router.Param exposing (parsingResult2params)
 
 
 toStateLess handler model =

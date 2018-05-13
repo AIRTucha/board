@@ -1,4 +1,4 @@
-module Board.Static exposing (..)
+module Board.Router.Static exposing (..)
 
 import Pathfinder exposing (..)
 import Task

@@ -1,9 +1,8 @@
-module Board.Param exposing (parsingResult2params)
+module Board.Router.Param exposing (parsingResult2params)
 
  {- Convert Pathfinder parsing values to Result Params which are used for routing.
  -}
 import Pathfinder exposing (..)
-import Dict exposing (..)
 import List exposing (map, reverse)
 import Board.Shared exposing (Params(..))
 

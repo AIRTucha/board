@@ -5,7 +5,7 @@ import Test exposing (..)
 import Board exposing (..)
 import Pathfinder exposing (..)
 import Dict exposing(..)
-import Board.ParamTest exposing(..)
+import Board.Router.ParamTest exposing(..)
 
 suite : Test
 suite =

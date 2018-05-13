@@ -4,7 +4,7 @@ import Debug exposing (log)
 import Board.Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
-import Board.RouterFactory exposing (..)
+import Board.Router.Factory exposing (..)
 
 type alias RoutHandler a b c = 
     (Params, Request a ) ->  Mode b (Answer c)
@@ -12,7 +12,7 @@ type alias RoutHandler a b c =
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
-    
+
 
 empty req =
     nextStateLessSync req

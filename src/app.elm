@@ -9,7 +9,7 @@ import Board.Shared exposing (..)
 import Debug exposing (log)
 import Dict exposing(insert)
 import Board.Status exposing (..)
-import Board.Static exposing (..)
+import Board.Router.Static exposing (..)
 config = 
     { state = 0
     , errorPrefix = Just "Warning"
