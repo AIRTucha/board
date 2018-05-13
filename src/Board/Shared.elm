@@ -1,42 +1,96 @@
-module Board.Shared exposing (..)
+module Board.Shared exposing 
+    ( HTTPSOptions
+    , Options
+    , Cookie
+    , Params(..)
+    , Object
+    , Content(..)
+    , Response
+    , Protocol
+    , Request
+    , Method(..)
+    , isGet
+    , isPost
+    , isPut
+    , isDelete
+    , anyMethod
+    , getResponse
+    )
+
+{-| 
+@docs HTTPSOptions
+    , Options
+    , Cookie
+    , Params
+    , Object
+    , Content
+    , Response
+    , Protocol
+    , Request
+    , Method
+    , isGet
+    , isPost
+    , isPut
+    , isDelete
+    , anyMethod
+    , getResponse
+-}
 
 import Dict exposing (Dict)
 import Board.File exposing (File, Encoding)
 import Board.Status exposing (..)
-import Task
 
 
-type Mode error value
-    = Async (Task.Task error value)
-    | Sync value
+{-|
+-}
+type alias HTTPSOptions = Maybe
+    { key: Maybe String
+    , cert: Maybe String
+    , pfx: Maybe String
+    , passphrase: Maybe String 
+    }
 
 
-type AnswerValue value model error
-    = Redirect String
-    | Reply (Response value)
-    | Next (Request value)
+{-|
+-}
+type alias Options =
+    { portNumber: Int
+    , timeout: Int
+    , https: HTTPSOptions
+    }
 
 
-type Answer value model error
-    = StateFull (StateHandler value model error) 
-    | StateLess (AnswerValue value model error)
-   
+{-|
+-}
+type alias Cookie =
+    { value: String
+    , httpOnly: Bool
+    , secure: Bool 
+    , lifetime: Maybe Int
+    , domain: Maybe String
+    , path: Maybe String
+    }
 
+
+{-|
+-}
+type Params
+    = IntParam Int
+    | FloatParam Float
+    | StrParam String
+    | MultiParam (List Params)
+    | QueryParam (Dict String String)
+    | EmptyParam
+
+
+{-|
+-}
 type alias Object =
     Dict String String
 
 
-type alias StateHandler value model error =
-    (model -> (model, Mode error (Answer value model error)) )
-
-
-type Msg value model error
-    = Input (Request value)
-    | Output (Response value)
-    | Error String
-    | Model (StateHandler value model error) (Request value)
-
-
+{-|
+-}
 type Content a
     = JSON String
     | Data String (File a)
@@ -44,6 +98,8 @@ type Content a
     | Empty
 
 
+{-|
+-}
 type alias Response a =
     { cookeis : Dict String Cookie
     , id: String
@@ -53,11 +109,15 @@ type alias Response a =
     }
 
 
+{-|
+-}
 type Protocol
     = HTTP
     | HTTPS
 
 
+{-|
+-}
 type alias Request a =
     { url : String
     , id : String
@@ -72,6 +132,8 @@ type alias Request a =
     }
 
 
+{-|
+-}
 type Method
     = Get
     | Post
@@ -79,30 +141,43 @@ type Method
     | Delete
 
 
+{-|
+-}
 isGet: Request a -> Bool
 isGet req =
     req.method == Get
 
 
+{-|
+-}
 isPost: Request a -> Bool
 isPost req =
     req.method == Post
 
 
+{-|
+-}
 isPut: Request a -> Bool
 isPut req =
     req.method == Put
 
 
+{-|
+-}
 isDelete: Request a -> Bool
 isDelete req =
     req.method == Delete
 
 
+{-|
+-}
 anyMethod: Request a -> Bool
 anyMethod req =
     True
 
+
+{-|
+-}
 getResponse: Request a -> Response a
 getResponse request =
     { cookeis = Dict.empty
@@ -111,54 +186,3 @@ getResponse request =
     , status = notFound
     , header = Dict.empty
     }
-
-
-(=>) : a -> b -> b
-(=>) t1 t2 =
-    (\_ -> t2) t1
-
-
-(&>) task v =
-    Task.map (\_ -> v) task
-
-
-liftToAsync value =
-    case value of 
-        Sync answer ->
-            Task.succeed answer 
-        
-        Async task ->
-            task
-
-
-type alias HTTPSOptions = Maybe
-    { key: Maybe String
-    , cert: Maybe String
-    , pfx: Maybe String
-    , passphrase: Maybe String 
-    }
-
-
-type alias Options =
-    { portNumber: Int
-    , timeout: Int
-    , https: HTTPSOptions
-    }
-
-
-type alias Cookie =
-    { value: String
-    , httpOnly: Bool
-    , secure: Bool 
-    , lifetime: Maybe Int
-    , domain: Maybe String
-    , path: Maybe String
-    }
-
-type Params
-    = IntParam Int
-    | FloatParam Float
-    | StrParam String
-    | MultiParam (List Params)
-    | QueryParam (Dict String String)
-    | EmptyParam

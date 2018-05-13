@@ -1,17 +1,49 @@
-module Board.File exposing (..)
+module Board.File exposing 
+    ( Buffer
+    , File
+    , Encoding
+    , read
+    , write
+    , fromBytes
+    , fromString
+    , bytes
+    , string
+    , getContentType
+    )
+
+{-| File handling library
+
+@docs Buffer
+    , File
+    , Encoding
+    , read
+    , write
+    , fromBytes
+    , fromString
+    , bytes
+    , string
+    , getContentType
+-}
 
 import Native.File
 import Task exposing (Task)
 import Bytes exposing (Bytes)
 import Dict exposing(..)
 import String exposing(split)
-import Debug 
+
+
+{-|
+-}
 type Buffer = Buffer
 
 
+{-|
+-}
 type alias File a = (Buffer -> a) -> a
 
 
+{-|
+-}
 type Encoding
     = ASCII
     | UTF8
@@ -21,37 +53,50 @@ type Encoding
     | Hex
 
 
+{-|
+-}
 read : String -> Task String (File a)
 read path = 
     Native.File.read path
 
 
+{-|
+-}
 write: String -> File a -> Task String (File a)
 write path data = 
     Native.File.write path data
 
 
+{-|
+-}
 fromBytes: Bytes -> File a
 fromBytes =
      Bytes.toString >> fromString
 
 
+{-|
+-}
 fromString: String -> File a
 fromString =
     Native.File.fromString
 
--- TODO: refactor
 
+{-|
+-}
 bytes: Buffer -> Bytes
 bytes =
     Bytes.fromHex << string Hex 
 
 
+{-|
+-}
 string: Encoding -> Buffer -> String 
 string =
     Native.File.string
 
 
+{-|
+-}
 getContentType : String -> String
 getContentType path =
     path 
@@ -60,6 +105,9 @@ getContentType path =
         |> extensionToContentType
 
 
+{-|
+-}
+getLast : a -> List a -> a
 getLast last strList =
     case strList of
         head :: tail -> 
@@ -69,6 +117,9 @@ getLast last strList =
             last
 
 
+{-|
+-}
+extensionToContentType : String -> String
 extensionToContentType str =
     case get str contentTypes of
         Just contentType ->
@@ -78,6 +129,9 @@ extensionToContentType str =
             "application/octet-stream"
    
 
+{-|
+-}
+contentTypes : Dict String String
 contentTypes = 
     fromList     
         [ ( "3dm"       , "x-world/x-3dmf" )
@@ -534,4 +588,3 @@ contentTypes =
         , ( "zoo"       , "application/octet-stream" )
         , ( "zsh"       , "text/x-script.zsh" )
         ]
-

@@ -6,8 +6,8 @@ import Board.Shared exposing (..)
 import Basics exposing (..)
 import Board.File exposing(read, getContentType)
 import Board.Status exposing (..)
-import Dict
 import Board.Router exposing (..)
+import Board.Internals exposing (..)
 
 
 static basePath prefix router =
@@ -44,6 +44,4 @@ makeResponse path req file =
         { res
         | content = Data (getContentType path) file
         , status = custom 200
-        , header =  Dict.insert "Server" "test" <| Dict.insert "Cache-Control" "public" res.header
-        , id = req.id
         }

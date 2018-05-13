@@ -5,6 +5,7 @@ import Board.Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
 import Board.Router.Factory exposing (..)
+import Board.Internals exposing (..)
 
 type alias RoutHandler a b c = 
     (Params, Request a ) ->  Mode b (Answer c)
@@ -12,45 +13,6 @@ type alias RoutHandler a b c =
 
 type alias Router a b =
     Request a -> Mode b (Answer a)
-
-
-empty req =
-    nextStateLessSync req
-
-
-logger tag req =
-    req
-        |> logUrl tag
-        |> nextStateLessSync
-
-
-logUrl: String -> Request a -> Request a
-logUrl tag req =
-    Debug.log tag (reqToMsg req)
-        => req
-
-
-reqToMsg: Request a -> String
-reqToMsg req =
-    case req.method of 
-        Get ->
-            "GET " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
-        
-        Post ->
-            "POST " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
-        
-        Put ->
-            "PUT " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
-        
-        Delete ->
-            "DELETE " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
-
-
-fromatDate req =    
-    req.time
-        |> toFloat
-        |> fromTime
-        |> Basics.toString
 
 
 useSyncState = router anyMethod toStateFullSync
@@ -111,3 +73,42 @@ put = router isPut stateLessAsync
 
 
 delete = router isDelete stateLessAsync
+
+
+empty req =
+    nextStateLessSync req
+
+
+logger tag req =
+    req
+        |> logUrl tag
+        |> nextStateLessSync
+
+
+logUrl: String -> Request a -> Request a
+logUrl tag req =
+    Debug.log tag (reqToMsg req)
+        => req
+
+
+reqToMsg: Request a -> String
+reqToMsg req =
+    case req.method of 
+        Get ->
+            "GET " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
+        
+        Post ->
+            "POST " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
+        
+        Put ->
+            "PUT " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
+        
+        Delete ->
+            "DELETE " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
+
+
+fromatDate req =    
+    req.time
+        |> toFloat
+        |> fromTime
+        |> Basics.toString

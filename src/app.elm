@@ -10,6 +10,8 @@ import Debug exposing (log)
 import Dict exposing(insert)
 import Board.Status exposing (..)
 import Board.Router.Static exposing (..)
+import Board.Internals exposing (..)
+
 config = 
     { state = 0
     , errorPrefix = Just "Warning"

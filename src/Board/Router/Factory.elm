@@ -6,7 +6,7 @@ import Task
 import Board.Shared exposing (..)
 import Basics exposing (..)
 import Board.Router.Param exposing (parsingResult2params)
-
+import Board.Internals exposing (..)
 
 toStateLess handler model =
     let 

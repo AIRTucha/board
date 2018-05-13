@@ -5,7 +5,7 @@ import Task
 import Server exposing (..)
 import Debug exposing (..)
 import Board.Shared exposing (..)
-
+import Board.Internals exposing (..)
 
 board router conf =
     Platform.program
