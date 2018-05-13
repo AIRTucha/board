@@ -10,3 +10,5 @@ dist
 .idea
 elm-stuff
 public/*.js
+package-lock.json
+tests/package-lock.json
