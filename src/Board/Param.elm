@@ -1,8 +1,11 @@
-module Board.Param exposing (..)
+module Board.Param exposing (parsingResult2params, Params(..))
 
+ {- Convert Pathfinder parsing values to Result Params which are used for routing.
+ -}
 import Pathfinder exposing (..)
 import Dict exposing (..)
 import List exposing (map, reverse)
+
 
 type Params
     = IntParam Int
@@ -13,6 +16,8 @@ type Params
     | EmptyParam
 
 
+{-|
+-}
 parsingResult2params: ParsingResult -> Result String Params
 parsingResult2params result =
     case result of 
@@ -38,6 +43,8 @@ parsingResult2params result =
          Ok EmptyParam
 
 
+{-|
+-}
 multiValue2Param: List ParsingResult -> List Params -> Result String Params
 multiValue2Param list params =
     case list of
