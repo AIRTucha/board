@@ -21,7 +21,7 @@ const _AIRTucha$board$Native_File = function() {
         write: path => file => scheduler.nativeBinding( 
             callback =>
                 file( buffer => 
-                    fs.writeFile( path, buffer, error =>
+                    fs.writeBoard.File( path, buffer, error =>
                         error ?
                             callback( scheduler.fail( error ) )
                         :

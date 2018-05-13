@@ -1,4 +1,4 @@
-module Status exposing (..)
+module Board.Status exposing (..)
 
 {-| HTTP status codes.
 

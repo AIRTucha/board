@@ -2,10 +2,10 @@ module Board.Static exposing (..)
 
 import Pathfinder exposing (..)
 import Task
-import Shared exposing (..)
+import Board.Shared exposing (..)
 import Basics exposing (..)
-import File exposing(read, getContentType)
-import Status exposing (..)
+import Board.File exposing(read, getContentType)
+import Board.Status exposing (..)
 import Dict
 import Board.Router exposing (..)
 

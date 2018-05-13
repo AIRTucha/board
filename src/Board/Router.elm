@@ -1,7 +1,7 @@
 module Board.Router exposing (..)
 
 import Debug exposing (log)
-import Shared exposing (..)
+import Board.Shared exposing (..)
 import Date exposing (..)
 import Basics exposing (..)
 import Board.RouterFactory exposing (..)

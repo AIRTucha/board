@@ -16,7 +16,7 @@ import Native.Server
 import Dict exposing (Dict, insert)
 import String exposing (split)
 import List exposing (foldl)
-import Shared exposing (..)
+import Board.Shared exposing (..)
 import Dict.Extra exposing (fromListDedupe)
 import Json.Encode exposing (..)
 import Array 

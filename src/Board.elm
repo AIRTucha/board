@@ -4,7 +4,7 @@ import Result
 import Task
 import Server exposing (..)
 import Debug exposing (..)
-import Shared exposing (..)
+import Board.Shared exposing (..)
 
 
 board router conf =

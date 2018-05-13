@@ -1,8 +1,8 @@
-module Shared exposing (..)
+module Board.Shared exposing (..)
 
 import Dict exposing (Dict)
-import File exposing (File, Encoding)
-import Status exposing (..)
+import Board.File exposing (File, Encoding)
+import Board.Status exposing (..)
 import Task
 
 

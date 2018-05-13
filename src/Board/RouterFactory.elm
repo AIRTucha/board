@@ -3,9 +3,7 @@ module Board.RouterFactory exposing (..)
 import Pathfinder exposing (..)
 import Result
 import Task
-import Debug exposing (log)
-import Shared exposing (..)
-import Date exposing (..)
+import Board.Shared exposing (..)
 import Basics exposing (..)
 import Board.Param exposing (parsingResult2params)
 

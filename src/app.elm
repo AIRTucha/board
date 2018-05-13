@@ -1,14 +1,14 @@
 module App exposing (..)
 
 import Task
-import File exposing(read)
+import Board.File exposing(read)
 import Pathfinder exposing (..)
 import Board exposing (..)
 import Board.Router exposing (..)
-import Shared exposing (..)
+import Board.Shared exposing (..)
 import Debug exposing (log)
 import Dict exposing(insert)
-import Status exposing (..)
+import Board.Status exposing (..)
 import Board.Static exposing (..)
 config = 
     { state = 0
@@ -89,7 +89,7 @@ makeResponse req path file =
         res = getResponse req
     in
         { res
-        | content = Data (File.getContentType path) file
+        | content = Data (Board.File.getContentType path) file
         , id = req.id
         , status = ok
         , cookeis = res.cookeis

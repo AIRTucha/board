@@ -1,4 +1,4 @@
-module File exposing (..)
+module Board.File exposing (..)
 
 import Native.File
 import Task exposing (Task)

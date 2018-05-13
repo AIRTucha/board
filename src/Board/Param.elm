@@ -5,7 +5,7 @@ module Board.Param exposing (parsingResult2params)
 import Pathfinder exposing (..)
 import Dict exposing (..)
 import List exposing (map, reverse)
-import Shared exposing (Params(..))
+import Board.Shared exposing (Params(..))
 
 {-|
 -}
