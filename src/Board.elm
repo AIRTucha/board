@@ -7,6 +7,10 @@ import Debug exposing (..)
 import Board.Shared exposing (..)
 import Board.Internals exposing (..)
 
+
+{-|
+-}
+
 board router conf =
     Platform.program
         { init = ( conf.state, Cmd.none )
@@ -15,6 +19,8 @@ board router conf =
         }
 
 
+{-|
+-}
 subscriptions conf _ =
     Server.listen conf.options
 
@@ -58,6 +64,8 @@ update conf router message model =
                     (model, Cmd.none)
 
 
+{-|
+-}
 resultToOutput request result =
     case result of
         Ok answer ->
@@ -67,15 +75,14 @@ resultToOutput request result =
             Error msg
 
 
+{-|
+-}
 toOutput request state =
     case state of
         StateLess answer ->
             case answer of
                 Next newReq ->
-                    let 
-                        res = getResponse newReq 
-                    in
-                        Output { res| id = newReq.id }
+                    Output <| getResponse newReq 
                     
                 Reply res ->
                     Output res

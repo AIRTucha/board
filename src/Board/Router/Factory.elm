@@ -3,11 +3,13 @@ module Board.Router.Factory exposing (..)
 import Pathfinder exposing (..)
 import Result
 import Task
-import Board.Shared exposing (..)
 import Basics exposing (..)
 import Board.Router.Param exposing (parsingResult2params)
 import Board.Internals exposing (..)
 
+
+{-|
+-}
 toStateLess handler model =
     let 
         (newModel, answer) = handler model   
@@ -15,35 +17,51 @@ toStateLess handler model =
         (newModel, Sync << StateLess <| answer)
     
 
+{-|
+-}
 toStateFullAsync stateHandler =
     stateHandler
         |> Task.map toStateFull
         |> Async
 
-
+{-|
+-}
 stateLessSync = 
     Sync << StateLess
 
+
+{-|
+-}
 nextStateLessSync =
     stateLessSync << Next
 
 
+{-|
+-}
 toStateFull =
     StateFull << toStateLess
 
 
+{-|
+-}
 stateFullSync =
     Sync << StateFull
 
 
+{-|
+-}
 toStateFullSync =
     Sync << toStateFull
 
 
+{-|
+-}
 stateLessAsync v = 
     v 
         |> Task.map StateLess
         |> Async
+
+
 
 router checkMethod mode url handler router request =
     request

@@ -6,7 +6,8 @@ effect module Server
         , Message
         , RawContent(..)
         )
-{-|
+{-| It is not correct implementation of effect module, but it is done in this way due to perfomance reasons. 
+It is tightly coupled with Router and it is not going to be exposed as public API.
 
 @docs respond, listen, Request
 -}

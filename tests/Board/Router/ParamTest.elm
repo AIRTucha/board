@@ -4,7 +4,7 @@ import Expect exposing (Expectation)
 import Test exposing (..)
 import Board.Router.Param exposing (..)
 import Pathfinder exposing (..)
-import Shared exposing (..)
+import Board.Shared exposing (..)
 
 
 {- Test ParsingResult to Result String Board.Router.Params translation

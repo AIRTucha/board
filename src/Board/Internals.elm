@@ -23,6 +23,13 @@ import Task exposing (Task)
 
 {-|
 -}
+type Mode error value
+    = Async (Task.Task error value)
+    | Sync value
+
+
+{-|
+-}
 liftToAsync : Mode error a -> Task.Task error a
 liftToAsync value =
     case value of 
@@ -31,13 +38,6 @@ liftToAsync value =
         
         Async task ->
             task
-
-
-{-|
--}
-type Mode error value
-    = Async (Task.Task error value)
-    | Sync value
 
 
 {-|
