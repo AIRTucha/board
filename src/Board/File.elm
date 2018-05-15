@@ -12,7 +12,7 @@ module Board.File exposing
     )
 
 {-| File handling library
-
+ TODO: Has to be moved to port API
 @docs Buffer
     , File
     , Encoding
