@@ -4,7 +4,7 @@
   "description": "Elm Back-end framework",
   "main": "app.elm",
   "scripts": {
-    "start": "nodemon --exec \"elm make src/app.elm --output dist/main.js && node local.js\"",
+    "start": "nodemon --exec \"elm make src/port.elm --output dist/main.js && node local.js\"",
     "build": "elm make src/app.elm --output=dist/main.js",
     "install": "elm-package install elm-community/dict-extra",
     "elm": "elm",
