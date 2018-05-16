@@ -1,5 +1,5 @@
 // load Elm module
-const app = require('./dist/main.js').Port.worker()
+const app = require('./dist/main.js').App.worker()
 
 setInterval( () => {
     app.ports.suggestions.send("test")

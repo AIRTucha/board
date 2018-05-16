@@ -68,3 +68,4 @@ type Msg value model error
     | Output (Response value)
     | Error String
     | Model (StateHandler value model error) (Request value)
+    | Test String

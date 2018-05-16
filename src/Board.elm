@@ -1,4 +1,4 @@
-module Board exposing (..)
+port module Board exposing (..)
 
 import Result
 import Task
@@ -6,6 +6,7 @@ import Server exposing (..)
 import Debug exposing (..)
 import Board.Shared exposing (..)
 import Board.Internals exposing (..)
+import Json.Decode exposing (..)
 
 
 {-|
@@ -18,11 +19,17 @@ board router conf =
         , subscriptions = subscriptions conf
         }
 
+port suggestions : (String -> msg) -> Sub msg
+
 
 {-|
 -}
 subscriptions conf _ =
-    Server.listen conf.options
+    Sub.batch
+        [ Server.listen conf.options
+        , suggestions Test
+        ]
+    
 
 
 update conf router message model =
@@ -62,6 +69,10 @@ update conf router message model =
                 
                 Nothing ->
                     (model, Cmd.none)
+
+        Test str ->
+            Debug.log "ok" str 
+                |> \_ -> (model, Cmd.none)
 
 
 {-|
