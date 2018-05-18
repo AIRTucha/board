@@ -9,7 +9,6 @@ effect module Server
 {-| It is not correct implementation of effect module, but it is done in this way due to perfomance reasons. 
 It is tightly coupled with Router and it is not going to be exposed as public API.
 
- TODO: Has to be moved to port API
 @docs respond, listen, Request
 -}
 import Dict
