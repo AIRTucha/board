@@ -6,8 +6,17 @@ import Task
 import Basics exposing (..)
 import Board.Router.Param exposing (parsingResult2params)
 import Board.Internals exposing (..)
+import Board.Shared exposing (..)
+
+type alias ModePacker answer value model x = 
+    answer -> Mode x (Answer value model x)
 
 
+type alias PathHandler value answer = 
+    ( ( Params , Request value ) -> answer ) 
+
+
+-- type alias Router =
 {-|
 -}
 toStateLess handler model =
@@ -63,12 +72,22 @@ stateLessAsync v =
 
 
 
+
+
+router 
+    : MethodChecker value
+    -> ModePacker answer value model x
+    -> URL 
+    -> PathHandler value answer 
+    -> (request -> Mode x (Answer value model x)) 
+    -> request 
+    -> Mode x (Answer value model x)
 router checkMethod mode url handler router request =
     request
         |> router 
         |> processModeAnswer checkMethod mode url handler
 
-
+processModeAnswer : ( { cargo : Object , content : Content value , cookies : Object , host : String , id : String , ip : String , method : Method , protocol : Protocol , time : Int , url : String } -> Bool ) -> (a -> Mode x (Answer value model x)) -> URL -> ( ( Params , { cargo : Object , content : Content value , cookies : Object , host : String , id : String , ip : String , method : Method , protocol : Protocol , time : Int , url : String } ) -> a ) -> Mode x (Answer value model x) -> Mode x (Answer value model x)
 processModeAnswer checkMethod mode url handler modeAnswer =
     case modeAnswer of    
         Sync answer ->

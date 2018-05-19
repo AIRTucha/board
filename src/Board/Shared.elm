@@ -143,6 +143,12 @@ type Method
 
 {-|
 -}
+type alias MethodChecker value = 
+    Request value -> Bool
+
+
+{-|
+-}
 isGet: Request a -> Bool
 isGet req =
     req.method == Get

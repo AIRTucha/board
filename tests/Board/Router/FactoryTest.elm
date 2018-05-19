@@ -11,4 +11,10 @@ param =
         [ test "test" <|
             \_ ->
                 Expect.equal True True
+        -- Check Method is correct
+        -- URL match
+        -- URL does not match
+        -- Multiple handlers
+        -- Mode is applied
+        -- Async mode staies Async
         ]
