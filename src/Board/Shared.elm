@@ -15,6 +15,7 @@ module Board.Shared exposing
     , isDelete
     , anyMethod
     , getResponse
+    , MethodChecker
     )
 
 {-| 

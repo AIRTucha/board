@@ -1,4 +1,4 @@
-module Board.Router.Factory exposing (..)
+module Board.Router.Internal exposing (..)
 
 import Pathfinder exposing (..)
 import Result
@@ -8,17 +8,20 @@ import Board.Router.Param exposing (parsingResult2params)
 import Board.Internals exposing (..)
 import Board.Shared exposing (..)
 
-type alias ModePacker answer value model x = 
-    answer -> Mode x (Answer value model x)
-
-
-type alias PathHandler value answer = 
-    ( ( Params , Request value ) -> answer ) 
-
-
--- type alias Router =
 {-|
 -}
+type alias PathHandler value answer = 
+    ( Params , Request value ) -> answer 
+
+{-|
+-}
+type alias Router error request value model = 
+    request -> Mode error (Answer value model error)
+
+
+{-|
+-}
+toStateLess : (a -> ( b, AnswerValue value model error )) -> a -> ( b, Mode error1 (Answer value model error) )
 toStateLess handler model =
     let 
         (newModel, answer) = handler model   
@@ -28,6 +31,7 @@ toStateLess handler model =
 
 {-|
 -}
+toStateFullAsync : Task.Task error (model -> ( model, AnswerValue value model error1 )) -> Mode error (Answer value model error1)
 toStateFullAsync stateHandler =
     stateHandler
         |> Task.map toStateFull
@@ -35,59 +39,73 @@ toStateFullAsync stateHandler =
 
 {-|
 -}
+stateLessSync : AnswerValue value model error -> Mode error1 (Answer value model error)
 stateLessSync = 
     Sync << StateLess
 
 
 {-|
 -}
+nextStateLessSync : Request value -> Mode error1 (Answer value model error)
 nextStateLessSync =
     stateLessSync << Next
 
 
 {-|
 -}
+toStateFull : (model -> ( model, AnswerValue value model error )) -> Answer value model error
 toStateFull =
     StateFull << toStateLess
 
 
 {-|
 -}
+stateFullSync : StateHandler value model error -> Mode error1 (Answer value model error)
 stateFullSync =
     Sync << StateFull
 
 
 {-|
 -}
+toStateFullSync : (model -> ( model, AnswerValue value model error )) -> Mode error1 (Answer value model error)
 toStateFullSync =
     Sync << toStateFull
 
 
 {-|
 -}
+stateLessAsync : Task.Task error (AnswerValue value model error1) -> Mode error (Answer value model error1)
 stateLessAsync v = 
     v 
         |> Task.map StateLess
         |> Async
 
 
-
-
-
+{-|
+-}
 router 
     : MethodChecker value
-    -> ModePacker answer value model x
+    -> ModePacker answer value model error
     -> URL 
     -> PathHandler value answer 
-    -> (request -> Mode x (Answer value model x)) 
+    -> Router error request value model 
     -> request 
-    -> Mode x (Answer value model x)
+    -> Mode error (Answer value model error)
 router checkMethod mode url handler router request =
     request
         |> router 
         |> processModeAnswer checkMethod mode url handler
 
-processModeAnswer : ( { cargo : Object , content : Content value , cookies : Object , host : String , id : String , ip : String , method : Method , protocol : Protocol , time : Int , url : String } -> Bool ) -> (a -> Mode x (Answer value model x)) -> URL -> ( ( Params , { cargo : Object , content : Content value , cookies : Object , host : String , id : String , ip : String , method : Method , protocol : Protocol , time : Int , url : String } ) -> a ) -> Mode x (Answer value model x) -> Mode x (Answer value model x)
+
+{-|
+-}
+processModeAnswer 
+    : MethodChecker value
+    -> ModePacker answer value model error
+    -> URL 
+    -> PathHandler value answer 
+    -> Mode error (Answer value model error) 
+    -> Mode error (Answer value model error)
 processModeAnswer checkMethod mode url handler modeAnswer =
     case modeAnswer of    
         Sync answer ->
@@ -111,6 +129,16 @@ processModeAnswer checkMethod mode url handler modeAnswer =
                 |> Async
 
 
+{-|
+-}
+toStateHandler 
+    : MethodChecker value 
+    -> ModePacker answer value model error
+    -> PathHandler value answer
+    -> URL 
+    -> (model -> ( model, Mode error (Answer value model error) )) 
+    -> model 
+    -> ( model, Mode error (Answer value model error) )
 toStateHandler checkMethod mode handler url stateHandler model =
     let
         (newModel, answer) = stateHandler model
@@ -120,6 +148,15 @@ toStateHandler checkMethod mode handler url stateHandler model =
         )
 
 
+{-|
+-}
+processAsyncAnswer 
+    :  MethodChecker value 
+    -> ModePacker answer value model error
+    -> PathHandler value answer
+    -> URL 
+    -> Answer value model error
+    -> Task.Task error (Answer value model error)
 processAsyncAnswer checkMethod mode handler url answer =
     case answer of
         StateLess value ->
@@ -139,6 +176,15 @@ processAsyncAnswer checkMethod mode handler url answer =
                 |> Task.succeed
 
 
+{-|
+-}
+tryToProcessRequest 
+    : MethodChecker value 
+    -> ModePacker answer value model error
+    -> PathHandler value answer 
+    -> URL 
+    -> Request value
+    -> Mode error (Answer value model error)
 tryToProcessRequest checkMethod mode handler url request =
     if checkMethod request then
         case parse url request.url of
