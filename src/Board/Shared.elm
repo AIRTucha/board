@@ -8,6 +8,7 @@ module Board.Shared exposing
     , Response
     , Protocol
     , Request
+    , request
     , Method(..)
     , isGet
     , isPost
@@ -130,6 +131,21 @@ type alias Request a =
     , host : String
     , protocol : Protocol
     , method: Method
+    }
+
+
+request : Method -> Request a
+request method =
+    { url = "example.com"
+    , id = "0"
+    , time = 0
+    , content = Empty
+    , cookies = Dict.empty
+    , cargo = Dict.empty
+    , ip = "0"
+    , host = "example"
+    , protocol = HTTP
+    , method = method
     }
 
 
