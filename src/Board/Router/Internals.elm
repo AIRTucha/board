@@ -94,76 +94,76 @@ router
 router mode checkMethod url handler router request =
     request
         |> router 
-        |> processModeAnswer checkMethod mode url handler
+        |> processModeAnswer mode checkMethod url handler
 
 
 {-|
 -}
 processModeAnswer 
-    : MethodChecker value
-    -> ModePacker answer value model error
+    : ModePacker answer value model error 
+    -> MethodChecker value
     -> URL 
     -> PathHandler value answer 
     -> Mode error (Answer value model error) 
     -> Mode error (Answer value model error)
-processModeAnswer checkMethod mode url handler modeAnswer =
+processModeAnswer mode checkMethod url handler modeAnswer =
     case modeAnswer of    
         Sync answer ->
             case answer of
                 StateLess value ->
                     case value of 
                         Next newRequest ->
-                            tryToProcessRequest checkMethod mode handler url newRequest
+                            tryToProcessRequest mode checkMethod handler url newRequest
                         
                         _ ->
                             modeAnswer
 
                 StateFull stateHandler ->
                     stateHandler
-                        |> toStateHandler checkMethod mode handler url 
+                        |> toStateHandler mode checkMethod handler url 
                         |> stateFullSync
 
         Async taskAnswer ->
             taskAnswer 
-                |> Task.andThen (processAsyncAnswer checkMethod mode handler url)
+                |> Task.andThen (processAsyncAnswer mode checkMethod handler url)
                 |> Async
 
 
 {-|
 -}
 toStateHandler 
-    : MethodChecker value 
-    -> ModePacker answer value model error
+    : ModePacker answer value model error
+    -> MethodChecker value 
     -> PathHandler value answer
     -> URL 
     -> (model -> ( model, Mode error (Answer value model error) )) 
     -> model 
     -> ( model, Mode error (Answer value model error) )
-toStateHandler checkMethod mode handler url stateHandler model =
+toStateHandler mode checkMethod handler url stateHandler model =
     let
         (newModel, answer) = stateHandler model
     in
         ( newModel
-        , processModeAnswer checkMethod mode url handler answer
+        , processModeAnswer mode checkMethod url handler answer
         )
 
 
 {-|
 -}
 processAsyncAnswer 
-    :  MethodChecker value 
-    -> ModePacker answer value model error
+    :  ModePacker answer value model error
+    -> MethodChecker value 
     -> PathHandler value answer
     -> URL 
     -> Answer value model error
     -> Task.Task error (Answer value model error)
-processAsyncAnswer checkMethod mode handler url answer =
+processAsyncAnswer mode checkMethod handler url answer =
     case answer of
         StateLess value ->
             case value of 
                 Next request ->
                     request
-                        |> tryToProcessRequest checkMethod mode handler url
+                        |> tryToProcessRequest mode checkMethod handler url
                         |> liftToAsync
                 
                 _ ->
@@ -171,7 +171,7 @@ processAsyncAnswer checkMethod mode handler url answer =
 
         StateFull stateHandler ->
             stateHandler
-                |> toStateHandler checkMethod mode handler url 
+                |> toStateHandler mode checkMethod handler url 
                 |> StateFull
                 |> Task.succeed
 
@@ -179,13 +179,13 @@ processAsyncAnswer checkMethod mode handler url answer =
 {-|
 -}
 tryToProcessRequest 
-    : MethodChecker value 
-    -> ModePacker answer value model error
+    : ModePacker answer value model error 
+    -> MethodChecker value
     -> PathHandler value answer 
     -> URL 
     -> Request value
     -> Mode error (Answer value model error)
-tryToProcessRequest checkMethod mode handler url request =
+tryToProcessRequest mode checkMethod handler url request =
     if checkMethod request then
         case parse url request.url of
             Failure _ ->
