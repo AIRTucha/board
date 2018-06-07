@@ -1,4 +1,4 @@
-module Board.Router.Internal exposing (..)
+module Board.Router.Internals exposing (..)
 
 import Pathfinder exposing (..)
 import Result

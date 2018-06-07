@@ -1,9 +1,9 @@
-module Board.Router.InternalTest exposing (..)
+module Board.Router.InternalsTest exposing (..)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
 import Board.Router exposing (empty)
-import Board.Router.Internal exposing(..)
+import Board.Router.Internals exposing(..)
 import Board.Shared exposing (..)
 import Pathfinder exposing (any)
 import Board.Internals exposing(..)
