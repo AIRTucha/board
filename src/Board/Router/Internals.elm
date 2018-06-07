@@ -203,3 +203,15 @@ tryToProcessRequest mode checkMethod handler url request =
 
     else
         nextStateLessSync request
+
+
+syncStateRouter = router toStateFullSync
+
+
+asyncStateRouter = router toStateFullAsync
+
+
+syncRouter = router stateLessSync
+
+
+asyncRouter = router stateLessAsync

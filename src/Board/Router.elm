@@ -28,7 +28,7 @@ useSyncState
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-useSyncState = router toStateFullSync anyMethod
+useSyncState = syncStateRouter anyMethod
 
 
 getSyncState 
@@ -37,7 +37,7 @@ getSyncState
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-getSyncState = router toStateFullSync isGet
+getSyncState = syncStateRouter isGet
 
 
 postSyncState     
@@ -46,7 +46,7 @@ postSyncState
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-postSyncState = router toStateFullSync isPost
+postSyncState = syncStateRouter isPost
 
 
 putSyncState
@@ -55,7 +55,7 @@ putSyncState
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-putSyncState = router toStateFullSync isPut
+putSyncState = syncStateRouter isPut
 
 
 deleteSyncState
@@ -64,7 +64,7 @@ deleteSyncState
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-deleteSyncState = router toStateFullSync isDelete
+deleteSyncState = syncStateRouter isDelete
 
 
 useState
@@ -73,7 +73,7 @@ useState
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-useState = router toStateFullAsync anyMethod
+useState = asyncStateRouter anyMethod
 
 
 getState
@@ -82,7 +82,7 @@ getState
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-getState = router toStateFullAsync isGet
+getState = asyncStateRouter isGet
 
 
 postState 
@@ -91,7 +91,7 @@ postState
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-postState = router toStateFullAsync isPost
+postState = asyncStateRouter isPost
 
 
 putState 
@@ -100,7 +100,7 @@ putState
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-putState = router toStateFullAsync isPut
+putState = asyncStateRouter isPut
 
 
 deleteState 
@@ -109,7 +109,7 @@ deleteState
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-deleteState = router toStateFullAsync isDelete
+deleteState = asyncStateRouter isDelete
 
 
 useSync 
@@ -118,7 +118,7 @@ useSync
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-useSync = router stateLessSync anyMethod
+useSync = syncRouter anyMethod
 
 
 getSync 
@@ -127,7 +127,7 @@ getSync
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-getSync = router stateLessSync isGet
+getSync = syncRouter isGet
 
 
 postSync 
@@ -136,7 +136,7 @@ postSync
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-postSync = router stateLessSync isPost
+postSync = syncRouter isPost
 
 
 putSync 
@@ -145,7 +145,7 @@ putSync
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-putSync = router stateLessSync isPut
+putSync = syncRouter isPut
 
 
 deleteSync 
@@ -154,7 +154,7 @@ deleteSync
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-deleteSync = router stateLessSync isDelete
+deleteSync = syncRouter isDelete
 
 
 use 
@@ -163,7 +163,7 @@ use
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-use = router stateLessAsync anyMethod
+use = asyncRouter anyMethod
 
 
 get 
@@ -172,7 +172,7 @@ get
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-get = router stateLessAsync isGet
+get = asyncRouter isGet
 
 
 post 
@@ -181,7 +181,7 @@ post
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-post = router stateLessAsync isPost
+post = asyncRouter isPost
 
 
 put 
@@ -190,7 +190,7 @@ put
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-put = router stateLessAsync isPut
+put = asyncRouter isPut
 
 
 delete 
@@ -199,7 +199,7 @@ delete
     -> Router error1 request value model 
     -> request 
     -> Mode error1 (Answer value model error1)
-delete = router stateLessAsync isDelete
+delete = asyncRouter isDelete
 
 
 empty : Request value -> Mode error1 (Answer value model error)
