@@ -18,7 +18,7 @@ param =
                     handler = (\(params, req) -> Next req)
                     req = request Get
                 in
-                    router anyMethod stateLessSync any handler empty req
+                    router stateLessSync anyMethod any handler empty req
                         |> Expect.equal (nextStateLessSync req)
         -- Check Method is correct
         -- URL match

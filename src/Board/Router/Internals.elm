@@ -84,14 +84,14 @@ stateLessAsync v =
 {-|
 -}
 router 
-    : MethodChecker value
-    -> ModePacker answer value model error
+    : ModePacker answer value model error
+    -> MethodChecker value
     -> URL 
     -> PathHandler value answer 
     -> Router error request value model 
     -> request 
     -> Mode error (Answer value model error)
-router checkMethod mode url handler router request =
+router mode checkMethod url handler router request =
     request
         |> router 
         |> processModeAnswer checkMethod mode url handler
