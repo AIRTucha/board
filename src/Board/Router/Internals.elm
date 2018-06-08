@@ -13,6 +13,13 @@ import Board.Shared exposing (..)
 type alias PathHandler value answer = 
     ( Params , Request value ) -> answer 
 
+
+{-|
+-}
+type alias RoutHandler a b c = 
+    (Params, Request a ) ->  Mode b (Answer c)
+
+
 {-|
 -}
 type alias Router error request value model = 
@@ -205,13 +212,13 @@ tryToProcessRequest mode checkMethod handler url request =
         nextStateLessSync request
 
 
-syncStateRouter = router toStateFullSync
-
-
-asyncStateRouter = router toStateFullAsync
-
-
 syncRouter = router stateLessSync
 
 
 asyncRouter = router stateLessAsync
+
+
+syncStateRouter = router toStateFullSync
+
+
+asyncStateRouter = router toStateFullAsync

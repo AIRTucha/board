@@ -27,10 +27,23 @@ type Mode error value
     = Async (Task.Task error value)
     | Sync value
 
+
 {-|
 -}
 type alias ModePacker answer value model error = 
     answer -> Mode error (Answer value model error)
+
+
+{-|
+-}
+type alias ModelToState value model error =
+    (model -> ( model, AnswerValue value model error ))
+
+
+{-|
+-}
+type alias TaskModelToState value model error =
+    Task error (model -> ( model, AnswerValue value model error ))
 
 {-|
 -}

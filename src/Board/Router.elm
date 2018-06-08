@@ -10,16 +10,94 @@ import Pathfinder exposing (URL)
 import Task exposing (Task)
 
 
-type alias RoutHandler a b c = 
-    (Params, Request a ) ->  Mode b (Answer c)
+useSync 
+    : URL 
+    -> PathHandler value (AnswerValue value model error) 
+    -> Router error request value model 
+    -> request 
+    -> Mode error (Answer value model error)
+useSync = syncRouter anyMethod
 
 
-type alias ModelToState value model error =
-    (model -> ( model, AnswerValue value model error ))
+getSync 
+    : URL 
+    -> PathHandler value (AnswerValue value model error) 
+    -> Router error request value model 
+    -> request 
+    -> Mode error (Answer value model error)
+getSync = syncRouter isGet
 
 
-type alias TaskModelToState value model error =
-    Task error (model -> ( model, AnswerValue value model error ))
+postSync 
+    : URL 
+    -> PathHandler value (AnswerValue value model error) 
+    -> Router error request value model 
+    -> request 
+    -> Mode error (Answer value model error)
+postSync = syncRouter isPost
+
+
+putSync 
+    : URL 
+    -> PathHandler value (AnswerValue value model error) 
+    -> Router error request value model 
+    -> request 
+    -> Mode error (Answer value model error)
+putSync = syncRouter isPut
+
+
+deleteSync 
+    : URL 
+    -> PathHandler value (AnswerValue value model error) 
+    -> Router error request value model 
+    -> request 
+    -> Mode error (Answer value model error)
+deleteSync = syncRouter isDelete
+
+
+use 
+    : URL 
+    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
+    -> Router error1 request value model 
+    -> request 
+    -> Mode error1 (Answer value model error1)
+use = asyncRouter anyMethod
+
+
+get 
+    : URL 
+    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
+    -> Router error1 request value model 
+    -> request 
+    -> Mode error1 (Answer value model error1)
+get = asyncRouter isGet
+
+
+post 
+    : URL 
+    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
+    -> Router error1 request value model 
+    -> request 
+    -> Mode error1 (Answer value model error1)
+post = asyncRouter isPost
+
+
+put 
+    : URL 
+    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
+    -> Router error1 request value model 
+    -> request 
+    -> Mode error1 (Answer value model error1)
+put = asyncRouter isPut
+
+
+delete 
+    : URL 
+    -> PathHandler value (Task.Task error1 (AnswerValue value model error1)) 
+    -> Router error1 request value model 
+    -> request 
+    -> Mode error1 (Answer value model error1)
+delete = asyncRouter isDelete
 
 
 useSyncState 
@@ -110,96 +188,6 @@ deleteState
     -> request 
     -> Mode error1 (Answer value model error1)
 deleteState = asyncStateRouter isDelete
-
-
-useSync 
-    : URL 
-    -> PathHandler value (AnswerValue value model error) 
-    -> Router error request value model 
-    -> request 
-    -> Mode error (Answer value model error)
-useSync = syncRouter anyMethod
-
-
-getSync 
-    : URL 
-    -> PathHandler value (AnswerValue value model error) 
-    -> Router error request value model 
-    -> request 
-    -> Mode error (Answer value model error)
-getSync = syncRouter isGet
-
-
-postSync 
-    : URL 
-    -> PathHandler value (AnswerValue value model error) 
-    -> Router error request value model 
-    -> request 
-    -> Mode error (Answer value model error)
-postSync = syncRouter isPost
-
-
-putSync 
-    : URL 
-    -> PathHandler value (AnswerValue value model error) 
-    -> Router error request value model 
-    -> request 
-    -> Mode error (Answer value model error)
-putSync = syncRouter isPut
-
-
-deleteSync 
-    : URL 
-    -> PathHandler value (AnswerValue value model error) 
-    -> Router error request value model 
-    -> request 
-    -> Mode error (Answer value model error)
-deleteSync = syncRouter isDelete
-
-
-use 
-    : URL 
-    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
-    -> Router error1 request value model 
-    -> request 
-    -> Mode error1 (Answer value model error1)
-use = asyncRouter anyMethod
-
-
-get 
-    : URL 
-    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
-    -> Router error1 request value model 
-    -> request 
-    -> Mode error1 (Answer value model error1)
-get = asyncRouter isGet
-
-
-post 
-    : URL 
-    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
-    -> Router error1 request value model 
-    -> request 
-    -> Mode error1 (Answer value model error1)
-post = asyncRouter isPost
-
-
-put 
-    : URL 
-    -> PathHandler value (Task error1 (AnswerValue value model error1)) 
-    -> Router error1 request value model 
-    -> request 
-    -> Mode error1 (Answer value model error1)
-put = asyncRouter isPut
-
-
-delete 
-    : URL 
-    -> PathHandler value (Task.Task error1 (AnswerValue value model error1)) 
-    -> Router error1 request value model 
-    -> request 
-    -> Mode error1 (Answer value model error1)
-delete = asyncRouter isDelete
 
 
 empty : Request value -> Mode error1 (Answer value model error)
