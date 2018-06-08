@@ -8,7 +8,7 @@ module Board.Shared exposing
     , Response
     , Protocol
     , Request
-    , request
+    , getRequest
     , Method(..)
     , isGet
     , isPost
@@ -134,8 +134,8 @@ type alias Request a =
     }
 
 
-request : Method -> Request a
-request method =
+getRequest : Method -> Request a
+getRequest method =
     { url = "example.com"
     , id = "0"
     , time = 0
