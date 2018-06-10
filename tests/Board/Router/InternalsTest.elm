@@ -63,6 +63,10 @@ next req str =
     Next { req | content = Text "text/plain" str }
 
 
+redirect req str =
+    Redirect str
+
+
 getHandler hanlder (param, req) =
     case param of
         StrParam str ->
@@ -72,127 +76,96 @@ getHandler hanlder (param, req) =
             Next req
 
 
+toResponse =
+    getHandler response
+
+
+toNext = 
+    getHandler next
+
+
+toRedirect =
+    getHandler redirect
+
+
+stateLessSyncNext = 
+    Next >> stateLessSync
+
+
+result checker req mismatchHandler matchHandler matchMode =
+    if checker req then 
+        matchMode <| matchHandler req url
+    else 
+        mismatchHandler req
+    
+
 testCheckerAndMethod (chekcer, method, name) =
-    describe name
-        [ describe "Sync Handler"
-            [ describe "Sync Router" 
-                [ test "Router Response" <|
-                    \_ -> 
-                        let
-                            stateLessSyncReply = Reply >> stateLessSync
-                            handler = second >> Next
-                            rout = getResponse >> stateLessSyncReply
-                            req = getRequest method
-                            response = rout req
-                        in
-                            syncRouter chekcer any handler rout req
-                                |> Expect.equal response
-                , test "Router Redirect" <|
-                    \_ ->
-                        let
-                            stateLessSyncRedirect = Redirect >> stateLessSync
-                            handler = second >> Next
-                            redirect = stateLessSyncRedirect "test"
-                            rout = \_ -> redirect
-                            req = getRequest method
-                        in
-                            syncRouter chekcer any handler rout req
-                                |> Expect.equal redirect
-                , describe "Router Next"
-                    [ test "Handler Redirect" <|
+    let 
+        req = request method
+        stateLessSyncResult = 
+            result chekcer req stateLessSyncNext
+    in
+        describe name
+            [ describe "Sync Handler"
+                [ describe "Sync Router" 
+                    [ test "Router Response" <|
+                        \_ -> 
+                            let
+                                rout = getResponse >> Reply >> stateLessSync
+                            in
+                                syncRouter chekcer any toNext rout req
+                                    |> Expect.equal (rout req)
+                    , test "Router Redirect" <|
                         \_ ->
                             let
-                                url = "test"
-                                stateLessSyncNext = Next >> stateLessSync
-                                redirect = Redirect url
-                                handler = \ (param, req) ->
-                                    case param of
-                                        StrParam str ->
-                                            Redirect str 
-                                        
-                                        _ -> 
-                                            Next req
-                                rout = stateLessSyncNext
-                                rawReq = getRequest method 
-                                req = { rawReq | url = url }
-                                result = if chekcer req then 
-                                            (stateLessSync redirect)
-                                        else 
-                                            stateLessSyncNext req
+                                redirect = "test"
+                                    |> Redirect
+                                    |> stateLessSync 
+                                rout = \_ -> redirect
                             in
-                                syncRouter chekcer str handler rout req
-                                    |> Expect.equal result   
-                    , test "Handler Reply" <|
-                        \_ ->
-                            let
-                                stateLessSyncNext = Next >> stateLessSync
-                                handler = \ (param, req ) ->
-                                    case param of 
-                                        StrParam str ->
-                                            response req str
-                                        
-                                        _ ->
-                                            Next req
-                                rout = stateLessSyncNext
-                                req = request method
-                                result = if chekcer req then 
-                                            (stateLessSync <| response req url)
-                                        else 
-                                            stateLessSyncNext req
-                            in
-                                syncRouter chekcer str handler rout req
-                                    |> Expect.equal result  
-                    , test "Handler Next" <|
-                        \_ ->
-                            let
-                                stateLessSyncNext = Next >> stateLessSync
-                                handler = getHandler next
-                                rout = stateLessSyncNext
-                                req = request method
-                                response = Reply <| getResponse req
-                                result = if chekcer req then 
-                                            (stateLessSync (next req url))
-                                        else 
-                                            stateLessSyncNext req
-                            in
-                                syncRouter chekcer str handler rout req
-                                    |> Expect.equal result  
-                    , test "Hanler URL does not match" <|
-                        \_ ->
-                            let
-                                stateLessSyncNext = Next >> stateLessSync
-                                handler = getHandler next
-                                rout = stateLessSyncNext
-                                req = request method
-                                response = Reply <| getResponse req
-                                result = stateLessSyncNext req
-                            in
-                                syncRouter chekcer int handler rout req
-                                    |> Expect.equal result  
+                                syncRouter chekcer any toNext rout req
+                                    |> Expect.equal redirect
+                    , describe "Router Next"
+                        [ test "Handler Redirect" <|
+                            \_ ->
+                                syncRouter chekcer str toRedirect stateLessSyncNext req
+                                    |> Expect.equal (stateLessSyncResult redirect stateLessSync )
+                        , test "Handler Reply" <|
+                            \_ ->
+                                syncRouter chekcer str toResponse stateLessSyncNext req
+                                    |> Expect.equal (stateLessSyncResult response stateLessSync )  
+                        , test "Handler Next" <|
+                            \_ ->
+                                syncRouter chekcer str toNext stateLessSyncNext req
+                                    |> Expect.equal (stateLessSyncResult next stateLessSync )   
+                        , test "Hanler URL does not match" <|
+                            \_ ->
+                                syncRouter chekcer int toNext stateLessSyncNext req
+                                    |> Expect.equal (stateLessSyncNext req)  
+                        ]
                     ]
                 ]
+            , describe "Sync State Router"
+                [ 
+                    test "Pass" <|
+                        \_ -> 
+                            let
+                                handler = \(params, req) -> Next req 
+                                req = getRequest Get
+                            in
+                                router stateLessSync anyMethod any handler empty req
+                                    |> Expect.equal (nextStateLessSync req)
+                ]
+            -- Different handlers
+                -- Different router types
+                    -- Check router respons
+                    -- Check router redirect
+                    -- Check router next
+                        -- Check that handler redirect
+                        -- Check that handler next
+                        -- Check that handler respons
+                        -- Check URL fails
             ]
-        , describe "Sync State Router"
-            [ 
-                test "Pass" <|
-                    \_ -> 
-                        let
-                            handler = \(params, req) -> Next req 
-                            req = getRequest Get
-                        in
-                            router stateLessSync anyMethod any handler empty req
-                                |> Expect.equal (nextStateLessSync req)
-            ]
-        -- Different handlers
-            -- Different router types
-                -- Check router respons
-                -- Check router redirect
-                -- Check router next
-                    -- Check that handler redirect
-                    -- Check that handler next
-                    -- Check that handler respons
-                    -- Check URL fails
-        ]
 
 {-
 -}

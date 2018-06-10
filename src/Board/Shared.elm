@@ -24,7 +24,7 @@ module Board.Shared exposing
     , Options
     , Cookie
     , Params
-    , Object
+respo    , Object
     , Content
     , Response
     , Protocol
