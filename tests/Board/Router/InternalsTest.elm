@@ -121,7 +121,7 @@ testCheckerAndMethod (chekcer, method, name) =
                                 redirect = "test"
                                     |> Redirect
                                     |> stateLessSync 
-                                rout = \_ -> redirect
+                                rout _ = redirect
                             in
                                 syncRouter chekcer any toNext rout req
                                     |> Expect.equal redirect
@@ -150,7 +150,7 @@ testCheckerAndMethod (chekcer, method, name) =
                     test "Pass" <|
                         \_ -> 
                             let
-                                handler = \(params, req) -> Next req 
+                                handler (params, req) = Next req 
                                 req = getRequest Get
                             in
                                 router stateLessSync anyMethod any handler empty req
