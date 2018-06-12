@@ -6,9 +6,9 @@
   "scripts": {
     "start": "nodemon --exec \"elm make src/app.elm --output dist/main.js && node local.js\"",
     "build": "elm make src/app.elm --output=dist/main.js",
-    "install": "elm-package install elm-community/dict-extra",
+    "install": "elm-install install",
     "elm": "elm",
-    "test": "elm-test --watch"
+    "test": "nodemon --exec \"elm-ordeal tests/Test.elm\""
   },
   "author": "AIRTucha",
   "license": "ISC",
@@ -17,7 +17,8 @@
     "object-hash": "^1.3.0"
   },
   "devDependencies": {
-    "elm-test": "^0.18.12",
+    "elm-github-install": "^1.6.1",
+    "elm-ordeal": "0.0.5",
     "nodemon": "^1.12.1"
   }
 }
