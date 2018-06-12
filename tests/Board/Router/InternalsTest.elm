@@ -1,6 +1,6 @@
 module Board.Router.InternalsTest exposing (..)
 
-import Ordeal exposing (Test, test, describe, shouldEqual)
+import Ordeal exposing (Test, test, describe, shouldEqual, andTest, failure)
 import Board.Router exposing (empty)
 import Board.Router.Internals exposing(..)
 import Board.Shared exposing (..)
@@ -146,49 +146,56 @@ testCheckerAndMethod (chekcer, method, name) =
                         ]
                     ]
                 ]
-                -- , describe "Async Router" 
-                --     [ test "Router Response" <|
-                --         \_ -> 
-                --             let
-                --                 syncRouter = getResponse >> Reply 
-                --                 rout = syncRouter >> succeed >> stateLessAsync
-                --             in
-                --                 case syncRouter chekcer any toNext rout req of
-                --                     Sync _ ->
-                --                         Expect.fail "Incorrect synchronization mode"
-                                    
-                --                     Async task ->
-                --                         task 
-                --                             |> Task.map shouldEqual (syncRouter req)
-                --     , test "Router Redirect" <|
-                --         \_ ->
-                --             let
-                --                 redirect = "test"
-                --                     |> Redirect
-                --                     |> stateLessSync 
-                --                 rout _ = redirect
-                --             in
-                --                 syncRouter chekcer any toNext rout req
-                --                     |> shouldEqual redirect
-                --     , describe "Router Next"
-                --         [ test "Handler Redirect" <|
-                --             \_ ->
-                --                 syncRouter chekcer str toRedirect stateLessSyncNext req
-                --                     |> shouldEqual (stateLessSyncResult redirect stateLessSync )
-                --         , test "Handler Reply" <|
-                --             \_ ->
-                --                 syncRouter chekcer str toResponse stateLessSyncNext req
-                --                     |> shouldEqual (stateLessSyncResult response stateLessSync )  
-                --         , test "Handler Next" <|
-                --             \_ ->
-                --                 syncRouter chekcer str toNext stateLessSyncNext req
-                --                     |> shouldEqual (stateLessSyncResult next stateLessSync )   
-                --         , test "Hanler URL does not match" <|
-                --             \_ ->
-                --                 syncRouter chekcer int toNext stateLessSyncNext req
-                --                     |> shouldEqual (stateLessSyncNext req)  
-                --         ]
-                --     ]
+                , describe "Async Router" 
+                    [ test "Router Response" (
+                        let
+                            syncRouter = getResponse >> Reply >> StateLess
+                            rout = syncRouter >> succeed >> Async
+                            checkTask result = 
+                                case result of 
+                                    Ok value ->
+                                        shouldEqual value (syncRouter req)
+
+                                    Err str ->
+                                        failure str
+                        in
+                            case asyncRouter chekcer str (toNext >> succeed ) rout req of
+                                Sync _ ->
+                                    failure "Incorrect synchronization mode"
+                                
+                                Async task ->
+                                    task 
+                                        |> andTest checkTask
+                    )
+                    -- , test "Router Redirect" <|
+                    --     \_ ->
+                    --         let
+                    --             redirect = "test"
+                    --                 |> Redirect
+                    --                 |> stateLessSync 
+                    --             rout _ = redirect
+                    --         in
+                    --             syncRouter chekcer any toNext rout req
+                    --                 |> shouldEqual redirect
+                    -- , describe "Router Next"
+                    --     [ test "Handler Redirect" <|
+                    --         \_ ->
+                    --             syncRouter chekcer str toRedirect stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncResult redirect stateLessSync )
+                    --     , test "Handler Reply" <|
+                    --         \_ ->
+                    --             syncRouter chekcer str toResponse stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncResult response stateLessSync )  
+                    --     , test "Handler Next" <|
+                    --         \_ ->
+                    --             syncRouter chekcer str toNext stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncResult next stateLessSync )   
+                    --     , test "Hanler URL does not match" <|
+                    --         \_ ->
+                    --             syncRouter chekcer int toNext stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncNext req)  
+                        -- ]
+                    ]
                 , describe "Sync State Router"
                     [ 
                         test "Pass" (   
