@@ -9,7 +9,8 @@ import Pathfinder exposing (any, str, int)
 import Board.Internals exposing(..)
 import Tuple exposing (second)
 import List exposing (concat, map)
-
+import Task exposing (succeed)
+import Debug 
 methodCheckers = 
     [ ( isGet, "Get" )
     , ( isPost, "Post" )
@@ -145,17 +146,60 @@ testCheckerAndMethod (chekcer, method, name) =
                         ]
                     ]
                 ]
-            , describe "Sync State Router"
-                [ 
-                    test "Pass" <|
-                        \_ -> 
-                            let
-                                handler (params, req) = Next req 
-                                req = getRequest Get
-                            in
-                                router stateLessSync anyMethod any handler empty req
-                                    |> Expect.equal (nextStateLessSync req)
-                ]
+                -- , describe "Async Router" 
+                --     [ test "Router Response" <|
+                --         \_ -> 
+                --             let
+                --                 syncRouter = getResponse >> Reply 
+                --                 rout = syncRouter >> succeed >> stateLessAsync
+                --             in
+                --                 case syncRouter chekcer any toNext rout req of
+                --                     Sync _ ->
+                --                         Expect.fail "Incorrect synchronization mode"
+                                    
+                --                     Async task ->
+                --                         task 
+                --                             |> Task.map Expect.equal (syncRouter req)
+                --     , test "Router Redirect" <|
+                --         \_ ->
+                --             let
+                --                 redirect = "test"
+                --                     |> Redirect
+                --                     |> stateLessSync 
+                --                 rout _ = redirect
+                --             in
+                --                 syncRouter chekcer any toNext rout req
+                --                     |> Expect.equal redirect
+                --     , describe "Router Next"
+                --         [ test "Handler Redirect" <|
+                --             \_ ->
+                --                 syncRouter chekcer str toRedirect stateLessSyncNext req
+                --                     |> Expect.equal (stateLessSyncResult redirect stateLessSync )
+                --         , test "Handler Reply" <|
+                --             \_ ->
+                --                 syncRouter chekcer str toResponse stateLessSyncNext req
+                --                     |> Expect.equal (stateLessSyncResult response stateLessSync )  
+                --         , test "Handler Next" <|
+                --             \_ ->
+                --                 syncRouter chekcer str toNext stateLessSyncNext req
+                --                     |> Expect.equal (stateLessSyncResult next stateLessSync )   
+                --         , test "Hanler URL does not match" <|
+                --             \_ ->
+                --                 syncRouter chekcer int toNext stateLessSyncNext req
+                --                     |> Expect.equal (stateLessSyncNext req)  
+                --         ]
+                --     ]
+                , describe "Sync State Router"
+                    [ 
+                        test "Pass" <|
+                            \_ -> 
+                                let
+                                    handler (params, req) = Next req 
+                                    req = getRequest Get
+                                in
+                                    router stateLessSync anyMethod any handler empty req
+                                        |> Expect.equal (nextStateLessSync req)
+                    ]
             -- Different handlers
                 -- Different router types
                     -- Check router respons
