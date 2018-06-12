@@ -1,17 +1,14 @@
 module BoardTest exposing (..)
 
-import Expect exposing (Expectation)
-import Test exposing (..)
-import Board exposing (..)
-import Pathfinder exposing (..)
-import Dict exposing(..)
-import Board.Router.ParamTest exposing(..)
+import Ordeal exposing (..)
+-- import Board exposing (..)
+-- import Pathfinder exposing (..)
+-- import Dict exposing(..)
+-- import Board.Router.ParamTest exposing(..)
 
-suite : Test
-suite =
+board : Test
+board =
     describe "Testing of Board framework modules"
-        [ test "true" <|
-            \_ ->
-                Expect.equal True True
+        [ test "true" (shouldEqual True True)
             
         ]

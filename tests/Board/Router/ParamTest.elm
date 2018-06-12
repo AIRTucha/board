@@ -1,7 +1,6 @@
 module Board.Router.ParamTest exposing (..)
 
-import Expect exposing (Expectation)
-import Test exposing (..)
+import Ordeal exposing (..)
 import Board.Router.Param exposing (..)
 import Pathfinder exposing (..)
 import Board.Shared exposing (..)
@@ -14,26 +13,26 @@ therefore only MultiValue and Failuer is going to be tested.
 param : Test
 param =
     describe "ParsingResult -> Params"
-        [ test "Failuer to Err" <|
-            \_ ->
-                Failure "Some error"
+        [ test "Failuer to Err" 
+            ( Failure "Some error"
                     |> parsingResult2params
-                    |> Expect.equal (Err "Some error")
+                    |> shouldEqual (Err "Some error")
+            )
         , describe "MultiValue -> Params"
-            [ test "single value" <|
-                \_ ->
-                    MultiValue [ Integer 9 ]
-                        |> parsingResult2params
-                        |> Expect.equal (Ok <| MultiParam [ IntParam 9 ])
-            , test "two values" <|
-                \_ -> 
-                    MultiValue [ Integer 9, Floating 3.14 ]
-                        |> parsingResult2params
-                        |> Expect.equal (Ok <| MultiParam [ IntParam 9, FloatParam 3.14 ])
-            , test "multiple values " <|
-                \_ -> 
-                    MultiValue [ Integer 9, Floating 3.14, Str "test" ]
-                        |> parsingResult2params
-                        |> Expect.equal (Ok <| MultiParam [ IntParam 9, FloatParam 3.14, StrParam "test" ])
+            [ test "single value" 
+                ( MultiValue [ Integer 9 ]
+                    |> parsingResult2params
+                    |> shouldEqual (Ok <| MultiParam [ IntParam 9 ])
+                )
+            , test "two values" 
+                ( MultiValue [ Integer 9, Floating 3.14 ]
+                    |> parsingResult2params
+                    |> shouldEqual (Ok <| MultiParam [ IntParam 9, FloatParam 3.14 ])
+                )
+            , test "multiple values "
+                ( MultiValue [ Integer 9, Floating 3.14, Str "test" ]
+                    |> parsingResult2params
+                    |> shouldEqual (Ok <| MultiParam [ IntParam 9, FloatParam 3.14, StrParam "test" ])
+                )  
             ]
         ]

@@ -1,7 +1,6 @@
 module Board.Router.InternalsTest exposing (..)
 
-import Expect exposing (Expectation)
-import Test exposing (Test, test, describe)
+import Ordeal exposing (Test, test, describe, shouldEqual)
 import Board.Router exposing (empty)
 import Board.Router.Internals exposing(..)
 import Board.Shared exposing (..)
@@ -11,6 +10,7 @@ import Tuple exposing (second)
 import List exposing (concat, map)
 import Task exposing (succeed)
 import Debug 
+
 methodCheckers = 
     [ ( isGet, "Get" )
     , ( isPost, "Post" )
@@ -109,40 +109,40 @@ testCheckerAndMethod (chekcer, method, name) =
         describe name
             [ describe "Sync Handler"
                 [ describe "Sync Router" 
-                    [ test "Router Response" <|
-                        \_ -> 
-                            let
-                                rout = getResponse >> Reply >> stateLessSync
-                            in
-                                syncRouter chekcer any toNext rout req
-                                    |> Expect.equal (rout req)
-                    , test "Router Redirect" <|
-                        \_ ->
-                            let
-                                redirect = "test"
-                                    |> Redirect
-                                    |> stateLessSync 
-                                rout _ = redirect
-                            in
-                                syncRouter chekcer any toNext rout req
-                                    |> Expect.equal redirect
+                    [ test "Router Response" (   
+                        let
+                            rout = getResponse >> Reply >> stateLessSync
+                        in
+                            syncRouter chekcer any toNext rout req
+                                |> shouldEqual (rout req)
+                    )
+                    , test "Router Redirect" (
+                        let
+                            redirect = "test"
+                                |> Redirect
+                                |> stateLessSync 
+                            rout _ = redirect
+                        in
+                            syncRouter chekcer any toNext rout req
+                                |> shouldEqual redirect
+                    )
                     , describe "Router Next"
-                        [ test "Handler Redirect" <|
-                            \_ ->
-                                syncRouter chekcer str toRedirect stateLessSyncNext req
-                                    |> Expect.equal (stateLessSyncResult redirect stateLessSync )
-                        , test "Handler Reply" <|
-                            \_ ->
-                                syncRouter chekcer str toResponse stateLessSyncNext req
-                                    |> Expect.equal (stateLessSyncResult response stateLessSync )  
-                        , test "Handler Next" <|
-                            \_ ->
+                        [ test "Handler Redirect" ( 
+                            syncRouter chekcer str toRedirect stateLessSyncNext req
+                                |> shouldEqual (stateLessSyncResult redirect stateLessSync )
+                        )
+                        , test "Handler Reply" ( 
+                            syncRouter chekcer str toResponse stateLessSyncNext req
+                                |> shouldEqual (stateLessSyncResult response stateLessSync ) 
+                        ) 
+                        , test "Handler Next" (
                                 syncRouter chekcer str toNext stateLessSyncNext req
-                                    |> Expect.equal (stateLessSyncResult next stateLessSync )   
-                        , test "Hanler URL does not match" <|
-                            \_ ->
-                                syncRouter chekcer int toNext stateLessSyncNext req
-                                    |> Expect.equal (stateLessSyncNext req)  
+                                    |> shouldEqual (stateLessSyncResult next stateLessSync )  
+                        ) 
+                        , test "Hanler URL does not match" ( 
+                            syncRouter chekcer int toNext stateLessSyncNext req
+                                    |> shouldEqual (stateLessSyncNext req)  
+                        )
                         ]
                     ]
                 ]
@@ -159,7 +159,7 @@ testCheckerAndMethod (chekcer, method, name) =
                                     
                 --                     Async task ->
                 --                         task 
-                --                             |> Task.map Expect.equal (syncRouter req)
+                --                             |> Task.map shouldEqual (syncRouter req)
                 --     , test "Router Redirect" <|
                 --         \_ ->
                 --             let
@@ -169,36 +169,36 @@ testCheckerAndMethod (chekcer, method, name) =
                 --                 rout _ = redirect
                 --             in
                 --                 syncRouter chekcer any toNext rout req
-                --                     |> Expect.equal redirect
+                --                     |> shouldEqual redirect
                 --     , describe "Router Next"
                 --         [ test "Handler Redirect" <|
                 --             \_ ->
                 --                 syncRouter chekcer str toRedirect stateLessSyncNext req
-                --                     |> Expect.equal (stateLessSyncResult redirect stateLessSync )
+                --                     |> shouldEqual (stateLessSyncResult redirect stateLessSync )
                 --         , test "Handler Reply" <|
                 --             \_ ->
                 --                 syncRouter chekcer str toResponse stateLessSyncNext req
-                --                     |> Expect.equal (stateLessSyncResult response stateLessSync )  
+                --                     |> shouldEqual (stateLessSyncResult response stateLessSync )  
                 --         , test "Handler Next" <|
                 --             \_ ->
                 --                 syncRouter chekcer str toNext stateLessSyncNext req
-                --                     |> Expect.equal (stateLessSyncResult next stateLessSync )   
+                --                     |> shouldEqual (stateLessSyncResult next stateLessSync )   
                 --         , test "Hanler URL does not match" <|
                 --             \_ ->
                 --                 syncRouter chekcer int toNext stateLessSyncNext req
-                --                     |> Expect.equal (stateLessSyncNext req)  
+                --                     |> shouldEqual (stateLessSyncNext req)  
                 --         ]
                 --     ]
                 , describe "Sync State Router"
                     [ 
-                        test "Pass" <|
-                            \_ -> 
-                                let
-                                    handler (params, req) = Next req 
-                                    req = getRequest Get
-                                in
-                                    router stateLessSync anyMethod any handler empty req
-                                        |> Expect.equal (nextStateLessSync req)
+                        test "Pass" (   
+                            let
+                                handler (params, req) = Next req 
+                                req = getRequest Get
+                            in
+                                router stateLessSync anyMethod any handler empty req
+                                    |> shouldEqual (nextStateLessSync req)
+                        )    
                     ]
             -- Different handlers
                 -- Different router types
@@ -213,6 +213,6 @@ testCheckerAndMethod (chekcer, method, name) =
 
 {-
 -}
-param : Test
-param =
+routerInternals : Test
+routerInternals =
     describe "Router Interlan logic" (map testCheckerAndMethod methodTestCases)

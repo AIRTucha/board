@@ -1,5 +1,8 @@
 port module Test exposing (..)
 
+import BoardTest exposing (board)
+import Board.Router.ParamTest exposing (param)
+import  Board.Router.InternalsTest  exposing (routerInternals)
 import Task
 import Ordeal exposing (..)
 
@@ -50,4 +53,7 @@ tests =
     , test "Another failure" (
       ["a","b","c"] |> shouldContain "a"
     )
+    , board
+    , param
+    , routerInternals
     ]

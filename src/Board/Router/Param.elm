@@ -30,7 +30,7 @@ parsingResult2params result =
        Query dict ->
          Ok <| QueryParam dict
 
-       Succes ->
+       Success ->
          Ok EmptyParam
 
 

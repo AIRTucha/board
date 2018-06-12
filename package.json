@@ -8,7 +8,7 @@
     "build": "elm make src/app.elm --output=dist/main.js",
     "install": "elm-install install",
     "elm": "elm",
-    "test": "nodemon --exec \"elm-ordeal tests/Test.elm\""
+    "test": "nodemon --exec \"elm-ordeal tests/Main.elm\""
   },
   "author": "AIRTucha",
   "license": "ISC",
