@@ -97,7 +97,7 @@ stateLessAsyncNext =
     Next >> succeed >> stateLessAsync
 
 
-result checker req mismatchHandler matchHandler matchMode =
+result checker req mismatchHandler matchMode matchHandler =
     if checker req then 
         matchMode <| matchHandler req url
     else 
@@ -127,9 +127,9 @@ testCheckerAndMethod (chekcer, method, name) =
     let 
         req = request method
         stateLessSyncResult = 
-            result chekcer req stateLessSyncNext
+            result chekcer req stateLessSyncNext stateLessSync
         stateLessAsyncResult = 
-            result chekcer req stateLessAsyncNext 
+            result chekcer req stateLessSyncNext
     in
         describe name
             [ describe "Sync Handler"
@@ -154,15 +154,15 @@ testCheckerAndMethod (chekcer, method, name) =
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
                             syncRouter chekcer str toRedirect stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncResult redirect stateLessSync )
+                                |> shouldEqual (stateLessSyncResult redirect )
                         )
                         , test "Handler Reply" ( 
                             syncRouter chekcer str toResponse stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncResult response stateLessSync ) 
+                                |> shouldEqual (stateLessSyncResult response ) 
                         ) 
                         , test "Handler Next" (
                                 syncRouter chekcer str toNext stateLessSyncNext req
-                                    |> shouldEqual (stateLessSyncResult next stateLessSync )  
+                                    |> shouldEqual (stateLessSyncResult next )  
                         ) 
                         , test "Hanler URL does not match" ( 
                             syncRouter chekcer int toNext stateLessSyncNext req
