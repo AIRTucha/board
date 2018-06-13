@@ -192,8 +192,11 @@ testCheckerAndMethod (chekcer, method, name) =
                     )
                     , describe "Router Next"
                         [ test "Handler Redirect" (
-                            asyncRouter chekcer str (toRedirect >> succeed) stateLessAsyncNext req
-                                |> testTask ( \_ -> url |> Redirect |> StateLess ) req
+                            let 
+                                ts = result chekcer req (StateLess << Next) ( \_ -> url |> Redirect |> StateLess ) (\v _ -> v)
+                            in
+                                asyncRouter chekcer str (toRedirect >> succeed) stateLessAsyncNext req
+                                    |> testTask (\_ -> ts) req
                         )
                     --     , test "Handler Reply" <|
                     --         \_ ->
