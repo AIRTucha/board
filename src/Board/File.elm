@@ -4,9 +4,7 @@ module Board.File exposing
     , Encoding
     , read
     , write
-    , fromBytes
     , fromString
-    , bytes
     , string
     , getContentType
     )
@@ -18,16 +16,14 @@ module Board.File exposing
     , Encoding
     , read
     , write
-    , fromBytes
     , fromString
-    , bytes
     , string
     , getContentType
 -}
 
 import Native.File
 import Task exposing (Task)
-import Bytes exposing (Bytes)
+-- import Bytes exposing (Bytes)
 import Dict exposing(..)
 import String exposing(split)
 
@@ -69,23 +65,9 @@ write path data =
 
 {-|
 -}
-fromBytes: Bytes -> File a
-fromBytes =
-     Bytes.toString >> fromString
-
-
-{-|
--}
 fromString: String -> File a
 fromString =
     Native.File.fromString
-
-
-{-|
--}
-bytes: Buffer -> Bytes
-bytes =
-    Bytes.fromHex << string Hex 
 
 
 {-|
