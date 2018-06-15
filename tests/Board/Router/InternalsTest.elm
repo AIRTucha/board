@@ -174,6 +174,90 @@ testCheckerAndMethod (chekcer, method, name) =
                 , describe "Async Router" 
                     [ test "Router Response" (
                         let
+                            rout = getResponse >> Reply >> StateLess
+                        in
+                            syncRouter chekcer str toNext (rout >> succeed >> Async) req
+                                |> testTask rout req
+                    )
+                    , test "Router Redirect" (
+                        let
+                            redirect = url
+                                |> Redirect
+                                |> StateLess
+                            rout _ = (succeed >> Async) redirect
+                        in
+                            syncRouter chekcer str ( toNext ) rout req
+                                |> testTask (\_ -> redirect) req
+                    )
+                    , describe "Router Next"
+                        [ test "Handler Redirect" (
+                            syncRouter chekcer str (toRedirect) stateLessAsyncNext req
+                                |> testTask (stateLessAsyncResult redirect ) req
+                        )
+                        , test "Handler Reply" (
+                                syncRouter chekcer str (toResponse) stateLessAsyncNext req
+                                    |> testTask (stateLessAsyncResult response ) req
+                        )
+                        , test "Handler Next" (
+                                syncRouter chekcer str (toNext) stateLessAsyncNext req
+                                    |> testTask (stateLessAsyncResult next) req  
+                        )
+                        , test "Hanler URL does not match" (
+                                syncRouter chekcer int (toNext) stateLessAsyncNext req
+                                    |> testTask (StateLess << Next) req  
+                        )
+                        ]
+                    ]
+                -- , describe "Sync State Router"
+                --     [ test "Router Response" (   
+                --         let
+                --             rout = getResponse >> Reply >> stateLessSync
+                --         in
+                --             syncRouter chekcer any toNext rout req
+                --                 |> shouldEqual (rout req)
+                --     )
+                    -- , test "Router Redirect" (
+                    --     let
+                    --         redirect = url
+                    --             |> Redirect
+                    --             |> stateLessSync 
+                    --         rout _ = redirect
+                    --     in
+                    --         syncRouter chekcer any toNext rout req
+                    --             |> shouldEqual redirect
+                    -- )
+                    -- , describe "Router Next"
+                    --     [ test "Handler Redirect" ( 
+                    --         syncRouter chekcer str toRedirect stateLessSyncNext req
+                    --             |> shouldEqual (stateLessSyncResult redirect )
+                    --     )
+                    --     , test "Handler Reply" ( 
+                    --         syncRouter chekcer str toResponse stateLessSyncNext req
+                    --             |> shouldEqual (stateLessSyncResult response ) 
+                    --     ) 
+                    --     , test "Handler Next" (
+                    --             syncRouter chekcer str toNext stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncResult next )  
+                    --     ) 
+                    --     , test "Hanler URL does not match" ( 
+                    --         syncRouter chekcer int toNext stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncNext req)  
+                    --     )
+                    --     ]
+                    -- ]
+            -- Different handlers
+                -- Different router types
+                    -- Check router respons
+                    -- Check router redirect
+                    -- Check router next
+                        -- Check that handler redirect
+                        -- Check that handler next
+                        -- Check that handler respons
+                        -- Check URL fails
+            , describe "Async Handler"
+                [ describe "Async Router" 
+                    [ test "Router Response" (
+                        let
                             syncRouter = getResponse >> Reply >> StateLess
                             rout = syncRouter >> succeed >> Async
                         in
@@ -209,52 +293,7 @@ testCheckerAndMethod (chekcer, method, name) =
                         )
                         ]
                     ]
-                , describe "Sync State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = getResponse >> Reply >> stateLessSync
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , test "Router Redirect" (
-                        let
-                            redirect = url
-                                |> Redirect
-                                |> stateLessSync 
-                            rout _ = redirect
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> shouldEqual redirect
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncRouter chekcer str toRedirect stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncResult redirect )
-                        )
-                        , test "Handler Reply" ( 
-                            syncRouter chekcer str toResponse stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncResult response ) 
-                        ) 
-                        , test "Handler Next" (
-                                syncRouter chekcer str toNext stateLessSyncNext req
-                                    |> shouldEqual (stateLessSyncResult next )  
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncRouter chekcer int toNext stateLessSyncNext req
-                                    |> shouldEqual (stateLessSyncNext req)  
-                        )
-                        ]
-                    ]
-            -- Different handlers
-                -- Different router types
-                    -- Check router respons
-                    -- Check router redirect
-                    -- Check router next
-                        -- Check that handler redirect
-                        -- Check that handler next
-                        -- Check that handler respons
-                        -- Check URL fails
+                ]
             ]
 
 {-

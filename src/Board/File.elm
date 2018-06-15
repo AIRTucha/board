@@ -23,7 +23,6 @@ module Board.File exposing
 
 import Native.File
 import Task exposing (Task)
--- import Bytes exposing (Bytes)
 import Dict exposing(..)
 import String exposing(split)
 
