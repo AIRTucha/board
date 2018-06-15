@@ -45,6 +45,7 @@ type alias ModelToState value model error =
 type alias TaskModelToState value model error =
     Task error (model -> ( model, AnswerValue value model error ))
 
+
 {-|
 -}
 liftToAsync : Mode error a -> Task.Task error a
