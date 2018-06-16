@@ -3,11 +3,7 @@ sudo: false
 language: node_js
 node_js: node
 
-cache:
-  directories:
-    - elm-stuff/build-artifacts
-    - elm-stuff/packages
-    - node_modules
+
 
 os:
   - linux
