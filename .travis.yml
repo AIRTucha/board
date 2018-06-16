@@ -17,4 +17,4 @@ install:
   - npm run install
 
 script:
-  - ./node_modules/.bin/elm-ordeal tests/Main.elm
+  - npm run ci
