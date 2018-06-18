@@ -279,11 +279,17 @@ testCheckerAndMethod (chekcer, method, name) =
                             syncRouter chekcer any toNext rout req
                                 |> equal (rout req)
                     )
-                    -- , describe "Router Next"
-                    --     [ test "Handler Redirect" ( 
-                    --         syncRouter chekcer str toRedirect stateLessSyncNext req
-                    --             |> shouldEqual (stateLessSyncResult redirect )
-                    --     )
+                    , describe "Router Next"
+                        [ test "Handler Redirect" ( 
+                            let
+                                rout req = 
+                                    stateFullSync (\ model -> (model,  ( Next >> stateLessSync ) req ))
+                                value _ _ =
+                                     (\ model -> (model,  ( Redirect >> stateLessSync ) url ))
+                            in
+                                syncRouter chekcer str toRedirect rout req
+                                    |> equal (result chekcer req rout stateFullSync value)
+                        )
                     --     , test "Handler Reply" ( 
                     --         syncRouter chekcer str toResponse stateLessSyncNext req
                     --             |> shouldEqual (stateLessSyncResult response ) 
@@ -296,7 +302,7 @@ testCheckerAndMethod (chekcer, method, name) =
                     --         syncRouter chekcer int toNext stateLessSyncNext req
                     --                 |> shouldEqual (stateLessSyncNext req)  
                     --     )
-                        -- ]
+                        ]
                     ]
             -- Different handlers
                 -- Different router types
