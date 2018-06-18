@@ -284,24 +284,42 @@ testCheckerAndMethod (chekcer, method, name) =
                             let
                                 rout req = 
                                     stateFullSync (\ model -> (model,  ( Next >> stateLessSync ) req ))
-                                value _ _ =
-                                     (\ model -> (model,  ( Redirect >> stateLessSync ) url ))
+                                value req _ =
+                                     (\ model -> (model,  ( Redirect >> stateLessSync ) req.url ))
                             in
                                 syncRouter chekcer str toRedirect rout req
                                     |> equal (result chekcer req rout stateFullSync value)
                         )
-                    --     , test "Handler Reply" ( 
-                    --         syncRouter chekcer str toResponse stateLessSyncNext req
-                    --             |> shouldEqual (stateLessSyncResult response ) 
-                    --     ) 
-                    --     , test "Handler Next" (
-                    --             syncRouter chekcer str toNext stateLessSyncNext req
-                    --                 |> shouldEqual (stateLessSyncResult next )  
-                    --     ) 
-                    --     , test "Hanler URL does not match" ( 
-                    --         syncRouter chekcer int toNext stateLessSyncNext req
-                    --                 |> shouldEqual (stateLessSyncNext req)  
-                    --     )
+                        , test "Handler Reply" ( 
+                            let
+                                rout req = 
+                                    stateFullSync (\ model -> (model,  ( Next >> stateLessSync ) req ))
+                                value req _ =
+                                     (\ model -> (model,  stateLessSync <| response req req.url))
+                            in
+                                syncRouter chekcer str toResponse rout req
+                                    |> equal (result chekcer req rout stateFullSync value)
+                        ) 
+                        , test "Handler Next" (
+                            let
+                                rout req = 
+                                    stateFullSync (\ model -> (model,  ( Next >> stateLessSync ) req ))
+                                value req _ =
+                                     (\ model -> (model,  stateLessSync <| next req req.url))
+                            in
+                                syncRouter chekcer str toNext rout req
+                                    |> equal (result chekcer req rout stateFullSync value)
+                        ) 
+                        , test "Hanler URL does not match" ( 
+                            let
+                                rout req = 
+                                    stateFullSync (\ model -> (model,  ( Next >> stateLessSync ) req ))
+                                value req _ =
+                                     (\ model -> (model,  stateLessSync <| next req req.url))
+                            in
+                                syncRouter chekcer int toNext rout req
+                                    |> equal (rout req)
+                        )
                         ]
                     ]
             -- Different handlers
