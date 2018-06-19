@@ -191,6 +191,8 @@ testCheckerAndMethod (chekcer, method, name) =
             stateFullSync (\ model -> (model, ( Next >> stateLessSync ) req ))
         stateFullSyncResult =
             result chekcer req stateFullSyncRouter stateFullSync 
+        newstateFullSyncResult reqToValue =
+            result chekcer req stateFullSyncRouter stateFullSync (\ req str model -> (model, reqToValue req req.url ))
     in
         describe name
             [ describe "Sync Handler"
@@ -287,28 +289,16 @@ testCheckerAndMethod (chekcer, method, name) =
                     )
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
-                            let
-                                value req _ =
-                                     (\ model -> (model, ( Redirect >> stateLessSync ) req.url ))
-                            in
-                                syncRouter chekcer str toRedirect stateFullSyncRouter req
-                                    |> equal (stateFullSyncResult value)
+                            syncRouter chekcer str toRedirect stateFullSyncRouter req
+                                |> equal (newstateFullSyncResult <| \ req _ -> (Redirect >> stateLessSync) req.url)
                         )
                         , test "Handler Reply" ( 
-                            let
-                                value req _ =
-                                     (\ model -> (model, stateLessSync <| response req req.url))
-                            in
-                                syncRouter chekcer str toResponse stateFullSyncRouter req
-                                    |> equal (stateFullSyncResult value)
+                            syncRouter chekcer str toResponse stateFullSyncRouter req
+                                |> equal (newstateFullSyncResult <| \ req _ -> stateLessSync <| response req req.url)
                         ) 
                         , test "Handler Next" (
-                            let
-                                value req _ =
-                                     (\ model -> (model, stateLessSync <| next req req.url))
-                            in
-                                syncRouter chekcer str toNext stateFullSyncRouter req
-                                    |> equal (stateFullSyncResult value)
+                            syncRouter chekcer str toNext stateFullSyncRouter req
+                                |> equal (newstateFullSyncResult <| \ req _ -> stateLessSync <| next req req.url)
                         ) 
                         , test "Hanler URL does not match" ( 
                             syncRouter chekcer int toNext stateFullSyncRouter req
