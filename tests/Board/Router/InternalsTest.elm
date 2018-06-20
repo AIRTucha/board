@@ -186,14 +186,16 @@ testCheckerAndMethod (chekcer, method, name) =
             result chekcer req stateLessSyncNext stateLessSync
         stateLessAsyncResult handler _ = 
             result chekcer req (StateLess << Next) StateLess handler
+        toStateHandler reqToValue req str model =
+           (model, stateLessSync <| reqToValue req str )
         stateFullSyncRouter reqToValue req = 
-            stateFullSync (\ model -> (model, stateLessSync <| reqToValue req req.url ))
+            stateFullSync <| toStateHandler reqToValue req req.url
         stateFullSyncNext =
             stateFullSyncRouter next
         stateFullSyncResult =
             result chekcer req stateFullSyncNext stateFullSync 
         newstateFullSyncResult reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync (\ req str model -> (model, stateLessSync <| reqToValue req req.url ))
+            result chekcer req stateFullSyncNext stateFullSync <| toStateHandler reqToValue
     in
         describe name
             [ describe "Sync Handler"
