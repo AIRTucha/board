@@ -177,6 +177,8 @@ equal v1 v2 =
                                 Err str ->
                                     failure str
                         )
+omitFirstArg f _ =
+    f
 
 testCheckerAndMethod (chekcer, method, name) =
     let 
@@ -192,7 +194,7 @@ testCheckerAndMethod (chekcer, method, name) =
         stateFullSyncResult =
             result chekcer req stateFullSyncRouter stateFullSync 
         newstateFullSyncResult reqToValue =
-            result chekcer req stateFullSyncRouter stateFullSync (\ req str model -> (model, reqToValue req req.url ))
+            result chekcer req stateFullSyncRouter stateFullSync (\ req str model -> (model, stateLessSync <| reqToValue req req.url ))
     in
         describe name
             [ describe "Sync Handler"
@@ -290,15 +292,15 @@ testCheckerAndMethod (chekcer, method, name) =
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
                             syncRouter chekcer str toRedirect stateFullSyncRouter req
-                                |> equal (newstateFullSyncResult <| \ req _ -> (Redirect >> stateLessSync) req.url)
+                                |> equal (newstateFullSyncResult (omitFirstArg Redirect))
                         )
                         , test "Handler Reply" ( 
                             syncRouter chekcer str toResponse stateFullSyncRouter req
-                                |> equal (newstateFullSyncResult <| \ req _ -> stateLessSync <| response req req.url)
+                                |> equal (newstateFullSyncResult response)
                         ) 
                         , test "Handler Next" (
                             syncRouter chekcer str toNext stateFullSyncRouter req
-                                |> equal (newstateFullSyncResult <| \ req _ -> stateLessSync <| next req req.url)
+                                |> equal (newstateFullSyncResult next)
                         ) 
                         , test "Hanler URL does not match" ( 
                             syncRouter chekcer int toNext stateFullSyncRouter req

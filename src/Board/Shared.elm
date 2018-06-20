@@ -15,6 +15,7 @@ module Board.Shared exposing
     , isPut
     , isDelete
     , anyMethod
+    , getURL
     , getResponse
     , MethodChecker
     )
@@ -198,6 +199,11 @@ anyMethod: Request a -> Bool
 anyMethod req =
     True
 
+{-|
+-}
+getURL: Request a -> String
+getURL req =
+    req.url
 
 {-|
 -}
