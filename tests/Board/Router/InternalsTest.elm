@@ -350,7 +350,43 @@ testCheckerAndMethod (chekcer, method, name) =
                     ]
                 ]
             , describe "Async Handler"
-                [ describe "Async Router" 
+                [ describe "Sync Router" 
+                    [ test "Router Response" (   
+                        let
+                            rout = getResponse >> Reply >> stateLessSync
+                        in
+                            asyncRouter chekcer any (toNext >> succeed) rout req
+                                |> shouldEqual (rout req)
+                    )
+                    , test "Router Redirect" (
+                        let
+                            rout req = req.url
+                                |> Redirect
+                                |> stateLessSync 
+                        in
+                            asyncRouter chekcer any (toNext >> succeed) rout req
+                                |> shouldEqual (rout req)
+                    )
+                    -- , describe "Router Next"
+                    --     [ test "Handler Redirect" ( 
+                    --         syncRouter chekcer str toRedirect stateLessSyncNext req
+                    --             |> shouldEqual (stateLessSyncResult redirect )
+                    --     )
+                    --     , test "Handler Reply" ( 
+                    --         syncRouter chekcer str toResponse stateLessSyncNext req
+                    --             |> shouldEqual (stateLessSyncResult response ) 
+                    --     ) 
+                    --     , test "Handler Next" (
+                    --             syncRouter chekcer str toNext stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncResult next )  
+                    --     ) 
+                    --     , test "Hanler URL does not match" ( 
+                    --         syncRouter chekcer int toNext stateLessSyncNext req
+                    --                 |> shouldEqual (stateLessSyncNext req)  
+                    --     )
+                    --     ]
+                    ]
+                , describe "Async Router" 
                     [ test "Router Response" (
                         let
                             syncRouter = getResponse >> Reply >> StateLess
