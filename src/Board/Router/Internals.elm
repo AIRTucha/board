@@ -74,6 +74,13 @@ stateFullSync =
 
 {-|
 -}
+stateFullAsync : StateHandler value model error -> Mode error1 (Answer value model error)
+stateFullAsync =
+    Async << Task.succeed << StateFull
+
+
+{-|
+-}
 toStateFullSync : (model -> ( model, AnswerValue value model error )) -> Mode error1 (Answer value model error)
 toStateFullSync =
     Sync << toStateFull
