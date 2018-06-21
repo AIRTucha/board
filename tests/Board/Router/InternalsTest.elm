@@ -283,7 +283,7 @@ testCheckerAndMethod (chekcer, method, name) =
                         )
                         , test "Hanler URL does not match" (
                                 syncRouter chekcer int toNext stateLessAsyncNext req
-                                    |> testTask (StateLess << Next) req  
+                                    |> testTask stateLessNext req  
                         )
                         ]
                     ]
@@ -366,7 +366,7 @@ testCheckerAndMethod (chekcer, method, name) =
                         let
                             rout = getResponse >> Reply >> stateLessSync
                         in
-                            asyncRouter chekcer any (toNext >> succeed) rout req
+                            asyncRouter chekcer any toNextTask rout req
                                 |> shouldEqual (rout req)
                     )
                     , test "Router Redirect" (
@@ -375,25 +375,25 @@ testCheckerAndMethod (chekcer, method, name) =
                                 |> Redirect
                                 |> stateLessSync 
                         in
-                            asyncRouter chekcer any (toNext >> succeed) rout req
+                            asyncRouter chekcer any toNextTask rout req
                                 |> shouldEqual (rout req)
                     )
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
-                            asyncRouter chekcer str (toRedirect >> succeed) stateLessSyncNext req
-                                |> testTask (stateLessAsyncResult redirect ) req
+                            asyncRouter chekcer str toRedirectTask stateLessSyncNext req
+                                |> testTask ( stateLessAsyncResult redirect ) req
                         )
                         , test "Handler Reply" ( 
-                            asyncRouter chekcer str (toResponse >> succeed) stateLessSyncNext req
-                                |> testTask (stateLessAsyncResult response ) req
+                            asyncRouter chekcer str toResponseTask stateLessSyncNext req
+                                |> testTask ( stateLessAsyncResult response ) req
                         ) 
                         , test "Handler Next" (
-                            asyncRouter chekcer str (toNext >> succeed) stateLessSyncNext req
-                                |> testTask (stateLessAsyncResult next )  req
+                            asyncRouter chekcer str toNextTask stateLessSyncNext req
+                                |> testTask ( stateLessAsyncResult next )  req
                         ) 
                         , test "Hanler URL does not match" ( 
-                            asyncRouter chekcer int (toNext >> succeed) stateLessSyncNext req
-                                |> testTask ((StateLess << Next)) req  
+                            asyncRouter chekcer int toNextTask stateLessSyncNext req
+                                |> testTask stateLessNext req  
                         )
                         ]
                     ]
