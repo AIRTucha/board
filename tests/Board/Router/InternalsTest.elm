@@ -114,13 +114,9 @@ testTask reqToResult req result =
                 Err str ->
                     failure str
     in
-        case result of
-            Sync _ ->
-                failure "Incorrect synchronization mode"
-
-            Async task ->
-                task
-                    |> andTest checkResult
+        result
+            |> liftToAsync
+            |> andTest checkResult
 
 
 model =
@@ -367,24 +363,24 @@ testCheckerAndMethod (chekcer, method, name) =
                             asyncRouter chekcer any (toNext >> succeed) rout req
                                 |> shouldEqual (rout req)
                     )
-                    -- , describe "Router Next"
-                    --     [ test "Handler Redirect" ( 
-                    --         syncRouter chekcer str toRedirect stateLessSyncNext req
-                    --             |> shouldEqual (stateLessSyncResult redirect )
-                    --     )
-                    --     , test "Handler Reply" ( 
-                    --         syncRouter chekcer str toResponse stateLessSyncNext req
-                    --             |> shouldEqual (stateLessSyncResult response ) 
-                    --     ) 
-                    --     , test "Handler Next" (
-                    --             syncRouter chekcer str toNext stateLessSyncNext req
-                    --                 |> shouldEqual (stateLessSyncResult next )  
-                    --     ) 
-                    --     , test "Hanler URL does not match" ( 
-                    --         syncRouter chekcer int toNext stateLessSyncNext req
-                    --                 |> shouldEqual (stateLessSyncNext req)  
-                    --     )
-                    --     ]
+                    , describe "Router Next"
+                        [ test "Handler Redirect" ( 
+                            asyncRouter chekcer str (toRedirect >> succeed) stateLessSyncNext req
+                                |> testTask (stateLessAsyncResult redirect ) req
+                        )
+                        , test "Handler Reply" ( 
+                            asyncRouter chekcer str (toResponse >> succeed) stateLessSyncNext req
+                                |> testTask (stateLessAsyncResult response ) req
+                        ) 
+                        , test "Handler Next" (
+                            asyncRouter chekcer str (toNext >> succeed) stateLessSyncNext req
+                                |> testTask (stateLessAsyncResult next )  req
+                        ) 
+                        , test "Hanler URL does not match" ( 
+                            asyncRouter chekcer int (toNext >> succeed) stateLessSyncNext req
+                                |> testTask ((StateLess << Next)) req  
+                        )
+                        ]
                     ]
                 , describe "Async Router" 
                     [ test "Router Response" (
