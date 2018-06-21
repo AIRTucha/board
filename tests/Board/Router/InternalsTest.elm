@@ -239,7 +239,6 @@ testCheckerAndMethod (chekcer, method, name) =
                         )
                         ]
                     ]
-                ]
                 , describe "Async Router" 
                     [ test "Router Response" (
                         let
@@ -349,15 +348,7 @@ testCheckerAndMethod (chekcer, method, name) =
                         )
                         ]
                     ]
-            -- Different handlers
-                -- Different router types
-                    -- Check router respons
-                    -- Check router redirect
-                    -- Check router next
-                        -- Check that handler redirect
-                        -- Check that handler next
-                        -- Check that handler respons
-                        -- Check URL fails
+                ]
             , describe "Async Handler"
                 [ describe "Async Router" 
                     [ test "Router Response" (
