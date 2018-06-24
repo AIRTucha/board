@@ -124,7 +124,7 @@ testTask reqToResult req result =
         checkResult result = 
             case result of 
                 Ok value ->
-                    shouldEqual value (reqToResult req)
+                    eqaulValues value (reqToResult req)
 
                 Err str ->
                     failure str
@@ -215,6 +215,8 @@ testCheckerAndMethod (chekcer, method, name) =
             toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync 
         stateLessAsyncResult handler _ = 
             result chekcer req stateLessNext StateLess handler
+        stateFullAsyncResult handler _ = 
+            result chekcer req stateLessNext StateFull (toSyncStateHandler handler)
         toStateFulRouter  mode reqToValue req str model =
            (model, mode <| reqToValue req str )
         toSyncStateHandler =
@@ -576,7 +578,7 @@ testCheckerAndMethod (chekcer, method, name) =
                         let
                             rout = getResponse >> Reply >> StateLess
                         in
-                            syncRouter chekcer str toNext (rout >> succeed >> Async) req
+                            syncStateRouter chekcer str stateFullNext (rout >> succeed >> Async) req
                                 |> testTask rout req
                     )
                     , test "Router Redirect" (
@@ -586,25 +588,25 @@ testCheckerAndMethod (chekcer, method, name) =
                                 |> StateLess
                             rout = redirect >> succeed >> Async
                         in
-                            syncRouter chekcer str toNext rout req
+                            syncStateRouter chekcer str stateFullNext rout req
                                 |> testTask redirect req
                     )
                     , describe "Router Next"
                         [ test "Handler Redirect" (
-                            syncRouter chekcer str toRedirect stateLessAsyncNext req
-                                |> testTask (stateLessAsyncResult redirect ) req
+                            syncStateRouter chekcer str stateFullRedirect stateLessAsyncNext req
+                                |> testTask (stateFullAsyncResult redirect ) req
                         )
                         , test "Handler Reply" (
-                                syncRouter chekcer str toResponse stateLessAsyncNext req
-                                    |> testTask (stateLessAsyncResult response ) req
+                            syncStateRouter chekcer str stateFullResponse stateLessAsyncNext req
+                                |> testTask (stateFullAsyncResult response ) req
                         )
                         , test "Handler Next" (
-                                syncRouter chekcer str toNext stateLessAsyncNext req
-                                    |> testTask (stateLessAsyncResult next) req  
+                            syncStateRouter chekcer str stateFullNext stateLessAsyncNext req
+                                |> testTask (stateFullAsyncResult next) req  
                         )
                         , test "Hanler URL does not match" (
-                                syncRouter chekcer int toNext stateLessAsyncNext req
-                                    |> testTask stateLessNext req  
+                            syncStateRouter chekcer int stateFullNext stateLessAsyncNext req
+                                |> testTask stateLessNext req  
                         )
                         ]
                     ]
