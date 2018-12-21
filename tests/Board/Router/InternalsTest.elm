@@ -63,9 +63,12 @@ response req str =
 next req str =
     Next { req | content = Text "text/plain" str }
 
-
+redirect: a -> String -> AnswerValue value model error
 redirect req str =
     Redirect str
+
+stateFullRedirectRouter req str model =
+    (model, stateLessSync <| Redirect str)
 
 
 getHandler hanlder (param, req) =
@@ -217,10 +220,12 @@ testCheckerAndMethod (chekcer, method, name) =
             result chekcer req stateLessNext StateLess handler
         stateFullAsyncResult handler _ = 
             result chekcer req stateLessNext StateFull (toSyncStateHandler handler)
-        toStateFulRouter  mode reqToValue req str model =
+        toStateFulRouter mode reqToValue req str model =
            (model, mode <| reqToValue req str )
         toSyncStateHandler =
-           toStateFulRouter  stateLessSync
+           toStateFulRouter stateLessSync
+        toSyncStateHandlerStateFull = 
+           toStateFulRouter stateFullSync
         toAsyncStateHandler =
            toStateFulRouter  (stateLessAsync << succeed)
         stateFullSyncRouter reqToValue req = 
@@ -229,6 +234,8 @@ testCheckerAndMethod (chekcer, method, name) =
             stateFullSyncRouter next
         stateFullSyncResult reqToValue =
             result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandler reqToValue
+        stateFullSyncResultStateFullHanlder reqToValue =
+            result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull reqToValue
         stateFullAsyncRouter reqToValue req = 
             stateFullAsync <| toSyncStateHandler reqToValue req req.url
         stateFullAsyncNext =
@@ -237,6 +244,7 @@ testCheckerAndMethod (chekcer, method, name) =
             result chekcer req stateFullAsyncNext stateFullAsync <| toSyncStateHandler reqToValue
         syncStateFullSyncResultAsync reqToValue =
             result chekcer req stateFullSyncNext stateFullSync <| toAsyncStateHandler reqToValue
+
         asyncStateFullAsyncResultAsync reqToValue =
             result chekcer req stateFullAsyncNext stateFullAsync <| toAsyncStateHandler reqToValue
     in
@@ -616,7 +624,7 @@ testCheckerAndMethod (chekcer, method, name) =
                             rout = 
                                 stateFullSyncRouter response
                         in
-                            syncRouter chekcer any toNext rout req
+                            syncStateRouter chekcer any stateFullNext rout req
                                 |> equal (rout req)
                         )
                     , test "Router Redirect" (
@@ -624,64 +632,64 @@ testCheckerAndMethod (chekcer, method, name) =
                             rout = 
                                 stateFullSyncRouter redirect
                         in
-                            syncRouter chekcer any toNext rout req
+                            syncStateRouter chekcer any stateFullNext rout req
                                 |> equal (rout req)
                     )
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
-                            syncRouter chekcer str toRedirect stateFullSyncNext req
-                                |> equal (stateFullSyncResult redirect)
+                            syncStateRouter chekcer str stateFullRedirect stateFullSyncNext req
+                                |> equal (stateFullSyncResultStateFullHanlder stateFullRedirectRouter)
                         )
-                        , test "Handler Reply" ( 
-                            syncRouter chekcer str toResponse stateFullSyncNext req
-                                |> equal (stateFullSyncResult response)
-                        ) 
-                        , test "Handler Next" (
-                            syncRouter chekcer str toNext stateFullSyncNext req
-                                |> equal (stateFullSyncResult next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncRouter chekcer int toNext stateFullSyncNext req
-                                |> equal (stateFullSyncNext req)
-                        )
+                        -- , test "Handler Reply" ( 
+                        --     syncRouter chekcer str toResponse stateFullSyncNext req
+                        --         |> equal (stateFullSyncResult response)
+                        -- ) 
+                        -- , test "Handler Next" (
+                        --     syncRouter chekcer str toNext stateFullSyncNext req
+                        --         |> equal (stateFullSyncResult next)
+                        -- ) 
+                        -- , test "Hanler URL does not match" ( 
+                        --     syncRouter chekcer int toNext stateFullSyncNext req
+                        --         |> equal (stateFullSyncNext req)
+                        -- )
                         ]
                     ]
-                , describe "Async State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullAsyncRouter response
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullAsyncRouter redirect
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncRouter chekcer str toRedirect stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultSync redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            syncRouter chekcer str toResponse stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultSync response)
-                        ) 
-                        , test "Handler Next" (
-                            syncRouter chekcer str toNext stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultSync next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncRouter chekcer int toNext stateFullAsyncNext req
-                                |> equal (stateFullAsyncNext req)
-                        )
-                        ]
-                    ]
+                -- , describe "Async State Router"
+                    -- [ test "Router Response" (   
+                    --     let
+                    --         rout = 
+                    --             stateFullAsyncRouter response
+                    --     in
+                    --         syncRouter chekcer any toNext rout req
+                    --             |> equal (rout req)
+                    --     )
+                    -- , test "Router Redirect" (
+                    --     let
+                    --         rout = 
+                    --             stateFullAsyncRouter redirect
+                    --     in
+                    --         syncRouter chekcer any toNext rout req
+                    --             |> equal (rout req)
+                    -- )
+                    -- , describe "Router Next"
+                    --     [ test "Handler Redirect" ( 
+                    --         syncRouter chekcer str toRedirect stateFullAsyncNext req
+                    --             |> equal (asyncStateFullAsyncResultSync redirect)
+                    --     )
+                    --     , test "Handler Reply" ( 
+                    --         syncRouter chekcer str toResponse stateFullAsyncNext req
+                    --             |> equal (asyncStateFullAsyncResultSync response)
+                    --     ) 
+                    --     , test "Handler Next" (
+                    --         syncRouter chekcer str toNext stateFullAsyncNext req
+                    --             |> equal (asyncStateFullAsyncResultSync next)
+                    --     ) 
+                    --     , test "Hanler URL does not match" ( 
+                    --         syncRouter chekcer int toNext stateFullAsyncNext req
+                    --             |> equal (stateFullAsyncNext req)
+                    --     )
+                    --     ]
+                    -- ]
                 ]
             ]
 
