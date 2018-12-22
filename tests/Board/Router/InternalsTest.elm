@@ -1,6 +1,6 @@
 module Board.Router.InternalsTest exposing (..)
 
-import Ordeal exposing (Test, test, describe, shouldEqual, andTest, failure, all, and)
+import Ordeal exposing (Test, success, test, describe, shouldEqual, andTest, failure, all, and)
 import Board.Router exposing (empty)
 import Board.Router.Internals exposing(..)
 import Board.Shared exposing (..)
@@ -114,7 +114,7 @@ stateLessAsyncNext =
 
 stateLessNext =
     Next >> StateLess
-
+    
 result checker req mismatchHandler matchMode matchHandler =
     if checker req then 
         matchMode <| matchHandler req url
@@ -227,7 +227,7 @@ testCheckerAndMethod (chekcer, method, name) =
         toSyncStateHandlerStateFull = 
            toStateFulRouter stateFullSync
         toAsyncStateHandler =
-           toStateFulRouter  (stateLessAsync << succeed)
+           toStateFulRouter (stateLessAsync << succeed)
         stateFullSyncRouter reqToValue req = 
             stateFullSync <| toSyncStateHandler reqToValue req req.url
         stateFullSyncNext =
@@ -236,6 +236,8 @@ testCheckerAndMethod (chekcer, method, name) =
             result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandler reqToValue
         stateFullSyncResultStateFullHanlder reqToValue =
             result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull reqToValue
+        stateFullAsyncResultStateFullHanlder reqToValue =
+            result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullSync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
         stateFullAsyncRouter reqToValue req = 
             stateFullAsync <| toSyncStateHandler reqToValue req req.url
         stateFullAsyncNext =
@@ -244,7 +246,6 @@ testCheckerAndMethod (chekcer, method, name) =
             result chekcer req stateFullAsyncNext stateFullAsync <| toSyncStateHandler reqToValue
         syncStateFullSyncResultAsync reqToValue =
             result chekcer req stateFullSyncNext stateFullSync <| toAsyncStateHandler reqToValue
-
         asyncStateFullAsyncResultAsync reqToValue =
             result chekcer req stateFullAsyncNext stateFullAsync <| toAsyncStateHandler reqToValue
     in
@@ -660,7 +661,7 @@ testCheckerAndMethod (chekcer, method, name) =
                             rout = 
                                 stateFullAsyncRouter response
                         in
-                            asyncRouter chekcer any toNextTask rout req
+                            syncStateRouter chekcer any stateFullNext rout req
                                 |> equal (rout req)
                         )
                     , test "Router Redirect" (
@@ -668,28 +669,29 @@ testCheckerAndMethod (chekcer, method, name) =
                             rout = 
                                 stateFullAsyncRouter redirect
                         in
-                            asyncRouter chekcer any toNextTask rout req
+                            syncStateRouter chekcer any stateFullNext rout req
                                 |> equal (rout req)
                     )
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
-                            asyncRouter chekcer str toRedirectTask stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultAsync redirect)
+                            syncStateRouter chekcer str stateFullRedirect stateFullAsyncNext req
+                                |> equal (stateFullAsyncResultStateFullHanlder redirect)
                         )
                         , test "Handler Reply" ( 
-                            asyncRouter chekcer str toResponseTask stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultAsync response)
+                            syncStateRouter chekcer str stateFullResponse stateFullAsyncNext req
+                                |> equal (stateFullAsyncResultStateFullHanlder response)
                         ) 
                         , test "Handler Next" (
-                            asyncRouter chekcer str toNextTask stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultAsync next)
+                            syncStateRouter chekcer str stateFullNext stateFullAsyncNext req
+                                |> equal (stateFullAsyncResultStateFullHanlder next)
                         ) 
                         , test "Hanler URL does not match" ( 
-                            asyncRouter chekcer int toNextTask stateFullAsyncNext req
+                            syncStateRouter chekcer int stateFullNext stateFullAsyncNext req
                                 |> equal (stateFullAsyncNext req)
                         )
                         ]
                     ]
+
                 ]
             ]
 
