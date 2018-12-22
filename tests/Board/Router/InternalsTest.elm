@@ -67,8 +67,8 @@ redirect: a -> String -> AnswerValue value model error
 redirect req str =
     Redirect str
 
-stateFullRedirectRouter req str model =
-    (model, stateLessSync <| Redirect str)
+stateFullRouter resp req str model =
+    (model, stateLessSync <| resp req str)
 
 
 getHandler hanlder (param, req) =
@@ -638,20 +638,20 @@ testCheckerAndMethod (chekcer, method, name) =
                     , describe "Router Next"
                         [ test "Handler Redirect" ( 
                             syncStateRouter chekcer str stateFullRedirect stateFullSyncNext req
-                                |> equal (stateFullSyncResultStateFullHanlder stateFullRedirectRouter)
+                                |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter redirect)
                         )
-                        -- , test "Handler Reply" ( 
-                        --     syncRouter chekcer str toResponse stateFullSyncNext req
-                        --         |> equal (stateFullSyncResult response)
-                        -- ) 
-                        -- , test "Handler Next" (
-                        --     syncRouter chekcer str toNext stateFullSyncNext req
-                        --         |> equal (stateFullSyncResult next)
-                        -- ) 
-                        -- , test "Hanler URL does not match" ( 
-                        --     syncRouter chekcer int toNext stateFullSyncNext req
-                        --         |> equal (stateFullSyncNext req)
-                        -- )
+                        , test "Handler Reply" ( 
+                            syncStateRouter chekcer str stateFullResponse stateFullSyncNext req
+                                |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter response)
+                        ) 
+                        , test "Handler Next" (
+                            syncStateRouter chekcer str stateFullNext stateFullSyncNext req
+                                |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter next)
+                        ) 
+                        , test "Hanler URL does not match" ( 
+                            syncStateRouter chekcer int stateFullNext stateFullSyncNext req
+                                |> equal (stateFullSyncNext req)
+                        )
                         ]
                     ]
                 -- , describe "Async State Router"
