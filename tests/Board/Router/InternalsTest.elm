@@ -122,12 +122,12 @@ result checker req mismatchHandler matchMode matchHandler =
         mismatchHandler req
 
 
-testTask reqToResult req result = 
+testTask resultValue result = 
     let 
         checkResult result = 
             case result of 
                 Ok value ->
-                    eqaulValues value (reqToResult req)
+                    eqaulValues value resultValue
 
                 Err str ->
                     failure str
@@ -209,850 +209,764 @@ stateFullResponse =
     toStateFullHanlder toResponse
 
 
-testCheckerAndMethod (chekcer, method, name) =
+-- testCheckerAndMethod (chekcer, method, name) =
+--     let 
+--         req = request method
+--         stateLessSyncResult = 
+--             result chekcer req stateLessSyncNext stateLessSync
+--         stateFulSyncResult = 
+--             toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync 
+--         stateFulAsyncResult = 
+--             toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullAsync
+--         stateLessAsyncResult handler _ = 
+--             result chekcer req stateLessNext StateLess handler
+--         stateFullAsyncResult handler _ = 
+--             result chekcer req stateLessNext StateFull (toSyncStateHandler handler)
+--         toStateFulRouter mode reqToValue req str model =
+--            (model, mode <| reqToValue req str )
+--         toSyncStateHandler =
+--            toStateFulRouter stateLessSync
+--         toSyncStateHandlerStateFull = 
+--            toStateFulRouter stateFullSync
+--         toAsyncStateHandler =
+--            toStateFulRouter (stateLessAsync << succeed)
+--         stateFullSyncRouter reqToValue req = 
+--             stateFullSync <| toSyncStateHandler reqToValue req req.url
+--         stateFullSyncNext =
+--             stateFullSyncRouter next
+--         stateFullSyncResult reqToValue =
+--             result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandler reqToValue
+--         stateFullSyncResultStateFullHanlder reqToValue =
+--             result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull reqToValue
+--         stateFullAsyncResultStateFullHanlder reqToValue =
+--             result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullSync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
+--         stateFullAsyncResultStateFullAsyncHanlder reqToValue =
+--             result chekcer req stateFullSyncNext stateFullSync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
+--         stateFullAsyncResultStateFullAsyncHanlderAsync reqToValue =
+--             result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
+--         stateFullAsyncRouter reqToValue req = 
+--             stateFullAsync <| toSyncStateHandler reqToValue req req.url
+--         stateFullAsyncNext =
+--             stateFullAsyncRouter next
+--         asyncStateFullAsyncResultSync reqToValue =
+--             result chekcer req stateFullAsyncNext stateFullAsync <| toSyncStateHandler reqToValue
+--         syncStateFullSyncResultAsync reqToValue =
+--             result chekcer req stateFullSyncNext stateFullSync <| toAsyncStateHandler reqToValue
+--         asyncStateFullAsyncResultAsync reqToValue =
+--             result chekcer req stateFullAsyncNext stateFullAsync <| toAsyncStateHandler reqToValue
+--     in
+--         describe name
+--             [ describe "Sync StateLess Handler"
+--                 [ describe "Sync Router" 
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = getResponse >> Reply >> stateLessSync
+--                         in
+--                             syncRouter chekcer any toNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout req = req.url
+--                                 |> Redirect
+--                                 |> stateLessSync 
+--                         in
+--                             syncRouter chekcer any toNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             syncRouter chekcer str toRedirect stateLessSyncNext req
+--                                 |> equal (stateLessSyncResult redirect )
+--                         )
+--                         , test "Handler Reply" ( 
+--                             syncRouter chekcer str toResponse stateLessSyncNext req
+--                                 |> equal (stateLessSyncResult response ) 
+--                         ) 
+--                         , test "Handler Next" (
+--                                 syncRouter chekcer str toNext stateLessSyncNext req
+--                                     |> equal (stateLessSyncResult next )  
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             syncRouter chekcer int toNext stateLessSyncNext req
+--                                     |> equal (stateLessSyncNext req)  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async Router" 
+--                     [ test "Router Response" (
+--                         let
+--                             rout = getResponse >> Reply >> StateLess
+--                         in
+--                             syncRouter chekcer str toNext (rout >> succeed >> Async) req
+--                                 |> testTask rout req
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             redirect req = req.url
+--                                 |> Redirect
+--                                 |> StateLess
+--                             rout = redirect >> succeed >> Async
+--                         in
+--                             syncRouter chekcer str toNext rout req
+--                                 |> testTask redirect req
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" (
+--                             syncRouter chekcer str toRedirect stateLessAsyncNext req
+--                                 |> testTask (stateLessAsyncResult redirect ) req
+--                         )
+--                         , test "Handler Reply" (
+--                                 syncRouter chekcer str toResponse stateLessAsyncNext req
+--                                     |> testTask (stateLessAsyncResult response ) req
+--                         )
+--                         , test "Handler Next" (
+--                                 syncRouter chekcer str toNext stateLessAsyncNext req
+--                                     |> testTask (stateLessAsyncResult next) req  
+--                         )
+--                         , test "Hanler URL does not match" (
+--                                 syncRouter chekcer int toNext stateLessAsyncNext req
+--                                     |> testTask stateLessNext req  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Sync State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter response
+--                         in
+--                             syncRouter chekcer any toNext rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter redirect
+--                         in
+--                             syncRouter chekcer any toNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             syncRouter chekcer str toRedirect stateFullSyncNext req
+--                                 |> equal (stateFullSyncResult redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             syncRouter chekcer str toResponse stateFullSyncNext req
+--                                 |> equal (stateFullSyncResult response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             syncRouter chekcer str toNext stateFullSyncNext req
+--                                 |> equal (stateFullSyncResult next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             syncRouter chekcer int toNext stateFullSyncNext req
+--                                 |> equal (stateFullSyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter response
+--                         in
+--                             syncRouter chekcer any toNext rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter redirect
+--                         in
+--                             syncRouter chekcer any toNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             syncRouter chekcer str toRedirect stateFullAsyncNext req
+--                                 |> equal (asyncStateFullAsyncResultSync redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             syncRouter chekcer str toResponse stateFullAsyncNext req
+--                                 |> equal (asyncStateFullAsyncResultSync response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             syncRouter chekcer str toNext stateFullAsyncNext req
+--                                 |> equal (asyncStateFullAsyncResultSync next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             syncRouter chekcer int toNext stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 ]
+--             , describe "Async StateLess Handler"
+--                 [ describe "Sync Router" 
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = getResponse >> Reply >> stateLessSync
+--                         in
+--                             asyncRouter chekcer any toNextTask rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout req = req.url
+--                                 |> Redirect
+--                                 |> stateLessSync 
+--                         in
+--                             asyncRouter chekcer any toNextTask rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             asyncRouter chekcer str toRedirectTask stateLessSyncNext req
+--                                 |> testTask ( stateLessAsyncResult redirect ) req
+--                         )
+--                         , test "Handler Reply" ( 
+--                             asyncRouter chekcer str toResponseTask stateLessSyncNext req
+--                                 |> testTask ( stateLessAsyncResult response ) req
+--                         ) 
+--                         , test "Handler Next" (
+--                             asyncRouter chekcer str toNextTask stateLessSyncNext req
+--                                 |> testTask ( stateLessAsyncResult next )  req
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             asyncRouter chekcer int toNextTask stateLessSyncNext req
+--                                 |> testTask stateLessNext req  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async Router" 
+--                     [ test "Router Response" (
+--                         let
+--                             syncRouter = getResponse >> Reply >> StateLess
+--                             rout = syncRouter >> succeed >> Async
+--                         in
+--                             asyncRouter chekcer str toNextTask rout req
+--                                 |> testTask syncRouter req
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             redirect = url
+--                                 |> Redirect
+--                                 |> StateLess
+--                             rout _ = (succeed >> Async) redirect
+--                         in
+--                             asyncRouter chekcer str toNextTask rout req
+--                                 |> testTask (\_ -> redirect) req
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" (
+--                             asyncRouter chekcer str toRedirectTask stateLessAsyncNext req
+--                                 |> testTask (stateLessAsyncResult redirect ) req
+--                         )
+--                         , test "Handler Reply" (
+--                             asyncRouter chekcer str toResponseTask stateLessAsyncNext req
+--                                 |> testTask (stateLessAsyncResult response ) req
+--                         )
+--                         , test "Handler Next" (
+--                             asyncRouter chekcer str toNextTask stateLessAsyncNext req
+--                                 |> testTask (stateLessAsyncResult next) req  
+--                         )
+--                         , test "Hanler URL does not match" (
+--                             asyncRouter chekcer int toNextTask stateLessAsyncNext req
+--                                 |> testTask stateLessNext req  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Sync State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter response
+--                         in
+--                             asyncRouter chekcer any toNextTask rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter redirect
+--                         in
+--                             asyncRouter chekcer any toNextTask rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" (
+--                             asyncRouter chekcer str toRedirectTask stateFullSyncNext req
+--                                 |> equal (syncStateFullSyncResultAsync redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             asyncRouter chekcer str toResponseTask stateFullSyncNext req
+--                                 |> equal (syncStateFullSyncResultAsync response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             asyncRouter chekcer str toNextTask stateFullSyncNext req
+--                                 |> equal (syncStateFullSyncResultAsync next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             asyncRouter chekcer int toNextTask stateFullSyncNext req
+--                                 |> equal (stateFullSyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter response
+--                         in
+--                             asyncRouter chekcer any toNextTask rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter redirect
+--                         in
+--                             asyncRouter chekcer any toNextTask rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             asyncRouter chekcer str toRedirectTask stateFullAsyncNext req
+--                                 |> equal (asyncStateFullAsyncResultAsync redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             asyncRouter chekcer str toResponseTask stateFullAsyncNext req
+--                                 |> equal (asyncStateFullAsyncResultAsync response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             asyncRouter chekcer str toNextTask stateFullAsyncNext req
+--                                 |> equal (asyncStateFullAsyncResultAsync next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             asyncRouter chekcer int toNextTask stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 ]
+--             , describe "Sync StateFul Handler"
+--                 [ describe "Sync Router" 
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = getResponse >> Reply >> stateLessSync
+--                         in
+--                             syncStateRouter chekcer any stateFullNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout req = req.url
+--                                 |> Redirect
+--                                 |> stateLessSync 
+--                         in
+--                             syncStateRouter chekcer any stateFullNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             syncStateRouter chekcer str stateFullRedirect stateLessSyncNext req
+--                                 |> equal (stateFulSyncResult redirect) 
+--                         )
+--                         , test "Handler Reply" ( 
+--                             syncStateRouter chekcer str stateFullResponse stateLessSyncNext req
+--                                 |> equal (stateFulSyncResult response ) 
+--                         ) 
+--                         , test "Handler Next" (
+--                             syncStateRouter chekcer str stateFullNext stateLessSyncNext req
+--                                 |> equal (stateFulSyncResult next )  
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             syncStateRouter chekcer int stateFullNext stateLessSyncNext req
+--                                 |> equal (stateLessSyncNext req)  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async Router" 
+--                     [ test "Router Response" (
+--                         let
+--                             rout = getResponse >> Reply >> StateLess
+--                         in
+--                             syncStateRouter chekcer str stateFullNext (rout >> succeed >> Async) req
+--                                 |> testTask rout req
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             redirect req = req.url
+--                                 |> Redirect
+--                                 |> StateLess
+--                             rout = redirect >> succeed >> Async
+--                         in
+--                             syncStateRouter chekcer str stateFullNext rout req
+--                                 |> testTask redirect req
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" (
+--                             syncStateRouter chekcer str stateFullRedirect stateLessAsyncNext req
+--                                 |> testTask (stateFullAsyncResult redirect ) req
+--                         )
+--                         , test "Handler Reply" (
+--                             syncStateRouter chekcer str stateFullResponse stateLessAsyncNext req
+--                                 |> testTask (stateFullAsyncResult response ) req
+--                         )
+--                         , test "Handler Next" (
+--                             syncStateRouter chekcer str stateFullNext stateLessAsyncNext req
+--                                 |> testTask (stateFullAsyncResult next) req  
+--                         )
+--                         , test "Hanler URL does not match" (
+--                             syncStateRouter chekcer int stateFullNext stateLessAsyncNext req
+--                                 |> testTask stateLessNext req  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Sync State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter response
+--                         in
+--                             syncStateRouter chekcer any stateFullNext rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter redirect
+--                         in
+--                             syncStateRouter chekcer any stateFullNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             syncStateRouter chekcer str stateFullRedirect stateFullSyncNext req
+--                                 |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             syncStateRouter chekcer str stateFullResponse stateFullSyncNext req
+--                                 |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             syncStateRouter chekcer str stateFullNext stateFullSyncNext req
+--                                 |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             syncStateRouter chekcer int stateFullNext stateFullSyncNext req
+--                                 |> equal (stateFullSyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter response
+--                         in
+--                             syncStateRouter chekcer any stateFullNext rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter redirect
+--                         in
+--                             syncStateRouter chekcer any stateFullNext rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             syncStateRouter chekcer str stateFullRedirect stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullHanlder redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             syncStateRouter chekcer str stateFullResponse stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullHanlder response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             syncStateRouter chekcer str stateFullNext stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullHanlder next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             syncStateRouter chekcer int stateFullNext stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 ]
+--             , describe "Async StateFul Handler"
+--                 [ describe "Sync Router" 
+--                     [ 
+--                         test "Router Response" (   
+--                         let
+--                             rout = getResponse >> Reply >> stateLessSync
+--                         in
+--                             asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout req = req.url
+--                                 |> Redirect
+--                                 |> stateLessSync 
+--                         in
+--                             asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateLessSyncNext req
+--                                 |> equal (stateFulAsyncResult redirect) 
+--                         )
+--                         , test "Handler Reply" ( 
+--                             asyncStateRouter chekcer str (stateFullResponse >> succeed) stateLessSyncNext req
+--                                 |> equal (stateFulAsyncResult response ) 
+--                         ) 
+--                         , test "Handler Next" (
+--                             asyncStateRouter chekcer str (stateFullNext >> succeed) stateLessSyncNext req
+--                                 |> equal (stateFulAsyncResult next )  
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             asyncStateRouter chekcer int (stateFullNext >> succeed) stateLessSyncNext req
+--                                 |> equal (stateLessSyncNext req)  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async Router" 
+--                     [ test "Router Response" (
+--                         let
+--                             rout = getResponse >> Reply >> StateLess
+--                         in
+--                             asyncStateRouter chekcer str (stateFullNext >> succeed) (rout >> succeed >> Async) req
+--                                 |> testTask rout req
+--                     )
+--                     , test "Router Redirect" (
+--                         let
+--                             redirect req = req.url
+--                                 |> Redirect
+--                                 |> StateLess
+--                             rout = redirect >> succeed >> Async
+--                         in
+--                             asyncStateRouter chekcer str (stateFullNext >> succeed) rout req
+--                                 |> testTask redirect req
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" (
+--                             asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateLessAsyncNext req
+--                                 |> testTask (stateFullAsyncResult redirect ) req
+--                         )
+--                         , test "Handler Reply" (
+--                             asyncStateRouter chekcer str (stateFullResponse >> succeed) stateLessAsyncNext req
+--                                 |> testTask (stateFullAsyncResult response ) req
+--                         )
+--                         , test "Handler Next" (
+--                             asyncStateRouter chekcer str (stateFullNext >> succeed) stateLessAsyncNext req
+--                                 |> testTask (stateFullAsyncResult next) req  
+--                         )
+--                         , test "Hanler URL does not match" (
+--                             asyncStateRouter chekcer int (stateFullNext >> succeed) stateLessAsyncNext req
+--                                 |> testTask stateLessNext req  
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Sync State Router"
+--                     [
+--                          test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter response
+--                         in
+--                             asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullSyncRouter redirect
+--                         in
+--                             asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateFullSyncNext req
+--                                 |> equal ( stateFullAsyncResultStateFullAsyncHanlder redirect )
+--                         )
+--                         , test "Handler Reply" ( 
+--                             asyncStateRouter chekcer str (stateFullResponse >> succeed) stateFullSyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullAsyncHanlder response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             asyncStateRouter chekcer str (stateFullNext >> succeed) stateFullSyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullAsyncHanlder next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             asyncStateRouter chekcer int (stateFullNext >> succeed) stateFullSyncNext req
+--                                 |> equal (stateFullSyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 , describe "Async State Router"
+--                     [ test "Router Response" (   
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter response
+--                         in
+--                             asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
+--                                 |> equal (rout req)
+--                         )
+--                     , test "Router Redirect" (
+--                         let
+--                             rout = 
+--                                 stateFullAsyncRouter redirect
+--                         in
+--                             asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
+--                                 |> equal (rout req)
+--                     )
+--                     , describe "Router Next"
+--                         [ test "Handler Redirect" ( 
+--                             asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullAsyncHanlderAsync redirect)
+--                         )
+--                         , test "Handler Reply" ( 
+--                             asyncStateRouter chekcer str (stateFullResponse >> succeed) stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullAsyncHanlderAsync response)
+--                         ) 
+--                         , test "Handler Next" (
+--                             asyncStateRouter chekcer str (stateFullNext >> succeed) stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncResultStateFullAsyncHanlderAsync next)
+--                         ) 
+--                         , test "Hanler URL does not match" ( 
+--                             asyncStateRouter chekcer int (stateFullNext >> succeed) stateFullAsyncNext req
+--                                 |> equal (stateFullAsyncNext req)
+--                         )
+--                         ]
+--                     ]
+--                 ]
+--             ]
+
+runTests router chekcer method req cases =
     let 
-        req = request method
-        stateLessSyncResult = 
-            result chekcer req stateLessSyncNext stateLessSync
-        stateFulSyncResult = 
-            toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync 
-        stateFulAsyncResult = 
-            toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullAsync
-        stateLessAsyncResult handler _ = 
-            result chekcer req stateLessNext StateLess handler
-        stateFullAsyncResult handler _ = 
-            result chekcer req stateLessNext StateFull (toSyncStateHandler handler)
-        toStateFulRouter mode reqToValue req str model =
-           (model, mode <| reqToValue req str )
-        toSyncStateHandler =
-           toStateFulRouter stateLessSync
-        toSyncStateHandlerStateFull = 
-           toStateFulRouter stateFullSync
-        toAsyncStateHandler =
-           toStateFulRouter (stateLessAsync << succeed)
-        stateFullSyncRouter reqToValue req = 
-            stateFullSync <| toSyncStateHandler reqToValue req req.url
-        stateFullSyncNext =
-            stateFullSyncRouter next
-        stateFullSyncResult reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandler reqToValue
-        stateFullSyncResultStateFullHanlder reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull reqToValue
-        stateFullAsyncResultStateFullHanlder reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullSync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
-        stateFullAsyncResultStateFullAsyncHanlder reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
-        stateFullAsyncResultStateFullAsyncHanlderAsync reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
-        stateFullAsyncRouter reqToValue req = 
-            stateFullAsync <| toSyncStateHandler reqToValue req req.url
-        stateFullAsyncNext =
-            stateFullAsyncRouter next
-        asyncStateFullAsyncResultSync reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| toSyncStateHandler reqToValue
-        syncStateFullSyncResultAsync reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| toAsyncStateHandler reqToValue
-        asyncStateFullAsyncResultAsync reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| toAsyncStateHandler reqToValue
+        handlerResult = cases.handlerResult req chekcer 
     in
-        describe name
-            [ describe "Sync StateLess Handler"
-                [ describe "Sync Router" 
-                    [ test "Router Response" (   
-                        let
-                            rout = getResponse >> Reply >> stateLessSync
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , test "Router Redirect" (
-                        let
-                            rout req = req.url
-                                |> Redirect
-                                |> stateLessSync 
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncRouter chekcer str toRedirect stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncResult redirect )
-                        )
-                        , test "Handler Reply" ( 
-                            syncRouter chekcer str toResponse stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncResult response ) 
-                        ) 
-                        , test "Handler Next" (
-                                syncRouter chekcer str toNext stateLessSyncNext req
-                                    |> shouldEqual (stateLessSyncResult next )  
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncRouter chekcer int toNext stateLessSyncNext req
-                                    |> shouldEqual (stateLessSyncNext req)  
-                        )
-                        ]
-                    ]
-                , describe "Async Router" 
-                    [ test "Router Response" (
-                        let
-                            rout = getResponse >> Reply >> StateLess
-                        in
-                            syncRouter chekcer str toNext (rout >> succeed >> Async) req
-                                |> testTask rout req
-                    )
-                    , test "Router Redirect" (
-                        let
-                            redirect req = req.url
-                                |> Redirect
-                                |> StateLess
-                            rout = redirect >> succeed >> Async
-                        in
-                            syncRouter chekcer str toNext rout req
-                                |> testTask redirect req
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" (
-                            syncRouter chekcer str toRedirect stateLessAsyncNext req
-                                |> testTask (stateLessAsyncResult redirect ) req
-                        )
-                        , test "Handler Reply" (
-                                syncRouter chekcer str toResponse stateLessAsyncNext req
-                                    |> testTask (stateLessAsyncResult response ) req
-                        )
-                        , test "Handler Next" (
-                                syncRouter chekcer str toNext stateLessAsyncNext req
-                                    |> testTask (stateLessAsyncResult next) req  
-                        )
-                        , test "Hanler URL does not match" (
-                                syncRouter chekcer int toNext stateLessAsyncNext req
-                                    |> testTask stateLessNext req  
-                        )
-                        ]
-                    ]
-                , describe "Sync State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullSyncRouter response
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullSyncRouter redirect
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncRouter chekcer str toRedirect stateFullSyncNext req
-                                |> equal (stateFullSyncResult redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            syncRouter chekcer str toResponse stateFullSyncNext req
-                                |> equal (stateFullSyncResult response)
-                        ) 
-                        , test "Handler Next" (
-                            syncRouter chekcer str toNext stateFullSyncNext req
-                                |> equal (stateFullSyncResult next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncRouter chekcer int toNext stateFullSyncNext req
-                                |> equal (stateFullSyncNext req)
-                        )
-                        ]
-                    ]
-                , describe "Async State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullAsyncRouter response
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullAsyncRouter redirect
-                        in
-                            syncRouter chekcer any toNext rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncRouter chekcer str toRedirect stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultSync redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            syncRouter chekcer str toResponse stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultSync response)
-                        ) 
-                        , test "Handler Next" (
-                            syncRouter chekcer str toNext stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultSync next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncRouter chekcer int toNext stateFullAsyncNext req
-                                |> equal (stateFullAsyncNext req)
-                        )
-                        ]
-                    ]
-                ]
-            , describe "Async StateLess Handler"
-                [ describe "Sync Router" 
-                    [ test "Router Response" (   
-                        let
-                            rout = getResponse >> Reply >> stateLessSync
-                        in
-                            asyncRouter chekcer any toNextTask rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , test "Router Redirect" (
-                        let
-                            rout req = req.url
-                                |> Redirect
-                                |> stateLessSync 
-                        in
-                            asyncRouter chekcer any toNextTask rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            asyncRouter chekcer str toRedirectTask stateLessSyncNext req
-                                |> testTask ( stateLessAsyncResult redirect ) req
-                        )
-                        , test "Handler Reply" ( 
-                            asyncRouter chekcer str toResponseTask stateLessSyncNext req
-                                |> testTask ( stateLessAsyncResult response ) req
-                        ) 
-                        , test "Handler Next" (
-                            asyncRouter chekcer str toNextTask stateLessSyncNext req
-                                |> testTask ( stateLessAsyncResult next )  req
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            asyncRouter chekcer int toNextTask stateLessSyncNext req
-                                |> testTask stateLessNext req  
-                        )
-                        ]
-                    ]
-                , describe "Async Router" 
-                    [ test "Router Response" (
-                        let
-                            syncRouter = getResponse >> Reply >> StateLess
-                            rout = syncRouter >> succeed >> Async
-                        in
-                            asyncRouter chekcer str toNextTask rout req
-                                |> testTask syncRouter req
-                    )
-                    , test "Router Redirect" (
-                        let
-                            redirect = url
-                                |> Redirect
-                                |> StateLess
-                            rout _ = (succeed >> Async) redirect
-                        in
-                            asyncRouter chekcer str toNextTask rout req
-                                |> testTask (\_ -> redirect) req
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" (
-                            asyncRouter chekcer str toRedirectTask stateLessAsyncNext req
-                                |> testTask (stateLessAsyncResult redirect ) req
-                        )
-                        , test "Handler Reply" (
-                            asyncRouter chekcer str toResponseTask stateLessAsyncNext req
-                                |> testTask (stateLessAsyncResult response ) req
-                        )
-                        , test "Handler Next" (
-                            asyncRouter chekcer str toNextTask stateLessAsyncNext req
-                                |> testTask (stateLessAsyncResult next) req  
-                        )
-                        , test "Hanler URL does not match" (
-                            asyncRouter chekcer int toNextTask stateLessAsyncNext req
-                                |> testTask stateLessNext req  
-                        )
-                        ]
-                    ]
-                , describe "Sync State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullSyncRouter response
-                        in
-                            asyncRouter chekcer any toNextTask rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullSyncRouter redirect
-                        in
-                            asyncRouter chekcer any toNextTask rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" (
-                            asyncRouter chekcer str toRedirectTask stateFullSyncNext req
-                                |> equal (syncStateFullSyncResultAsync redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            asyncRouter chekcer str toResponseTask stateFullSyncNext req
-                                |> equal (syncStateFullSyncResultAsync response)
-                        ) 
-                        , test "Handler Next" (
-                            asyncRouter chekcer str toNextTask stateFullSyncNext req
-                                |> equal (syncStateFullSyncResultAsync next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            asyncRouter chekcer int toNextTask stateFullSyncNext req
-                                |> equal (stateFullSyncNext req)
-                        )
-                        ]
-                    ]
-                , describe "Async State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullAsyncRouter response
-                        in
-                            asyncRouter chekcer any toNextTask rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullAsyncRouter redirect
-                        in
-                            asyncRouter chekcer any toNextTask rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            asyncRouter chekcer str toRedirectTask stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultAsync redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            asyncRouter chekcer str toResponseTask stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultAsync response)
-                        ) 
-                        , test "Handler Next" (
-                            asyncRouter chekcer str toNextTask stateFullAsyncNext req
-                                |> equal (asyncStateFullAsyncResultAsync next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            asyncRouter chekcer int toNextTask stateFullAsyncNext req
-                                |> equal (stateFullAsyncNext req)
-                        )
-                        ]
-                    ]
-                ]
-            , describe "Sync StateFul Handler"
-                [ describe "Sync Router" 
-                    [ test "Router Response" (   
-                        let
-                            rout = getResponse >> Reply >> stateLessSync
-                        in
-                            syncStateRouter chekcer any stateFullNext rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , test "Router Redirect" (
-                        let
-                            rout req = req.url
-                                |> Redirect
-                                |> stateLessSync 
-                        in
-                            syncStateRouter chekcer any stateFullNext rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncStateRouter chekcer str stateFullRedirect stateLessSyncNext req
-                                |> equal (stateFulSyncResult redirect) 
-                        )
-                        , test "Handler Reply" ( 
-                            syncStateRouter chekcer str stateFullResponse stateLessSyncNext req
-                                |> equal (stateFulSyncResult response ) 
-                        ) 
-                        , test "Handler Next" (
-                            syncStateRouter chekcer str stateFullNext stateLessSyncNext req
-                                |> equal (stateFulSyncResult next )  
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncStateRouter chekcer int stateFullNext stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncNext req)  
-                        )
-                        ]
-                    ]
-                , describe "Async Router" 
-                    [ test "Router Response" (
-                        let
-                            rout = getResponse >> Reply >> StateLess
-                        in
-                            syncStateRouter chekcer str stateFullNext (rout >> succeed >> Async) req
-                                |> testTask rout req
-                    )
-                    , test "Router Redirect" (
-                        let
-                            redirect req = req.url
-                                |> Redirect
-                                |> StateLess
-                            rout = redirect >> succeed >> Async
-                        in
-                            syncStateRouter chekcer str stateFullNext rout req
-                                |> testTask redirect req
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" (
-                            syncStateRouter chekcer str stateFullRedirect stateLessAsyncNext req
-                                |> testTask (stateFullAsyncResult redirect ) req
-                        )
-                        , test "Handler Reply" (
-                            syncStateRouter chekcer str stateFullResponse stateLessAsyncNext req
-                                |> testTask (stateFullAsyncResult response ) req
-                        )
-                        , test "Handler Next" (
-                            syncStateRouter chekcer str stateFullNext stateLessAsyncNext req
-                                |> testTask (stateFullAsyncResult next) req  
-                        )
-                        , test "Hanler URL does not match" (
-                            syncStateRouter chekcer int stateFullNext stateLessAsyncNext req
-                                |> testTask stateLessNext req  
-                        )
-                        ]
-                    ]
-                , describe "Sync State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullSyncRouter response
-                        in
-                            syncStateRouter chekcer any stateFullNext rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullSyncRouter redirect
-                        in
-                            syncStateRouter chekcer any stateFullNext rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncStateRouter chekcer str stateFullRedirect stateFullSyncNext req
-                                |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            syncStateRouter chekcer str stateFullResponse stateFullSyncNext req
-                                |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter response)
-                        ) 
-                        , test "Handler Next" (
-                            syncStateRouter chekcer str stateFullNext stateFullSyncNext req
-                                |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncStateRouter chekcer int stateFullNext stateFullSyncNext req
-                                |> equal (stateFullSyncNext req)
-                        )
-                        ]
-                    ]
-                , describe "Async State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullAsyncRouter response
-                        in
-                            syncStateRouter chekcer any stateFullNext rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullAsyncRouter redirect
-                        in
-                            syncStateRouter chekcer any stateFullNext rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            syncStateRouter chekcer str stateFullRedirect stateFullAsyncNext req
-                                |> equal (stateFullAsyncResultStateFullHanlder redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            syncStateRouter chekcer str stateFullResponse stateFullAsyncNext req
-                                |> equal (stateFullAsyncResultStateFullHanlder response)
-                        ) 
-                        , test "Handler Next" (
-                            syncStateRouter chekcer str stateFullNext stateFullAsyncNext req
-                                |> equal (stateFullAsyncResultStateFullHanlder next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            syncStateRouter chekcer int stateFullNext stateFullAsyncNext req
-                                |> equal (stateFullAsyncNext req)
-                        )
-                        ]
-                    ]
-                ]
-            , describe "Async StateFul Handler"
-                [ describe "Sync Router" 
-                    [ 
-                        test "Router Response" (   
-                        let
-                            rout = getResponse >> Reply >> stateLessSync
-                        in
-                            asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , test "Router Redirect" (
-                        let
-                            rout req = req.url
-                                |> Redirect
-                                |> stateLessSync 
-                        in
-                            asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
-                                |> shouldEqual (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateLessSyncNext req
-                                |> equal (stateFulAsyncResult redirect) 
-                        )
-                        , test "Handler Reply" ( 
-                            asyncStateRouter chekcer str (stateFullResponse >> succeed) stateLessSyncNext req
-                                |> equal (stateFulAsyncResult response ) 
-                        ) 
-                        , test "Handler Next" (
-                            asyncStateRouter chekcer str (stateFullNext >> succeed) stateLessSyncNext req
-                                |> equal (stateFulAsyncResult next )  
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            asyncStateRouter chekcer int (stateFullNext >> succeed) stateLessSyncNext req
-                                |> shouldEqual (stateLessSyncNext req)  
-                        )
-                        ]
-                    ]
-                , describe "Async Router" 
-                    [ test "Router Response" (
-                        let
-                            rout = getResponse >> Reply >> StateLess
-                        in
-                            asyncStateRouter chekcer str (stateFullNext >> succeed) (rout >> succeed >> Async) req
-                                |> testTask rout req
-                    )
-                    , test "Router Redirect" (
-                        let
-                            redirect req = req.url
-                                |> Redirect
-                                |> StateLess
-                            rout = redirect >> succeed >> Async
-                        in
-                            asyncStateRouter chekcer str (stateFullNext >> succeed) rout req
-                                |> testTask redirect req
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" (
-                            asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateLessAsyncNext req
-                                |> testTask (stateFullAsyncResult redirect ) req
-                        )
-                        , test "Handler Reply" (
-                            asyncStateRouter chekcer str (stateFullResponse >> succeed) stateLessAsyncNext req
-                                |> testTask (stateFullAsyncResult response ) req
-                        )
-                        , test "Handler Next" (
-                            asyncStateRouter chekcer str (stateFullNext >> succeed) stateLessAsyncNext req
-                                |> testTask (stateFullAsyncResult next) req  
-                        )
-                        , test "Hanler URL does not match" (
-                            asyncStateRouter chekcer int (stateFullNext >> succeed) stateLessAsyncNext req
-                                |> testTask stateLessNext req  
-                        )
-                        ]
-                    ]
-                , describe "Sync State Router"
-                    [
-                         test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullSyncRouter response
-                        in
-                            asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullSyncRouter redirect
-                        in
-                            asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateFullSyncNext req
-                                |> equal ( stateFullAsyncResultStateFullAsyncHanlder redirect )
-                        )
-                        , test "Handler Reply" ( 
-                            asyncStateRouter chekcer str (stateFullResponse >> succeed) stateFullSyncNext req
-                                |> equal (stateFullAsyncResultStateFullAsyncHanlder response)
-                        ) 
-                        , test "Handler Next" (
-                            asyncStateRouter chekcer str (stateFullNext >> succeed) stateFullSyncNext req
-                                |> equal (stateFullAsyncResultStateFullAsyncHanlder next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            asyncStateRouter chekcer int (stateFullNext >> succeed) stateFullSyncNext req
-                                |> equal (stateFullSyncNext req)
-                        )
-                        ]
-                    ]
-                , describe "Async State Router"
-                    [ test "Router Response" (   
-                        let
-                            rout = 
-                                stateFullAsyncRouter response
-                        in
-                            asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
-                                |> equal (rout req)
-                        )
-                    , test "Router Redirect" (
-                        let
-                            rout = 
-                                stateFullAsyncRouter redirect
-                        in
-                            asyncStateRouter chekcer any (stateFullNext >> succeed) rout req
-                                |> equal (rout req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            asyncStateRouter chekcer str (stateFullRedirect >> succeed) stateFullAsyncNext req
-                                |> equal (stateFullAsyncResultStateFullAsyncHanlderAsync redirect)
-                        )
-                        , test "Handler Reply" ( 
-                            asyncStateRouter chekcer str (stateFullResponse >> succeed) stateFullAsyncNext req
-                                |> equal (stateFullAsyncResultStateFullAsyncHanlderAsync response)
-                        ) 
-                        , test "Handler Next" (
-                            asyncStateRouter chekcer str (stateFullNext >> succeed) stateFullAsyncNext req
-                                |> equal (stateFullAsyncResultStateFullAsyncHanlderAsync next)
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            asyncStateRouter chekcer int (stateFullNext >> succeed) stateFullAsyncNext req
-                                |> equal (stateFullAsyncNext req)
-                        )
-                        ]
-                    ]
+        describe cases.name
+            [ test "Router Response" (   
+                router chekcer any cases.toNext (cases.responseRoute >> cases.routeMode) req
+                    |> equal (cases.responseRoute req)
+            )
+            , test "Router Redirect" (
+                router chekcer any cases.toNext (cases.redirectRoute>> cases.routeMode) req
+                    |> equal (cases.redirectRoute req)
+            )
+            , describe "Router Next"
+                [ test "Handler Redirect" ( 
+                    router chekcer str cases.toRedirect cases.nextRoute req
+                        |> equal (handlerResult redirect )
+                )
+                , test "Handler Reply" ( 
+                    router chekcer str cases.toResponse cases.nextRoute req
+                        |> equal (handlerResult response ) 
+                ) 
+                , test "Handler Next" (
+                    router chekcer str cases.toNext cases.nextRoute req
+                        |> equal (handlerResult next )  
+                ) 
+                , test "Hanler URL does not match" ( 
+                    router chekcer int cases.toNext cases.nextRoute req
+                        |> equal (cases.nextRoute req)  
+                )
                 ]
             ]
-
-
 
 testCheckerAndMethod2 cases (chekcer, method, name) =
     let 
-        handlerResult = cases.handlerResult req chekcer 
-
         req = request method
-        stateLessSyncResult = 
-            result chekcer req stateLessSyncNext stateLessSync
-        stateFulSyncResult = 
-            toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync 
-        stateFulAsyncResult = 
-            toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullAsync
-        stateLessAsyncResult handler _ = 
-            result chekcer req stateLessNext StateLess handler
-        stateFullAsyncResult handler _ = 
-            result chekcer req stateLessNext StateFull (toSyncStateHandler handler)
-        toStateFulRouter mode reqToValue req str model =
-           (model, mode <| reqToValue req str )
-        toSyncStateHandler =
-           toStateFulRouter stateLessSync
-        toSyncStateHandlerStateFull = 
-           toStateFulRouter stateFullSync
-        toAsyncStateHandler =
-           toStateFulRouter (stateLessAsync << succeed)
-        stateFullSyncRouter reqToValue req = 
-            stateFullSync <| toSyncStateHandler reqToValue req req.url
-        stateFullSyncNext =
-            stateFullSyncRouter next
-        stateFullSyncResult reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandler reqToValue
-        stateFullSyncResultStateFullHanlder reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull reqToValue
-        stateFullAsyncResultStateFullHanlder reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullSync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
-        stateFullAsyncResultStateFullAsyncHanlder reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
-        stateFullAsyncResultStateFullAsyncHanlderAsync reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| reqToValue a s))) 
-        stateFullAsyncRouter reqToValue req = 
-            stateFullAsync <| toSyncStateHandler reqToValue req req.url
-        stateFullAsyncNext =
-            stateFullAsyncRouter next
-        asyncStateFullAsyncResultSync reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| toSyncStateHandler reqToValue
-        syncStateFullSyncResultAsync reqToValue =
-            result chekcer req stateFullSyncNext stateFullSync <| toAsyncStateHandler reqToValue
-        asyncStateFullAsyncResultAsync reqToValue =
-            result chekcer req stateFullAsyncNext stateFullAsync <| toAsyncStateHandler reqToValue
     in
         describe name
-            [ describe "Sync StateLess Handler"
-                [ describe "Sync Router" 
-                    [ test "Router Response" (   
-                        cases.router chekcer any cases.toNext cases.responseRoute req
-                            |> shouldEqual (cases.responseRoute req)
-                    )
-                    , test "Router Redirect" (
-                        cases.router chekcer any cases.toNext cases.redirectRoute req
-                            |> shouldEqual (cases.redirectRoute req)
-                    )
-                    , describe "Router Next"
-                        [ test "Handler Redirect" ( 
-                            cases.router chekcer str cases.toRedirect cases.nextRoute req
-                                |> shouldEqual (handlerResult redirect )
-                        )
-                        , test "Handler Reply" ( 
-                            cases.router chekcer str cases.toResponse cases.nextRoute req
-                                |> shouldEqual (handlerResult response ) 
-                        ) 
-                        , test "Handler Next" (
-                                cases.router chekcer str cases.toNext cases.nextRoute req
-                                    |> shouldEqual (handlerResult next )  
-                        ) 
-                        , test "Hanler URL does not match" ( 
-                            cases.router chekcer int cases.toNext cases.nextRoute req
-                                    |> shouldEqual (cases.nextRoute req)  
-                        )
-                        ]
-                    ]
-                -- , describe "Async Router" 
-                --     [ test "Router Response" (
-                --         let
-                --             rout = getResponse >> Reply >> StateLess
-                --         in
-                --             syncRouter chekcer str toNext (rout >> succeed >> Async) req
-                --                 |> testTask rout req
-                --     )
-                --     , test "Router Redirect" (
-                --         let
-                --             redirect req = req.url
-                --                 |> Redirect
-                --                 |> StateLess
-                --             rout = redirect >> succeed >> Async
-                --         in
-                --             syncRouter chekcer str toNext rout req
-                --                 |> testTask redirect req
-                --     )
-                --     , describe "Router Next"
-                --         [ test "Handler Redirect" (
-                --             syncRouter chekcer str toRedirect stateLessAsyncNext req
-                --                 |> testTask (stateLessAsyncResult redirect ) req
-                --         )
-                --         , test "Handler Reply" (
-                --                 syncRouter chekcer str toResponse stateLessAsyncNext req
-                --                     |> testTask (stateLessAsyncResult response ) req
-                --         )
-                --         , test "Handler Next" (
-                --                 syncRouter chekcer str toNext stateLessAsyncNext req
-                --                     |> testTask (stateLessAsyncResult next) req  
-                --         )
-                --         , test "Hanler URL does not match" (
-                --                 syncRouter chekcer int toNext stateLessAsyncNext req
-                --                     |> testTask stateLessNext req  
-                --         )
-                --         ]
-                --     ]
-                -- , describe "Sync State Router"
-                --     [ test "Router Response" (   
-                --         let
-                --             rout = 
-                --                 stateFullSyncRouter response
-                --         in
-                --             syncRouter chekcer any toNext rout req
-                --                 |> equal (rout req)
-                --         )
-                --     , test "Router Redirect" (
-                --         let
-                --             rout = 
-                --                 stateFullSyncRouter redirect
-                --         in
-                --             syncRouter chekcer any toNext rout req
-                --                 |> equal (rout req)
-                --     )
-                --     , describe "Router Next"
-                --         [ test "Handler Redirect" ( 
-                --             syncRouter chekcer str toRedirect stateFullSyncNext req
-                --                 |> equal (stateFullSyncResult redirect)
-                --         )
-                --         , test "Handler Reply" ( 
-                --             syncRouter chekcer str toResponse stateFullSyncNext req
-                --                 |> equal (stateFullSyncResult response)
-                --         ) 
-                --         , test "Handler Next" (
-                --             syncRouter chekcer str toNext stateFullSyncNext req
-                --                 |> equal (stateFullSyncResult next)
-                --         ) 
-                --         , test "Hanler URL does not match" ( 
-                --             syncRouter chekcer int toNext stateFullSyncNext req
-                --                 |> equal (stateFullSyncNext req)
-                --         )
-                --         ]
-                --     ]
-                -- , describe "Async State Router"
-                --     [ test "Router Response" (   
-                --         let
-                --             rout = 
-                --                 stateFullAsyncRouter response
-                --         in
-                --             syncRouter chekcer any toNext rout req
-                --                 |> equal (rout req)
-                --         )
-                --     , test "Router Redirect" (
-                --         let
-                --             rout = 
-                --                 stateFullAsyncRouter redirect
-                --         in
-                --             syncRouter chekcer any toNext rout req
-                --                 |> equal (rout req)
-                --     )
-                --     , describe "Router Next"
-                --         [ test "Handler Redirect" ( 
-                --             syncRouter chekcer str toRedirect stateFullAsyncNext req
-                --                 |> equal (asyncStateFullAsyncResultSync redirect)
-                --         )
-                --         , test "Handler Reply" ( 
-                --             syncRouter chekcer str toResponse stateFullAsyncNext req
-                --                 |> equal (asyncStateFullAsyncResultSync response)
-                --         ) 
-                --         , test "Handler Next" (
-                --             syncRouter chekcer str toNext stateFullAsyncNext req
-                --                 |> equal (asyncStateFullAsyncResultSync next)
-                --         ) 
-                --         , test "Hanler URL does not match" ( 
-                --             syncRouter chekcer int toNext stateFullAsyncNext req
-                --                 |> equal (stateFullAsyncNext req)
-                --         )
-                --         ]
-                --     ]
-                ]
+            [ describe cases.name ( 
+                cases.tests
+                    |> map (runTests cases.router chekcer method req)
+            )
             ]
+
+toStatelessAsync =
+    succeed >> stateLessAsync
+
+toStateFulRouter mode reqToValue req str model =
+    (model, mode <| reqToValue req str )
+
+toSyncStateHandler =
+    toStateFulRouter stateLessSync
+
+stateFullSyncRouter reqToValue req = 
+    stateFullSync <| toSyncStateHandler reqToValue req req.url
+
+stateFullSyncNext =
+    stateFullSyncRouter next
+
+stateFullAsyncRouter reqToValue req = 
+    stateFullAsync <| toSyncStateHandler reqToValue req req.url
+
+stateFullAsyncNext =
+    stateFullAsyncRouter next
 
 testDescription = 
     { router = syncRouter
-    , toNext = toNext
-    , toRedirect = toRedirect
-    , toResponse = toResponse
-    , responseRoute = getResponse >> Reply >> stateLessSync
-    , redirectRoute = \_ -> "test"
-        |> Redirect
-        |> stateLessSync  
-    , nextRoute = stateLessSyncNext
-    , handlerResult = \ req chekcer ->
-        result chekcer req stateLessSyncNext stateLessSync
+    , name = "Sync StateLess Handler" 
+    , tests = 
+        [ { name = "Sync Router"
+          , toNext = toNext
+          , toRedirect = toRedirect
+          , toResponse = toResponse
+          , responseRoute = getResponse >> Reply >> stateLessSync
+          , redirectRoute = \_ -> "test"
+            |> Redirect
+            |> stateLessSync  
+          , routeMode = identity
+          , nextRoute = stateLessSyncNext
+          , handlerResult = \ req chekcer handler ->
+                result chekcer req stateLessSyncNext stateLessSync handler
+          }
+        , { name = "Async Router"
+          , toNext = toNext
+          , toRedirect = toRedirect
+          , toResponse = toResponse
+          , responseRoute = getResponse >> Reply >> toStatelessAsync
+          , redirectRoute = \ _ -> "test"
+            |> Redirect
+            |> toStatelessAsync
+          , routeMode = identity
+          , nextRoute = stateLessAsyncNext
+          , handlerResult = \ req chekcer handler ->
+                result chekcer req stateLessAsyncNext toStatelessAsync handler
+          }
+        , { name = "Sync State Router"
+          , toNext = toNext
+          , toRedirect = toRedirect
+          , toResponse = toResponse
+          , responseRoute = stateFullSyncRouter response
+          , redirectRoute = stateFullSyncRouter redirect
+          , routeMode = identity
+          , nextRoute = stateFullSyncNext
+          , handlerResult = \ req chekcer handler ->
+                result chekcer req stateFullSyncNext stateFullSync (toSyncStateHandler handler)
+          }
+        , { name = "Async State Router"
+          , toNext = toNext
+          , toRedirect = toRedirect
+          , toResponse = toResponse
+          , responseRoute = stateFullAsyncRouter response
+          , redirectRoute = stateFullAsyncRouter redirect
+          , routeMode = identity
+          , nextRoute = stateFullAsyncNext
+          , handlerResult = \ req chekcer handler ->
+                result chekcer req stateFullAsyncNext stateFullAsync (toSyncStateHandler handler)
+          }
+        ]
     }
 
 {-
