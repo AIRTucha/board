@@ -882,16 +882,21 @@ runTests router chekcer method req cases =
                 ]
             ]
 
+testSubCases runTests chekcer method req subCases = 
+    describe subCases.name (
+        subCases.tests
+            |> map (runTests subCases.router chekcer method req)
+    )
+
 testCheckerAndMethod2 cases (chekcer, method, name) =
     let 
         req = request method
     in
-        describe name
-            [ describe cases.name ( 
-                cases.tests
-                    |> map (runTests cases.router chekcer method req)
+        describe name (
+            cases 
+                |> map (testSubCases runTests chekcer method req)
             )
-            ]
+            
 
 toStatelessAsync =
     succeed >> stateLessAsync
@@ -915,59 +920,61 @@ stateFullAsyncNext =
     stateFullAsyncRouter next
 
 testDescription = 
-    { router = syncRouter
-    , name = "Sync StateLess Handler" 
-    , tests = 
-        [ { name = "Sync Router"
-          , toNext = toNext
-          , toRedirect = toRedirect
-          , toResponse = toResponse
-          , responseRoute = getResponse >> Reply >> stateLessSync
-          , redirectRoute = \_ -> "test"
-            |> Redirect
-            |> stateLessSync  
-          , routeMode = identity
-          , nextRoute = stateLessSyncNext
-          , handlerResult = \ req chekcer handler ->
-                result chekcer req stateLessSyncNext stateLessSync handler
-          }
-        , { name = "Async Router"
-          , toNext = toNext
-          , toRedirect = toRedirect
-          , toResponse = toResponse
-          , responseRoute = getResponse >> Reply >> toStatelessAsync
-          , redirectRoute = \ _ -> "test"
-            |> Redirect
-            |> toStatelessAsync
-          , routeMode = identity
-          , nextRoute = stateLessAsyncNext
-          , handlerResult = \ req chekcer handler ->
-                result chekcer req stateLessAsyncNext toStatelessAsync handler
-          }
-        , { name = "Sync State Router"
-          , toNext = toNext
-          , toRedirect = toRedirect
-          , toResponse = toResponse
-          , responseRoute = stateFullSyncRouter response
-          , redirectRoute = stateFullSyncRouter redirect
-          , routeMode = identity
-          , nextRoute = stateFullSyncNext
-          , handlerResult = \ req chekcer handler ->
-                result chekcer req stateFullSyncNext stateFullSync (toSyncStateHandler handler)
-          }
-        , { name = "Async State Router"
-          , toNext = toNext
-          , toRedirect = toRedirect
-          , toResponse = toResponse
-          , responseRoute = stateFullAsyncRouter response
-          , redirectRoute = stateFullAsyncRouter redirect
-          , routeMode = identity
-          , nextRoute = stateFullAsyncNext
-          , handlerResult = \ req chekcer handler ->
-                result chekcer req stateFullAsyncNext stateFullAsync (toSyncStateHandler handler)
-          }
-        ]
-    }
+    [   { router = syncRouter
+        , name = "Sync StateLess Handler" 
+        , tests = 
+            [ { name = "Sync Router"
+            , toNext = toNext
+            , toRedirect = toRedirect
+            , toResponse = toResponse
+            , responseRoute = getResponse >> Reply >> stateLessSync
+            , redirectRoute = \_ -> "test"
+                |> Redirect
+                |> stateLessSync  
+            , routeMode = identity
+            , nextRoute = stateLessSyncNext
+            , handlerResult = \ req chekcer handler ->
+                    result chekcer req stateLessSyncNext stateLessSync handler
+            }
+            , { name = "Async Router"
+            , toNext = toNext
+            , toRedirect = toRedirect
+            , toResponse = toResponse
+            , responseRoute = getResponse >> Reply >> toStatelessAsync
+            , redirectRoute = \ _ -> "test"
+                |> Redirect
+                |> toStatelessAsync
+            , routeMode = identity
+            , nextRoute = stateLessAsyncNext
+            , handlerResult = \ req chekcer handler ->
+                    result chekcer req stateLessAsyncNext toStatelessAsync handler
+            }
+            , { name = "Sync State Router"
+            , toNext = toNext
+            , toRedirect = toRedirect
+            , toResponse = toResponse
+            , responseRoute = stateFullSyncRouter response
+            , redirectRoute = stateFullSyncRouter redirect
+            , routeMode = identity
+            , nextRoute = stateFullSyncNext
+            , handlerResult = \ req chekcer handler ->
+                    result chekcer req stateFullSyncNext stateFullSync (toSyncStateHandler handler)
+            }
+            , { name = "Async State Router"
+            , toNext = toNext
+            , toRedirect = toRedirect
+            , toResponse = toResponse
+            , responseRoute = stateFullAsyncRouter response
+            , redirectRoute = stateFullAsyncRouter redirect
+            , routeMode = identity
+            , nextRoute = stateFullAsyncNext
+            , handlerResult = \ req chekcer handler ->
+                    result chekcer req stateFullAsyncNext stateFullAsync (toSyncStateHandler handler)
+            }
+            ]
+        }
+
+    ]
 
 {-
 -}
