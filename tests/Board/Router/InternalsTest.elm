@@ -257,153 +257,6 @@ stateFullResponse =
 --     in
 --         describe name
 --             [ 
---             , describe "Sync StateFul Handler"
---                 [ describe "Sync Router" 
---                     [ test "Router Response" (   
---                         let
---                             rout = getResponse >> Reply >> stateLessSync
---                         in
---                             syncStateRouter chekcer any stateFullNext rout req
---                                 |> equal (rout req)
---                     )
---                     , test "Router Redirect" (
---                         let
---                             rout req = req.url
---                                 |> Redirect
---                                 |> stateLessSync 
---                         in
---                             syncStateRouter chekcer any stateFullNext rout req
---                                 |> equal (rout req)
---                     )
---                     , describe "Router Next"
---                         [ test "Handler Redirect" ( 
---                             syncStateRouter chekcer str stateFullRedirect stateLessSyncNext req
---                                 |> equal (stateFulSyncResult redirect) 
---                         )
---                         , test "Handler Reply" ( 
---                             syncStateRouter chekcer str stateFullResponse stateLessSyncNext req
---                                 |> equal (stateFulSyncResult response ) 
---                         ) 
---                         , test "Handler Next" (
---                             syncStateRouter chekcer str stateFullNext stateLessSyncNext req
---                                 |> equal (stateFulSyncResult next )  
---                         ) 
---                         , test "Hanler URL does not match" ( 
---                             syncStateRouter chekcer int stateFullNext stateLessSyncNext req
---                                 |> equal (stateLessSyncNext req)  
---                         )
---                         ]
---                     ]
---                 , describe "Async Router" 
---                     [ test "Router Response" (
---                         let
---                             rout = getResponse >> Reply >> StateLess
---                         in
---                             syncStateRouter chekcer str stateFullNext (rout >> succeed >> Async) req
---                                 |> testTask rout req
---                     )
---                     , test "Router Redirect" (
---                         let
---                             redirect req = req.url
---                                 |> Redirect
---                                 |> StateLess
---                             rout = redirect >> succeed >> Async
---                         in
---                             syncStateRouter chekcer str stateFullNext rout req
---                                 |> testTask redirect req
---                     )
---                     , describe "Router Next"
---                         [ test "Handler Redirect" (
---                             syncStateRouter chekcer str stateFullRedirect stateLessAsyncNext req
---                                 |> testTask (stateFullAsyncResult redirect ) req
---                         )
---                         , test "Handler Reply" (
---                             syncStateRouter chekcer str stateFullResponse stateLessAsyncNext req
---                                 |> testTask (stateFullAsyncResult response ) req
---                         )
---                         , test "Handler Next" (
---                             syncStateRouter chekcer str stateFullNext stateLessAsyncNext req
---                                 |> testTask (stateFullAsyncResult next) req  
---                         )
---                         , test "Hanler URL does not match" (
---                             syncStateRouter chekcer int stateFullNext stateLessAsyncNext req
---                                 |> testTask stateLessNext req  
---                         )
---                         ]
---                     ]
---                 , describe "Sync State Router"
---                     [ test "Router Response" (   
---                         let
---                             rout = 
---                                 stateFullSyncRouter response
---                         in
---                             syncStateRouter chekcer any stateFullNext rout req
---                                 |> equal (rout req)
---                         )
---                     , test "Router Redirect" (
---                         let
---                             rout = 
---                                 stateFullSyncRouter redirect
---                         in
---                             syncStateRouter chekcer any stateFullNext rout req
---                                 |> equal (rout req)
---                     )
---                     , describe "Router Next"
---                         [ test "Handler Redirect" ( 
---                             syncStateRouter chekcer str stateFullRedirect stateFullSyncNext req
---                                 |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter redirect)
---                         )
---                         , test "Handler Reply" ( 
---                             syncStateRouter chekcer str stateFullResponse stateFullSyncNext req
---                                 |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter response)
---                         ) 
---                         , test "Handler Next" (
---                             syncStateRouter chekcer str stateFullNext stateFullSyncNext req
---                                 |> equal (stateFullSyncResultStateFullHanlder <| stateFullRouter next)
---                         ) 
---                         , test "Hanler URL does not match" ( 
---                             syncStateRouter chekcer int stateFullNext stateFullSyncNext req
---                                 |> equal (stateFullSyncNext req)
---                         )
---                         ]
---                     ]
---                 , describe "Async State Router"
---                     [ test "Router Response" (   
---                         let
---                             rout = 
---                                 stateFullAsyncRouter response
---                         in
---                             syncStateRouter chekcer any stateFullNext rout req
---                                 |> equal (rout req)
---                         )
---                     , test "Router Redirect" (
---                         let
---                             rout = 
---                                 stateFullAsyncRouter redirect
---                         in
---                             syncStateRouter chekcer any stateFullNext rout req
---                                 |> equal (rout req)
---                     )
---                     , describe "Router Next"
---                         [ test "Handler Redirect" ( 
---                             syncStateRouter chekcer str stateFullRedirect stateFullAsyncNext req
---                                 |> equal (stateFullAsyncResultStateFullHanlder redirect)
---                         )
---                         , test "Handler Reply" ( 
---                             syncStateRouter chekcer str stateFullResponse stateFullAsyncNext req
---                                 |> equal (stateFullAsyncResultStateFullHanlder response)
---                         ) 
---                         , test "Handler Next" (
---                             syncStateRouter chekcer str stateFullNext stateFullAsyncNext req
---                                 |> equal (stateFullAsyncResultStateFullHanlder next)
---                         ) 
---                         , test "Hanler URL does not match" ( 
---                             syncStateRouter chekcer int stateFullNext stateFullAsyncNext req
---                                 |> equal (stateFullAsyncNext req)
---                         )
---                         ]
---                     ]
---                 ]
 --             , describe "Async StateFul Handler"
 --                 [ describe "Sync Router" 
 --                     [ 
@@ -632,6 +485,9 @@ stateFullAsyncNext =
 toAsyncStateHandler =
     toStateFulRouter (stateLessAsync << succeed)
 
+toSyncStateHandlerStateFull = 
+    toStateFulRouter stateFullSync
+
 testDescription = 
     { router = syncRouter
         , name = "Sync StateLess Handler" 
@@ -716,7 +572,7 @@ testDescription2 =
               , nextRoute = stateLessAsyncNext
               , handlerResult = \ req chekcer handler ->
                       result chekcer req stateLessAsyncNext toStatelessAsync handler
-            }
+              }
             , { name = "Sync State Router"
               , toNext = toNextTask
               , toRedirect = toRedirectTask
@@ -741,10 +597,69 @@ testDescription2 =
               }
             ]
         }
+
+
+testDescription3 =
+        { router = syncStateRouter
+        , name = "Sync StateFul Handler" 
+        , tests = 
+            [ { name = "Sync Router"
+              , toNext = stateFullNext
+              , toRedirect = stateFullRedirect
+              , toResponse = stateFullResponse
+              , responseRoute = getResponse >> Reply >> stateLessSync
+              , redirectRoute = \_ -> "test"
+                  |> Redirect
+                  |> stateLessSync  
+              , routeMode = identity
+              , nextRoute = stateLessSyncNext
+              , handlerResult = \ req chekcer handler ->
+                  (toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync) handler
+              }
+            , { name = "Async Router"
+              , toNext = stateFullNext
+              , toRedirect = stateFullRedirect
+              , toResponse = stateFullResponse
+              , responseRoute = getResponse >> Reply >> toStatelessAsync
+              , redirectRoute = \ _ -> "test"
+                  |> Redirect
+                  |> toStatelessAsync
+              , routeMode = identity
+              , nextRoute = stateLessAsyncNext
+              , handlerResult = \ req chekcer handler ->
+                  (toSyncStateHandler >> result chekcer req stateLessAsyncNext stateFullAsync) handler
+              }
+            , { name = "Sync State Router"
+              , toNext = stateFullNext
+              , toRedirect = stateFullRedirect
+              , toResponse = stateFullResponse
+              , responseRoute = stateFullSyncRouter response
+              , redirectRoute = stateFullSyncRouter redirect
+              , routeMode = identity
+              , nextRoute = stateFullSyncNext
+              , handlerResult = \ req chekcer handler ->
+                  result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull <| stateFullRouter handler
+              }
+            , { name = "Async State Router"
+              , toNext = stateFullNext
+              , toRedirect = stateFullRedirect
+              , toResponse = stateFullResponse
+              , responseRoute = stateFullAsyncRouter response
+              , redirectRoute = stateFullAsyncRouter redirect
+              , routeMode = identity
+              , nextRoute = stateFullAsyncNext
+              , handlerResult = \ req chekcer handler ->
+                  result chekcer req stateFullAsyncNext stateFullAsync <| (toStateFulRouter stateFullSync (\ a s m -> (m, stateLessSync <| handler a s))) 
+              }
+            ]
+        }
+
+
 {-
 -}
 routerInternals : Test
 routerInternals =
     describe "Router Interlan logic" <|
-      (map (testCheckerAndMethod2 testDescription) methodTestCases) ++
-      (map (testCheckerAndMethod2 testDescription2) methodTestCases)
+      -- (map (testCheckerAndMethod2 testDescription) methodTestCases) ++
+      -- (map (testCheckerAndMethod2 testDescription2) methodTestCases) ++
+      (map (testCheckerAndMethod2 testDescription3) methodTestCases)
