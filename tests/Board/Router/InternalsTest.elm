@@ -209,35 +209,35 @@ stateFullResponse =
     toStateFullHanlder toResponse
 
 
-runTests router chekcer method req cases =
+runTests router chekcer method req handlers cases =
     let 
         handlerResult = cases.handlerResult req chekcer 
     in
         describe cases.name
             [ 
               test "Router Response" (   
-                router chekcer any cases.toNext (cases.responseRoute >> cases.routeMode) req
+                router chekcer any handlers.toNext (cases.responseRoute >> cases.routeMode) req
                     |> equal (cases.responseRoute req)
             )
             , test "Router Redirect" (
-                router chekcer any cases.toNext (cases.redirectRoute>> cases.routeMode) req
+                router chekcer any handlers.toNext (cases.redirectRoute>> cases.routeMode) req
                     |> equal (cases.redirectRoute req)
             )
             , describe "Router Next"
                 [ test "Handler Redirect" ( 
-                    router chekcer str cases.toRedirect cases.nextRoute req
+                    router chekcer str handlers.toRedirect cases.nextRoute req
                         |> equal (handlerResult redirect )
                 )
                 , test "Handler Reply" ( 
-                    router chekcer str cases.toResponse cases.nextRoute req
+                    router chekcer str handlers.toResponse cases.nextRoute req
                         |> equal (handlerResult response ) 
                 ) 
                 , test "Handler Next" (
-                    router chekcer str cases.toNext cases.nextRoute req
+                    router chekcer str handlers.toNext cases.nextRoute req
                         |> equal (handlerResult next )  
                 ) 
                 , test "Hanler URL does not match" ( 
-                    router chekcer int cases.toNext cases.nextRoute req
+                    router chekcer int handlers.toNext cases.nextRoute req
                         |> equal (cases.nextRoute req)  
                 )
                 ]
@@ -247,7 +247,7 @@ testSubCases runTests chekcer method req subCases =
   [
     describe subCases.name (
         subCases.tests
-            |> map (runTests subCases.router chekcer method req)
+            |> map (runTests subCases.router chekcer method req subCases.handlers)
     )
     
     ]
@@ -292,11 +292,13 @@ toSyncStateHandlerStateFull =
 testDescription = 
     { router = syncRouter
         , name = "Sync StateLess Handler" 
+        , handlers = 
+          { toNext = toNext
+          , toRedirect = toRedirect
+          , toResponse = toResponse
+          } 
         , tests = 
             [ { name = "Sync Router"
-              , toNext = toNext
-              , toRedirect = toRedirect
-              , toResponse = toResponse
               , responseRoute = getResponse >> Reply >> stateLessSync
               , redirectRoute = \_ -> "test"
                   |> Redirect
@@ -307,9 +309,6 @@ testDescription =
                       result chekcer req stateLessSyncNext stateLessSync handler
               }
             , { name = "Async Router"
-              , toNext = toNext
-              , toRedirect = toRedirect
-              , toResponse = toResponse
               , responseRoute = getResponse >> Reply >> toStatelessAsync
               , redirectRoute = \ _ -> "test"
                   |> Redirect
@@ -320,9 +319,6 @@ testDescription =
                       result chekcer req stateLessAsyncNext toStatelessAsync handler
             }
             , { name = "Sync State Router"
-              , toNext = toNext
-              , toRedirect = toRedirect
-              , toResponse = toResponse
               , responseRoute = stateFullSyncRouter response
               , redirectRoute = stateFullSyncRouter redirect
               , routeMode = identity
@@ -331,9 +327,6 @@ testDescription =
                       result chekcer req stateFullSyncNext stateFullSync (toSyncStateHandler handler)
               }
             , { name = "Async State Router"
-              , toNext = toNext
-              , toRedirect = toRedirect
-              , toResponse = toResponse
               , responseRoute = stateFullAsyncRouter response
               , redirectRoute = stateFullAsyncRouter redirect
               , routeMode = identity
@@ -347,11 +340,13 @@ testDescription =
 testDescription2 =
         { router = asyncRouter
         , name = "Async StateLess Handler" 
+        , handlers = 
+          { toNext = toNextTask
+          , toRedirect = toRedirectTask
+          , toResponse = toResponseTask
+          }
         , tests = 
             [ { name = "Sync Router"
-              , toNext = toNextTask
-              , toRedirect = toRedirectTask
-              , toResponse = toResponseTask
               , responseRoute = getResponse >> Reply >> stateLessSync
               , redirectRoute = \_ -> "test"
                   |> Redirect
@@ -362,9 +357,6 @@ testDescription2 =
                   result chekcer req stateLessSyncNext toStatelessAsync handler
               }
             , { name = "Async Router"
-              , toNext = toNextTask
-              , toRedirect = toRedirectTask
-              , toResponse = toResponseTask
               , responseRoute = getResponse >> Reply >> toStatelessAsync
               , redirectRoute = \ _ -> "test"
                   |> Redirect
@@ -375,9 +367,6 @@ testDescription2 =
                       result chekcer req stateLessAsyncNext toStatelessAsync handler
               }
             , { name = "Sync State Router"
-              , toNext = toNextTask
-              , toRedirect = toRedirectTask
-              , toResponse = toResponseTask
               , responseRoute = stateFullSyncRouter response
               , redirectRoute = stateFullSyncRouter redirect
               , routeMode = identity
@@ -386,9 +375,6 @@ testDescription2 =
                   result chekcer req stateFullSyncNext stateFullSync <| toAsyncStateHandler handler
               }
             , { name = "Async State Router"
-              , toNext = toNextTask
-              , toRedirect = toRedirectTask
-              , toResponse = toResponseTask
               , responseRoute = stateFullAsyncRouter response
               , redirectRoute = stateFullAsyncRouter redirect
               , routeMode = identity
@@ -403,11 +389,13 @@ testDescription2 =
 testDescription3 =
         { router = syncStateRouter
         , name = "Sync StateFul Handler" 
+        , handlers = 
+        { toNext = stateFullNext
+        , toRedirect = stateFullRedirect
+        , toResponse = stateFullResponse
+        }
         , tests = 
             [ { name = "Sync Router"
-              , toNext = stateFullNext
-              , toRedirect = stateFullRedirect
-              , toResponse = stateFullResponse
               , responseRoute = getResponse >> Reply >> stateLessSync
               , redirectRoute = \_ -> "test"
                   |> Redirect
@@ -418,9 +406,6 @@ testDescription3 =
                   (toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync) handler
               }
             , { name = "Async Router"
-              , toNext = stateFullNext
-              , toRedirect = stateFullRedirect
-              , toResponse = stateFullResponse
               , responseRoute = getResponse >> Reply >> toStatelessAsync
               , redirectRoute = \ _ -> "test"
                   |> Redirect
@@ -431,9 +416,6 @@ testDescription3 =
                   (toSyncStateHandler >> result chekcer req stateLessAsyncNext stateFullAsync) handler
               }
             , { name = "Sync State Router"
-              , toNext = stateFullNext
-              , toRedirect = stateFullRedirect
-              , toResponse = stateFullResponse
               , responseRoute = stateFullSyncRouter response
               , redirectRoute = stateFullSyncRouter redirect
               , routeMode = identity
@@ -442,9 +424,6 @@ testDescription3 =
                   result chekcer req stateFullSyncNext stateFullSync <| toSyncStateHandlerStateFull <| stateFullRouter handler
               }
             , { name = "Async State Router"
-              , toNext = stateFullNext
-              , toRedirect = stateFullRedirect
-              , toResponse = stateFullResponse
               , responseRoute = stateFullAsyncRouter response
               , redirectRoute = stateFullAsyncRouter redirect
               , routeMode = identity
@@ -458,11 +437,13 @@ testDescription3 =
 testDescription4 =
         { router = asyncStateRouter
         , name = "Async StateFul Handler" 
+        , handlers = 
+        { toNext = stateFullNext >> succeed
+        , toRedirect = stateFullRedirect >> succeed
+        , toResponse = stateFullResponse >> succeed
+        }
         , tests = 
             [ { name = "Sync Router"
-              , toNext = stateFullNext >> succeed
-              , toRedirect = stateFullRedirect >> succeed
-              , toResponse = stateFullResponse >> succeed
               , responseRoute = getResponse >> Reply >> stateLessSync
               , redirectRoute = \_ -> "test"
                   |> Redirect
@@ -473,9 +454,6 @@ testDescription4 =
                   toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullAsync
               }
             , { name = "Async Router"
-              , toNext = stateFullNext >> succeed
-              , toRedirect = stateFullRedirect >> succeed
-              , toResponse = stateFullResponse >> succeed
               , responseRoute = getResponse >> Reply >> toStatelessAsync
               , redirectRoute = \ _ -> "test"
                   |> Redirect
@@ -486,9 +464,6 @@ testDescription4 =
                   (toSyncStateHandler >> result chekcer req stateLessAsyncNext stateFullAsync) handler
               }
             , { name = "Sync State Router"
-              , toNext = stateFullNext >> succeed
-              , toRedirect = stateFullRedirect >> succeed
-              , toResponse = stateFullResponse >> succeed
               , responseRoute = stateFullSyncRouter response
               , redirectRoute = stateFullSyncRouter redirect
               , routeMode = identity
@@ -497,9 +472,6 @@ testDescription4 =
                   result chekcer req stateFullSyncNext stateFullSync <| (toStateFulRouter stateFullAsync (\ a s m -> (m, stateLessSync <| handler a s))) 
               }
             , { name = "Async State Router"
-              , toNext = stateFullNext >> succeed
-              , toRedirect = stateFullRedirect >> succeed
-              , toResponse = stateFullResponse >> succeed
               , responseRoute = stateFullAsyncRouter response
               , redirectRoute = stateFullAsyncRouter redirect
               , routeMode = identity
