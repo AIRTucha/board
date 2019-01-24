@@ -41,12 +41,16 @@ stateLessAsyncNext =
     Next >> succeed >> stateLessAsync
 
 
-result : (a -> Bool) -> a -> (a -> b) -> (c -> b) -> (a -> String -> c) -> b
-result checker req mismatchHandler matchMode matchHandler =
-    if checker req then 
-        matchMode <| matchHandler req url
-    else 
-        mismatchHandler req
+result mismatchHandler matchMode mode req checker =
+    let 
+        getResult matchHandler =
+            if checker req then 
+                matchMode <| matchHandler req url
+            else 
+                mismatchHandler req
+    in
+        mode >> getResult
+    
 
 
 model : String
@@ -99,8 +103,8 @@ equal v1 v2 =
                 Async async2 ->
                     async1
                         |> andThen ( \ sync1 -> async2 |> Task.map (\ sync2 -> (sync1, sync2) ))
-                        |> andTest (\ result ->
-                            case result of 
+                        |> andTest (\ value ->
+                            case value of 
                                 Ok (value1, value2) ->
                                     eqaulValues value1 value2
                                 
@@ -203,14 +207,14 @@ testDescription =
         { router = syncRouter
         , name = "Sync StateLess Handler" 
         , handlersMode = identity
-        , syncRouterResultHandler = \ req chekcer -> 
-            result chekcer req stateLessSyncNext stateLessSync 
-        , asyncRouterResultHandler = \ req chekcer ->
-            result chekcer req stateLessAsyncNext toStatelessAsync
-        , syncStateRouterResultHandler =  \ req chekcer ->
-            toSyncStateHandler >> result chekcer req stateFullSyncNext stateFullSync
-        , asyncStateRouterResultHandler = \ req chekcer ->
-            toSyncStateHandler >> result chekcer req stateFullAsyncNext stateFullAsync
+        , syncRouterResultHandler =
+            result stateLessSyncNext stateLessSync identity
+        , asyncRouterResultHandler = 
+            result stateLessAsyncNext toStatelessAsync identity
+        , syncStateRouterResultHandler =
+            result stateFullSyncNext stateFullSync toSyncStateHandler
+        , asyncStateRouterResultHandler =
+            result stateFullAsyncNext stateFullAsync toSyncStateHandler
         }
 
 testDescription2 =
@@ -218,14 +222,14 @@ testDescription2 =
         { router = asyncRouter
         , name = "Async StateLess Handler" 
         , handlersMode = \ f -> f >> succeed
-        , syncRouterResultHandler = \ req chekcer ->
-            result chekcer req stateLessSyncNext toStatelessAsync
-        , asyncRouterResultHandler = \ req chekcer ->
-            result chekcer req stateLessAsyncNext toStatelessAsync
-        , syncStateRouterResultHandler = \ req chekcer ->
-            toAsyncStateHandler >> result chekcer req stateFullSyncNext stateFullSync
-        , asyncStateRouterResultHandler = \ req chekcer ->
-            toAsyncStateHandler >> result chekcer req stateFullAsyncNext stateFullAsync
+        , syncRouterResultHandler =
+            result stateLessSyncNext toStatelessAsync identity
+        , asyncRouterResultHandler =
+            result stateLessAsyncNext toStatelessAsync identity
+        , syncStateRouterResultHandler =
+            result stateFullSyncNext stateFullSync toAsyncStateHandler
+        , asyncStateRouterResultHandler = 
+            result stateFullAsyncNext stateFullAsync toAsyncStateHandler
         }
 
 
@@ -234,14 +238,14 @@ testDescription3 =
         { router = syncStateRouter
         , name = "Sync StateFul Handler" 
         , handlersMode = toStateFullHanlder
-        , syncRouterResultHandler = \ req chekcer ->
-            toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync
-        , asyncRouterResultHandler = \ req chekcer ->
-            toSyncStateHandler >> result chekcer req stateLessAsyncNext stateFullAsync
-        , syncStateRouterResultHandler = \ req chekcer ->
-            toStateFulRouter stateLessSync >> (toStateFulRouter stateFullSync) >> result chekcer req stateFullSyncNext stateFullSync 
-        , asyncStateRouterResultHandler = \ req chekcer ->
-            toAsyncStateHandlerStateFull stateFullSync >> result chekcer req stateFullAsyncNext stateFullAsync
+        , syncRouterResultHandler =
+            result stateLessSyncNext stateFullSync toSyncStateHandler
+        , asyncRouterResultHandler =
+            result stateLessAsyncNext stateFullAsync toSyncStateHandler
+        , syncStateRouterResultHandler = 
+            result stateFullSyncNext stateFullSync <| toStateFulRouter stateLessSync >> (toStateFulRouter stateFullSync)
+        , asyncStateRouterResultHandler =
+            result stateFullAsyncNext stateFullAsync <| toAsyncStateHandlerStateFull stateFullSync 
         }
 
 
@@ -253,14 +257,14 @@ testDescription4 =
             { router = asyncStateRouter
             , name = "Async StateFul Handler" 
             , handlersMode = \ f -> (toStateFullHanlder f) >> succeed
-            , syncRouterResultHandler = \ req chekcer ->
-                toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullAsync
-            , asyncRouterResultHandler = \ req chekcer ->
-                toSyncStateHandler >> result chekcer req stateLessAsyncNext stateFullAsync
-            , syncStateRouterResultHandler = \ req chekcer ->
-                toAsyncStateHandlerAsyncStateFull >> result chekcer req stateFullSyncNext stateFullSync 
-            , asyncStateRouterResultHandler = \ req chekcer ->
-                toAsyncStateHandlerAsyncStateFull >> result chekcer req stateFullAsyncNext stateFullAsync
+            , syncRouterResultHandler =
+                result stateLessSyncNext stateFullAsync toSyncStateHandler
+            , asyncRouterResultHandler = 
+                result stateLessAsyncNext stateFullAsync toSyncStateHandler
+            , syncStateRouterResultHandler =
+                result stateFullSyncNext stateFullSync toAsyncStateHandlerAsyncStateFull
+            , asyncStateRouterResultHandler =
+                result stateFullAsyncNext stateFullAsync toAsyncStateHandlerAsyncStateFull
             }
 
 
