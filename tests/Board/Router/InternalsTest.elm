@@ -181,48 +181,46 @@ stateFullResponse =
     toStateFullHanlder toResponse
 
 
-runTests : ( b -> Pathfinder.URL -> c -> (d -> Mode String (Answer value String String)) -> d -> Mode String (Answer value String String) ) -> b -> e -> d -> { f | toRedirect : c, toResponse : c, toNext : c } -> { g | handlerResult : d -> b -> (Request a -> String -> AnswerValue a model error) -> Mode String (Answer value String String) , name : String , redirectRoute : d -> Mode String (Answer value String String) , responseRoute : d -> Mode String (Answer value String String) , nextRoute : d -> Mode String (Answer value String String) } -> Test
-runTests router chekcer method req handlers cases =
+runTests router chekcer method req handlersMode cases =
     let 
         handlerResult = cases.handlerResult req chekcer 
     in
         describe cases.name
             [ test "Router Response" (   
-                router chekcer any handlers.toNext (cases.responseRoute) req
+                router chekcer any (handlersMode toNext) (cases.responseRoute) req
                     |> equal (cases.responseRoute req)
               )
             , test "Router Redirect" (
-                router chekcer any handlers.toNext (cases.redirectRoute) req
+                router chekcer any (handlersMode toNext) (cases.redirectRoute) req
                     |> equal (cases.redirectRoute req)
               )
             , describe "Router Next"
                 [ test "Handler Redirect" ( 
-                    router chekcer str handlers.toRedirect cases.nextRoute req
+                    router chekcer str (handlersMode toRedirect) cases.nextRoute req
                         |> equal (handlerResult redirect )
                   )
                 , test "Handler Reply" ( 
-                    router chekcer str handlers.toResponse cases.nextRoute req
+                    router chekcer str (handlersMode toResponse) cases.nextRoute req
                         |> equal (handlerResult response ) 
                   ) 
                 , test "Handler Next" (
-                    router chekcer str handlers.toNext cases.nextRoute req
+                    router chekcer str (handlersMode toNext) cases.nextRoute req
                         |> equal (handlerResult next )  
                   ) 
                 , test "Hanler URL does not match" ( 
-                    router chekcer int handlers.toNext cases.nextRoute req
+                    router chekcer int (handlersMode toNext) cases.nextRoute req
                         |> equal (cases.nextRoute req)  
                   )
                 ]
             ]
 
 
-testCheckerAndMethod : { g1 | handlers : { f | toNext : c, toRedirect : c, toResponse : c } , name : String , router : b -> Pathfinder.URL -> c -> (Request a -> Mode String (Answer value String String)) -> Request a -> Mode String (Answer value String String) , tests : List { g | handlerResult : Request a -> b -> ( Request a1 -> String -> AnswerValue a1 model error ) -> Mode String (Answer value String String) , name : String , nextRoute : Request a -> Mode String (Answer value String String) , redirectRoute : Request a -> Mode String (Answer value String String) , responseRoute : Request a -> Mode String (Answer value String String) } } -> ( b, Method, String ) -> Test
 testCheckerAndMethod cases (chekcer, method, name) =
   let 
     req = getRequest method
   in
     describe ( cases.name ++ ": " ++ name ) (
-      map (runTests cases.router chekcer method { req | url = url } cases.handlers) cases.tests
+      map (runTests cases.router chekcer method { req | url = url } cases.handlersMode) cases.tests
     )
             
 
@@ -310,14 +308,11 @@ createAsyncStateRouter handlerResult =
   , nextRoute = stateFullAsyncNext
   , handlerResult = handlerResult
   }
+
 testDescription = 
     { router = syncRouter
         , name = "Sync StateLess Handler" 
-        , handlers = 
-          { toNext = toNext
-          , toRedirect = toRedirect
-          , toResponse = toResponse
-          } 
+        , handlersMode = identity
         , tests = 
             [ createSyncRouter <| \ req chekcer -> 
                 result chekcer req stateLessSyncNext stateLessSync 
@@ -333,11 +328,7 @@ testDescription =
 testDescription2 =
         { router = asyncRouter
         , name = "Async StateLess Handler" 
-        , handlers = 
-          { toNext = toNext >> succeed
-          , toRedirect = toRedirect >> succeed
-          , toResponse = toResponse >> succeed
-          }
+        , handlersMode = \ f -> f >> succeed
         , tests = 
             [ createSyncRouter <| \ req chekcer ->
                 result chekcer req stateLessSyncNext toStatelessAsync
@@ -354,11 +345,7 @@ testDescription2 =
 testDescription3 =
         { router = syncStateRouter
         , name = "Sync StateFul Handler" 
-        , handlers = 
-          { toNext = stateFullNext
-          , toRedirect = stateFullRedirect
-          , toResponse = stateFullResponse
-          }
+        , handlersMode = toStateFullHanlder
         , tests = 
             [ createSyncRouter <| \ req chekcer ->
                 toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullSync
@@ -378,11 +365,7 @@ testDescription4 =
   in
     { router = asyncStateRouter
     , name = "Async StateFul Handler" 
-    , handlers = 
-      { toNext = stateFullNext >> succeed
-      , toRedirect = stateFullRedirect >> succeed
-      , toResponse = stateFullResponse >> succeed
-      }
+    , handlersMode = \ f -> (toStateFullHanlder f) >> succeed
     , tests = 
         [ createSyncRouter <| \ req chekcer ->
             toSyncStateHandler >> result chekcer req stateLessSyncNext stateFullAsync
