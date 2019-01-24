@@ -1,58 +1,46 @@
 module Board.Router.InternalsTest exposing (..)
 
 import Ordeal exposing (Test, success, test, describe, shouldEqual, andTest, failure, all, and)
-import Board.Router exposing (empty)
 import Board.Router.Internals exposing(..)
 import Board.Shared exposing (..)
 import Pathfinder exposing (any, str, int)
 import Board.Internals exposing(..)
-import Tuple exposing (second)
 import List exposing (concat, map)
 import Task exposing (succeed, andThen)
-import Debug 
+import String
 
-methodCheckers = 
-    [ ( isGet, "Get" )
-    , ( isPost, "Post" )
-    , ( isPut, "Put" )
-    , ( isDelete, "Delete" )
-    , ( anyMethod, "Any" )
-    ]
-
-
-methods = 
-    [ ( Get, "Get" )
-    , ( Post, "Post" )
-    , ( Put, "Put" )
-    , ( Delete, "Delete" )
-    ]
-
-
+jounMethodToChecker : ( a, String ) -> ( b, String ) -> ( a, b, String )
 jounMethodToChecker (checker, checkerName) (method, methodName) =
-    (checker, method, "Expects " ++ checkerName ++ ", received " ++ methodName)
+  (checker, method, "Expects " ++ checkerName ++ ", received " ++ methodName)
 
 
+joinCheckerToMethods : ( a, String ) -> List ( a, Method, String )
 joinCheckerToMethods checkerTuple =
-    methods
-        |> map (jounMethodToChecker checkerTuple)
+  [ ( Get, "Get" )
+  , ( Post, "Post" )
+  , ( Put, "Put" )
+  , ( Delete, "Delete" )
+  ]
+    |> map (jounMethodToChecker checkerTuple)
 
 
+methodTestCases : List ( Request a -> Bool, Method, String )
 methodTestCases =
-    methodCheckers
-        |> map joinCheckerToMethods
-        |> concat
+  [ ( isGet, "Get" )
+  , ( isPost, "Post" )
+  , ( isPut, "Put" )
+  , ( isDelete, "Delete" )
+  , ( anyMethod, "Any" )
+  ] 
+    |> map joinCheckerToMethods
+    |> concat
 
 
+url : String
 url = "test"
 
 
-request method =
-    let 
-        req = getRequest method
-    in 
-        { req | url = url }
-
-
+response : Request a -> String -> AnswerValue a1 model error
 response req str = 
     let 
         res = getResponse req
@@ -60,17 +48,17 @@ response req str =
         Reply { res | content = Text "text/plain" str }
 
 
+next : Request a -> String -> AnswerValue a model error
 next req str =
     Next { req | content = Text "text/plain" str }
 
-redirect: a -> String -> AnswerValue value model error
+
+redirect : a -> String -> AnswerValue value model error
 redirect req str =
     Redirect str
 
-stateFullRouter resp req str model =
-    (model, stateLessSync <| resp req str)
 
-
+getHandler : (Request value -> String -> AnswerValue value model error) -> ( Params, Request value ) -> AnswerValue value model error
 getHandler hanlder (param, req) =
     case param of
         StrParam str ->
@@ -80,41 +68,32 @@ getHandler hanlder (param, req) =
             Next req
 
 
+toResponse : ( Params, Request a1 ) -> AnswerValue a1 model error
 toResponse =
     getHandler response
 
 
+toNext : ( Params, Request a ) -> AnswerValue a model error
 toNext = 
     getHandler next
 
 
+toRedirect : ( Params, Request value ) -> AnswerValue value model error
 toRedirect =
     getHandler redirect
 
 
-toResponseTask =
-    toResponse >> succeed
-
-
-toNextTask =  
-    toNext >> succeed
-
-
-toRedirectTask =
-    toRedirect >> succeed
-
-
+stateLessSyncNext : Request value -> Mode error1 (Answer value model error)
 stateLessSyncNext = 
     Next >> stateLessSync
 
 
+stateLessAsyncNext : Request value -> Mode error (Answer value model error1)
 stateLessAsyncNext = 
     Next >> succeed >> stateLessAsync
 
 
-stateLessNext =
-    Next >> StateLess
-    
+result : (a -> Bool) -> a -> (a -> b) -> (c -> b) -> (a -> String -> c) -> b
 result checker req mismatchHandler matchMode matchHandler =
     if checker req then 
         matchMode <| matchHandler req url
@@ -122,25 +101,12 @@ result checker req mismatchHandler matchMode matchHandler =
         mismatchHandler req
 
 
-testTask resultValue result = 
-    let 
-        checkResult result = 
-            case result of 
-                Ok value ->
-                    eqaulValues value resultValue
-
-                Err str ->
-                    failure str
-    in
-        result
-            |> liftToAsync
-            |> andTest checkResult
-
-
+model : String
 model =
     "model"
 
 
+eqaulValues : Answer value String String -> Answer value String String -> Ordeal.Expectation
 eqaulValues sync1 sync2 =
      case sync1 of
         StateLess value1 ->
@@ -165,6 +131,8 @@ eqaulValues sync1 sync2 =
                     in  
                         and areModelsEqual areAnswersEqual
 
+
+equal : Mode String (Answer value String String) -> Mode String (Answer value String String) -> Ordeal.Expectation
 equal v1 v2 =
     case v1 of
         Sync sync1 ->
@@ -193,22 +161,27 @@ equal v1 v2 =
                         )
 
 
+toStateFullHanlder : (a -> b) -> a -> c -> ( c, b )
 toStateFullHanlder handler args model =
     (model, handler args)
 
 
+stateFullNext : ( Params, Request a ) -> c -> ( c, AnswerValue a model error )
 stateFullNext = 
     toStateFullHanlder toNext
 
 
+stateFullRedirect : ( Params, Request value ) -> c -> ( c, AnswerValue value model error )
 stateFullRedirect =
     toStateFullHanlder toRedirect
 
 
+stateFullResponse : ( Params, Request a1 ) -> c -> ( c, AnswerValue a1 model error )
 stateFullResponse =
     toStateFullHanlder toResponse
 
 
+runTests : ( b -> Pathfinder.URL -> c -> (d -> Mode String (Answer value String String)) -> d -> Mode String (Answer value String String) ) -> b -> e -> d -> { f | toRedirect : c, toResponse : c, toNext : c } -> { g | handlerResult : d -> b -> (Request a -> String -> AnswerValue a model error) -> Mode String (Answer value String String) , name : String , redirectRoute : d -> Mode String (Answer value String String) , responseRoute : d -> Mode String (Answer value String String) , nextRoute : d -> Mode String (Answer value String String) } -> Test
 runTests router chekcer method req handlers cases =
     let 
         handlerResult = cases.handlerResult req chekcer 
@@ -243,51 +216,65 @@ runTests router chekcer method req handlers cases =
                 ]
             ]
 
-testSubCases runTests chekcer method req subCases = 
-  [
-    describe subCases.name (
-        subCases.tests
-            |> map (runTests subCases.router chekcer method req subCases.handlers)
-    )
-    
-    ]
 
-testCheckerAndMethod2 cases (chekcer, method, name) =
-    let 
-        req = request method
-    in
-        describe name (
-            cases 
-                |> (testSubCases runTests chekcer method req)
-            )
+testCheckerAndMethod : { g1 | handlers : { f | toNext : c, toRedirect : c, toResponse : c } , name : String , router : b -> Pathfinder.URL -> c -> (Request a -> Mode String (Answer value String String)) -> Request a -> Mode String (Answer value String String) , tests : List { g | handlerResult : Request a -> b -> ( Request a1 -> String -> AnswerValue a1 model error ) -> Mode String (Answer value String String) , name : String , nextRoute : Request a -> Mode String (Answer value String String) , redirectRoute : Request a -> Mode String (Answer value String String) , responseRoute : Request a -> Mode String (Answer value String String) } } -> ( b, Method, String ) -> Test
+testCheckerAndMethod cases (chekcer, method, name) =
+  let 
+    req = getRequest method
+  in
+    describe ( cases.name ++ ": " ++ name ) (
+      map (runTests cases.router chekcer method { req | url = url } cases.handlers) cases.tests
+    )
             
 
+toStatelessAsync : AnswerValue value model error1 -> Mode error (Answer value model error1)
 toStatelessAsync =
     succeed >> stateLessAsync
 
+
+toStateFulRouter : (a -> b) -> (c -> d -> a) -> c -> d -> e -> ( e, b )
 toStateFulRouter mode reqToValue req str model =
     (model, mode <| reqToValue req str )
 
+
+toSyncStateHandler : (c -> d -> AnswerValue value model error) -> c -> d -> e -> ( e, Mode error1 (Answer value model error) )
 toSyncStateHandler =
     toStateFulRouter stateLessSync
 
+
+stateFullSyncRouter : ({ b | url : a } -> a -> AnswerValue value model error) -> { b | url : a } -> Mode error1 (Answer value model error)
 stateFullSyncRouter reqToValue req = 
     stateFullSync <| toSyncStateHandler reqToValue req req.url
 
+
+stateFullSyncNext : Request a -> Mode error1 (Answer a model error)
 stateFullSyncNext =
     stateFullSyncRouter next
 
+
+stateFullAsyncRouter : ({ b | url : a } -> a -> AnswerValue value model error) -> { b | url : a } -> Mode error1 (Answer value model error)
 stateFullAsyncRouter reqToValue req = 
     stateFullAsync <| toSyncStateHandler reqToValue req req.url
 
+
+stateFullAsyncNext : Request a -> Mode error1 (Answer a model error)
 stateFullAsyncNext =
     stateFullAsyncRouter next
 
+
+toAsyncStateHandler : (c -> d -> AnswerValue value model error1) -> c -> d -> e -> ( e, Mode x (Answer value model error1) )
 toAsyncStateHandler =
     toStateFulRouter (stateLessAsync << succeed)
 
+
+toSyncStateHandlerStateFull : (c -> d -> StateHandler value model error) -> c -> d -> e -> ( e, Mode error1 (Answer value model error) )
 toSyncStateHandlerStateFull = 
     toStateFulRouter stateFullSync
+
+
+stateFullRouter : (a -> b -> AnswerValue value model error) -> a -> b -> c -> ( c, Mode error1 (Answer value model error) )
+stateFullRouter resp req str model =
+    (model, stateLessSync <| resp req str)
 
 testDescription = 
     { router = syncRouter
@@ -300,7 +287,7 @@ testDescription =
         , tests = 
             [ { name = "Sync Router"
               , responseRoute = getResponse >> Reply >> stateLessSync
-              , redirectRoute = \_ -> "test"
+              , redirectRoute = \_ -> url
                   |> Redirect
                   |> stateLessSync  
               , nextRoute = stateLessSyncNext
@@ -309,7 +296,7 @@ testDescription =
               }
             , { name = "Async Router"
               , responseRoute = getResponse >> Reply >> toStatelessAsync
-              , redirectRoute = \ _ -> "test"
+              , redirectRoute = \ _ -> url
                   |> Redirect
                   |> toStatelessAsync
               , nextRoute = stateLessAsyncNext
@@ -337,14 +324,14 @@ testDescription2 =
         { router = asyncRouter
         , name = "Async StateLess Handler" 
         , handlers = 
-          { toNext = toNextTask
-          , toRedirect = toRedirectTask
-          , toResponse = toResponseTask
+          { toNext = toNext >> succeed
+          , toRedirect = toRedirect >> succeed
+          , toResponse = toResponse >> succeed
           }
         , tests = 
             [ { name = "Sync Router"
               , responseRoute = getResponse >> Reply >> stateLessSync
-              , redirectRoute = \_ -> "test"
+              , redirectRoute = \_ -> url
                   |> Redirect
                   |> stateLessSync  
               , nextRoute = stateLessSyncNext
@@ -353,7 +340,7 @@ testDescription2 =
               }
             , { name = "Async Router"
               , responseRoute = getResponse >> Reply >> toStatelessAsync
-              , redirectRoute = \ _ -> "test"
+              , redirectRoute = \ _ -> url
                   |> Redirect
                   |> toStatelessAsync
               , nextRoute = stateLessAsyncNext
@@ -382,14 +369,14 @@ testDescription3 =
         { router = syncStateRouter
         , name = "Sync StateFul Handler" 
         , handlers = 
-        { toNext = stateFullNext
-        , toRedirect = stateFullRedirect
-        , toResponse = stateFullResponse
-        }
+          { toNext = stateFullNext
+          , toRedirect = stateFullRedirect
+          , toResponse = stateFullResponse
+          }
         , tests = 
             [ { name = "Sync Router"
               , responseRoute = getResponse >> Reply >> stateLessSync
-              , redirectRoute = \_ -> "test"
+              , redirectRoute = \_ -> url
                   |> Redirect
                   |> stateLessSync  
               , nextRoute = stateLessSyncNext
@@ -398,7 +385,7 @@ testDescription3 =
               }
             , { name = "Async Router"
               , responseRoute = getResponse >> Reply >> toStatelessAsync
-              , redirectRoute = \ _ -> "test"
+              , redirectRoute = \ _ -> url
                   |> Redirect
                   |> toStatelessAsync
               , nextRoute = stateLessAsyncNext
@@ -433,7 +420,7 @@ testDescription4 =
         , tests = 
             [ { name = "Sync Router"
               , responseRoute = getResponse >> Reply >> stateLessSync
-              , redirectRoute = \_ -> "test"
+              , redirectRoute = \_ -> url
                   |> Redirect
                   |> stateLessSync  
               , nextRoute = stateLessSyncNext
@@ -442,7 +429,7 @@ testDescription4 =
               }
             , { name = "Async Router"
               , responseRoute = getResponse >> Reply >> toStatelessAsync
-              , redirectRoute = \ _ -> "test"
+              , redirectRoute = \ _ -> url
                   |> Redirect
                   |> toStatelessAsync
               , nextRoute = stateLessAsyncNext
@@ -472,7 +459,7 @@ testDescription4 =
 routerInternals : Test
 routerInternals =
     describe "Router Interlan logic" <|
-      (map (testCheckerAndMethod2 testDescription) methodTestCases) ++
-      (map (testCheckerAndMethod2 testDescription2) methodTestCases) ++
-      (map (testCheckerAndMethod2 testDescription3) methodTestCases) ++ 
-      (map (testCheckerAndMethod2 testDescription4) methodTestCases)
+      (map (testCheckerAndMethod testDescription) methodTestCases) ++
+      (map (testCheckerAndMethod testDescription2) methodTestCases) ++
+      (map (testCheckerAndMethod testDescription3) methodTestCases) ++ 
+      (map (testCheckerAndMethod testDescription4) methodTestCases)
