@@ -13,6 +13,11 @@ url : String
 url = "test"
 
 
+model : String
+model =
+    "model"
+
+
 response : Request a -> String -> AnswerValue a1 model error
 response req str = 
     let 
@@ -26,22 +31,13 @@ next req str =
     Next { req | content = Text "text/plain" str }
 
 
-redirect : a -> String -> AnswerValue value model error
-redirect req str =
+redirect : Request a -> String -> AnswerValue value model error
+redirect _ str =
     Redirect str
 
 
-stateLessSyncNext : Request value -> Mode error1 (Answer value model error)
-stateLessSyncNext = 
-    Next >> stateLessSync
-
-
-stateLessAsyncNext : Request value -> Mode error (Answer value model error1)
-stateLessAsyncNext = 
-    Next >> succeed >> stateLessAsync
-
-
-result mismatchHandler matchMode mode req checker =
+result : (a -> b -> String -> c) -> (b -> d) -> (c -> d) -> b -> (b -> Bool) -> a -> d
+result mode mismatchHandler matchMode req checker =
     let 
         getResult matchHandler =
             if checker req then 
@@ -50,12 +46,6 @@ result mismatchHandler matchMode mode req checker =
                 mismatchHandler req
     in
         mode >> getResult
-    
-
-
-model : String
-model =
-    "model"
 
 
 eqaulValues : Answer value String String -> Answer value String String -> Ordeal.Expectation
@@ -113,53 +103,52 @@ equal v1 v2 =
                         )
 
 
-toStateFullHanlder : (a -> b) -> a -> c -> ( c, b )
 toStateFullHanlder handler args model =
     (model, handler args)
     
 
-toStatelessAsync : AnswerValue value model error1 -> Mode error (Answer value model error1)
 toStatelessAsync =
     succeed >> stateLessAsync
 
 
-toStateFulRouter : (a -> b) -> (c -> d -> a) -> c -> d -> e -> ( e, b )
 toStateFulRouter mode reqToValue req str model =
     (model, mode <| reqToValue req str )
 
 
-toSyncStateHandler : (c -> d -> AnswerValue value model error) -> c -> d -> e -> ( e, Mode error1 (Answer value model error) )
 toSyncStateHandler =
     toStateFulRouter stateLessSync
 
 
-stateFullSyncRouter : ({ b | url : a } -> a -> AnswerValue value model error) -> { b | url : a } -> Mode error1 (Answer value model error)
 stateFullSyncRouter reqToValue req = 
     stateFullSync <| toSyncStateHandler reqToValue req req.url
 
 
-stateFullSyncNext : Request a -> Mode error1 (Answer a model error)
+stateLessSyncNext = 
+    Next >> stateLessSync
+
+
+stateLessAsyncNext = 
+    Next >> toStatelessAsync
+
+
 stateFullSyncNext =
     stateFullSyncRouter next
 
 
-stateFullAsyncRouter : ({ b | url : a } -> a -> AnswerValue value model error) -> { b | url : a } -> Mode error1 (Answer value model error)
 stateFullAsyncRouter reqToValue req = 
     stateFullAsync <| toSyncStateHandler reqToValue req req.url
 
 
-stateFullAsyncNext : Request a -> Mode error1 (Answer a model error)
 stateFullAsyncNext =
     stateFullAsyncRouter next
 
 
-toAsyncStateHandler : (c -> d -> AnswerValue value model error1) -> c -> d -> e -> ( e, Mode x (Answer value model error1) )
 toAsyncStateHandler =
-    toStateFulRouter (stateLessAsync << succeed)
+    toStateFulRouter (toStatelessAsync)
 
 
 toAsyncStateHandlerStateFull mode handler = 
-  toStateFulRouter mode (\ a s m -> (m, stateLessSync <| handler a s))
+    toStateFulRouter mode (\ a s m -> (m, stateLessSync <| handler a s))
 
 
 createTestDesciption description =
@@ -202,69 +191,83 @@ createTestDesciption description =
         }
 
 
-testDescription = 
+idResult = 
+    result identity
+
+
+syncStateHandlerResult =
+    result toSyncStateHandler
+
+
+testsSyncStatelessHandler = 
     createTestDesciption
         { router = syncRouter
         , name = "Sync StateLess Handler" 
         , handlersMode = identity
         , syncRouterResultHandler =
-            result stateLessSyncNext stateLessSync identity
+            idResult stateLessSyncNext stateLessSync 
         , asyncRouterResultHandler = 
-            result stateLessAsyncNext toStatelessAsync identity
+            idResult stateLessAsyncNext toStatelessAsync 
         , syncStateRouterResultHandler =
-            result stateFullSyncNext stateFullSync toSyncStateHandler
+            syncStateHandlerResult stateFullSyncNext stateFullSync 
         , asyncStateRouterResultHandler =
-            result stateFullAsyncNext stateFullAsync toSyncStateHandler
-        }
-
-testDescription2 =
-    createTestDesciption
-        { router = asyncRouter
-        , name = "Async StateLess Handler" 
-        , handlersMode = \ f -> f >> succeed
-        , syncRouterResultHandler =
-            result stateLessSyncNext toStatelessAsync identity
-        , asyncRouterResultHandler =
-            result stateLessAsyncNext toStatelessAsync identity
-        , syncStateRouterResultHandler =
-            result stateFullSyncNext stateFullSync toAsyncStateHandler
-        , asyncStateRouterResultHandler = 
-            result stateFullAsyncNext stateFullAsync toAsyncStateHandler
+            syncStateHandlerResult stateFullAsyncNext stateFullAsync 
         }
 
 
-testDescription3 =
+testsAsyncStatelessHandler =
+    let 
+        asyncStateHandlerResult =
+            result toAsyncStateHandler
+    in
+        createTestDesciption
+            { router = asyncRouter
+            , name = "Async StateLess Handler" 
+            , handlersMode = \ f -> f >> succeed
+            , syncRouterResultHandler =
+                idResult stateLessSyncNext toStatelessAsync 
+            , asyncRouterResultHandler =
+                idResult stateLessAsyncNext toStatelessAsync 
+            , syncStateRouterResultHandler =
+                asyncStateHandlerResult stateFullSyncNext stateFullSync 
+            , asyncStateRouterResultHandler = 
+                asyncStateHandlerResult stateFullAsyncNext stateFullAsync 
+            }
+
+
+testsSyncStatefullHandler =
     createTestDesciption
         { router = syncStateRouter
-        , name = "Sync StateFul Handler" 
+        , name = "Sync StateFull Handler" 
         , handlersMode = toStateFullHanlder
         , syncRouterResultHandler =
-            result stateLessSyncNext stateFullSync toSyncStateHandler
+            syncStateHandlerResult stateLessSyncNext stateFullSync 
         , asyncRouterResultHandler =
-            result stateLessAsyncNext stateFullAsync toSyncStateHandler
+            syncStateHandlerResult stateLessAsyncNext stateFullAsync 
         , syncStateRouterResultHandler = 
-            result stateFullSyncNext stateFullSync <| toStateFulRouter stateLessSync >> (toStateFulRouter stateFullSync)
+            result (toStateFulRouter stateLessSync >> (toStateFulRouter stateFullSync)) stateFullSyncNext stateFullSync 
         , asyncStateRouterResultHandler =
-            result stateFullAsyncNext stateFullAsync <| toAsyncStateHandlerStateFull stateFullSync 
+            result (toAsyncStateHandlerStateFull stateFullSync) stateFullAsyncNext stateFullAsync
         }
 
 
-testDescription4 =
+testsAsyncStatefullHandler =
     let
-        toAsyncStateHandlerAsyncStateFull = toAsyncStateHandlerStateFull stateFullAsync
+        asyncStateHandlerAsyncStateFullResult = 
+            result <| toAsyncStateHandlerStateFull stateFullAsync
     in
         createTestDesciption
             { router = asyncStateRouter
-            , name = "Async StateFul Handler" 
+            , name = "Async StateFull Handler" 
             , handlersMode = \ f -> (toStateFullHanlder f) >> succeed
             , syncRouterResultHandler =
-                result stateLessSyncNext stateFullAsync toSyncStateHandler
+                syncStateHandlerResult stateLessSyncNext stateFullAsync 
             , asyncRouterResultHandler = 
-                result stateLessAsyncNext stateFullAsync toSyncStateHandler
+                syncStateHandlerResult stateLessAsyncNext stateFullAsync 
             , syncStateRouterResultHandler =
-                result stateFullSyncNext stateFullSync toAsyncStateHandlerAsyncStateFull
+                asyncStateHandlerAsyncStateFullResult stateFullSyncNext stateFullSync 
             , asyncStateRouterResultHandler =
-                result stateFullAsyncNext stateFullAsync toAsyncStateHandlerAsyncStateFull
+                asyncStateHandlerAsyncStateFullResult stateFullAsyncNext stateFullAsync 
             }
 
 
@@ -313,9 +316,8 @@ testCheckerAndMethod {router, name, handlersMode, tests } (chekcer, method, conf
                     ]
                 ]
   in
-    describe ( name ++ ": " ++ confName ) (
-      map ( runTests { req | url = url } ) tests
-    )
+    describe ( name ++ ": " ++ confName ) <| map ( runTests { req | url = url } ) tests
+    
         
 
 {-
@@ -343,7 +345,7 @@ routerInternals =
                 |> concat
     in
         describe "Router Interlan logic" <|
-            (map (testCheckerAndMethod testDescription) methodTestCases) ++
-            (map (testCheckerAndMethod testDescription2) methodTestCases) ++
-            (map (testCheckerAndMethod testDescription3) methodTestCases) ++ 
-            (map (testCheckerAndMethod testDescription4) methodTestCases)
+            (map (testCheckerAndMethod testsSyncStatelessHandler) methodTestCases) ++
+            (map (testCheckerAndMethod testsAsyncStatelessHandler) methodTestCases) ++
+            (map (testCheckerAndMethod testsSyncStatefullHandler) methodTestCases) ++ 
+            (map (testCheckerAndMethod testsAsyncStatefullHandler) methodTestCases)
