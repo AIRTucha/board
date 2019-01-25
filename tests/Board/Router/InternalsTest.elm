@@ -123,10 +123,6 @@ stateFullSyncRouter reqToValue req =
     stateFullSync <| toSyncStateHandler reqToValue req req.url
 
 
-stateLessSyncNext = 
-    Next >> stateLessSync
-
-
 stateLessAsyncNext = 
     Next >> toStatelessAsync
 
@@ -166,7 +162,7 @@ createTestDesciption description =
             [ { name = "Sync Router"
               , responseRoute = reply >> stateLessSync
               , redirectRoute = redirectRoute stateLessSync  
-              , nextRoute = stateLessSyncNext
+              , nextRoute = nextStateLessSync
               , handlerResult = description.syncRouterResultHandler 
               }
             , { name = "Async Router"
@@ -205,7 +201,7 @@ testsSyncStatelessHandler =
         , name = "Sync StateLess Handler" 
         , handlersMode = identity
         , syncRouterResultHandler =
-            idResult stateLessSyncNext stateLessSync 
+            idResult nextStateLessSync stateLessSync 
         , asyncRouterResultHandler = 
             idResult stateLessAsyncNext toStatelessAsync 
         , syncStateRouterResultHandler =
@@ -225,7 +221,7 @@ testsAsyncStatelessHandler =
             , name = "Async StateLess Handler" 
             , handlersMode = \ f -> f >> succeed
             , syncRouterResultHandler =
-                idResult stateLessSyncNext toStatelessAsync 
+                idResult nextStateLessSync toStatelessAsync 
             , asyncRouterResultHandler =
                 idResult stateLessAsyncNext toStatelessAsync 
             , syncStateRouterResultHandler =
@@ -241,7 +237,7 @@ testsSyncStatefullHandler =
         , name = "Sync StateFull Handler" 
         , handlersMode = toStateFullHanlder
         , syncRouterResultHandler =
-            syncStateHandlerResult stateLessSyncNext stateFullSync 
+            syncStateHandlerResult nextStateLessSync stateFullSync 
         , asyncRouterResultHandler =
             syncStateHandlerResult stateLessAsyncNext stateFullAsync 
         , syncStateRouterResultHandler = 
@@ -261,7 +257,7 @@ testsAsyncStatefullHandler =
             , name = "Async StateFull Handler" 
             , handlersMode = \ f -> (toStateFullHanlder f) >> succeed
             , syncRouterResultHandler =
-                syncStateHandlerResult stateLessSyncNext stateFullAsync 
+                syncStateHandlerResult nextStateLessSync stateFullAsync 
             , asyncRouterResultHandler = 
                 syncStateHandlerResult stateLessAsyncNext stateFullAsync 
             , syncStateRouterResultHandler =

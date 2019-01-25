@@ -89,10 +89,9 @@ toStateFullSync =
 {-|
 -}
 stateLessAsync : Task.Task error (AnswerValue value model error1) -> Mode error (Answer value model error1)
-stateLessAsync v = 
-    v 
-        |> Task.map StateLess
-        |> Async
+stateLessAsync = 
+    Async << Task.map StateLess
+        
 
 
 {-|
@@ -219,13 +218,17 @@ tryToProcessRequest mode checkMethod handler url request =
         nextStateLessSync request
 
 
-syncRouter = router stateLessSync
+syncRouter = 
+    router stateLessSync
 
 
-asyncRouter = router stateLessAsync
+asyncRouter = 
+    router stateLessAsync
 
 
-syncStateRouter = router toStateFullSync
+syncStateRouter = 
+    router toStateFullSync
 
 
-asyncStateRouter = router toStateFullAsync
+asyncStateRouter = 
+    router toStateFullAsync
