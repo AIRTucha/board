@@ -8,7 +8,13 @@
         "tests"
     ],
     "exposed-modules": [
-        "Status"
+        "Board.File",
+        "Board",
+        "Board.Router",
+        "Board.Shared",
+        "Board.Status",
+        "Board.Router.Static",
+        "Board.Internals"
     ],
     "native-modules": true,
     "dependencies": {
