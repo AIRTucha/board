@@ -1,6 +1,17 @@
 module Board.Internals exposing (..)
 
-{-|
+{-| 
+@docs (=>)
+    , (&>)
+    , Mode
+    , ModePacker
+    , ModelToState
+    , TaskModelToState
+    , liftToAsync
+    , AnswerValue
+    , Answer
+    , StateHandler
+    , Msg
 -}
 
 import Board.Shared exposing (..)

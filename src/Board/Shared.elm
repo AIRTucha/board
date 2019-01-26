@@ -25,18 +25,21 @@ module Board.Shared exposing
     , Options
     , Cookie
     , Params
-respo    , Object
+    , Object
     , Content
     , Response
     , Protocol
     , Request
+    , getRequest
     , Method
     , isGet
     , isPost
     , isPut
     , isDelete
     , anyMethod
+    , getURL
     , getResponse
+    , MethodChecker
 -}
 
 import Dict exposing (Dict)
@@ -135,6 +138,8 @@ type alias Request a =
     }
 
 
+{-|
+-}
 getRequest : Method -> Request a
 getRequest method =
     { url = "example.com"
