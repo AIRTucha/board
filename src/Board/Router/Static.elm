@@ -1,6 +1,10 @@
 module Board.Router.Static exposing (..)
 
 {-|
+@docs static
+    , getFile
+    , onGetFileError
+    , makeResponse
 -}
 import Pathfinder exposing (..)
 import Task

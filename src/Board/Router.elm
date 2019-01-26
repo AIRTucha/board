@@ -1,5 +1,33 @@
 module Board.Router exposing (..)
 
+{-|
+@docs useSync
+    , getSync
+    , postSync
+    , putSync
+    , deleteSync
+    , use
+    , get
+    , post
+    , put
+    , delete
+    , useSyncState
+    , getSyncState
+    , postSyncState
+    , putSyncState
+    , deleteSyncState
+    , useState
+    , getState
+    , postState
+    , putState
+    , deleteState
+    , empty
+    , logger
+    , logUrl
+    , reqToMsg
+    , fromatDate
+-}
+
 import Debug exposing (log)
 import Board.Shared exposing (..)
 import Date exposing (..)
@@ -10,6 +38,8 @@ import Pathfinder exposing (URL)
 import Task exposing (Task)
 
 
+{-|
+-}
 useSync 
     : URL 
     -> PathHandler value (AnswerValue value model error) 
@@ -19,6 +49,8 @@ useSync
 useSync = syncRouter anyMethod
 
 
+{-|
+-}
 getSync 
     : URL 
     -> PathHandler value (AnswerValue value model error) 
@@ -28,6 +60,8 @@ getSync
 getSync = syncRouter isGet
 
 
+{-|
+-}
 postSync 
     : URL 
     -> PathHandler value (AnswerValue value model error) 
@@ -37,6 +71,8 @@ postSync
 postSync = syncRouter isPost
 
 
+{-|
+-}
 putSync 
     : URL 
     -> PathHandler value (AnswerValue value model error) 
@@ -46,6 +82,8 @@ putSync
 putSync = syncRouter isPut
 
 
+{-|
+-}
 deleteSync 
     : URL 
     -> PathHandler value (AnswerValue value model error) 
@@ -55,6 +93,8 @@ deleteSync
 deleteSync = syncRouter isDelete
 
 
+{-|
+-}
 use 
     : URL 
     -> PathHandler value (Task error1 (AnswerValue value model error1)) 
@@ -64,6 +104,8 @@ use
 use = asyncRouter anyMethod
 
 
+{-|
+-}
 get 
     : URL 
     -> PathHandler value (Task error1 (AnswerValue value model error1)) 
@@ -73,6 +115,8 @@ get
 get = asyncRouter isGet
 
 
+{-|
+-}
 post 
     : URL 
     -> PathHandler value (Task error1 (AnswerValue value model error1)) 
@@ -82,6 +126,8 @@ post
 post = asyncRouter isPost
 
 
+{-|
+-}
 put 
     : URL 
     -> PathHandler value (Task error1 (AnswerValue value model error1)) 
@@ -91,6 +137,8 @@ put
 put = asyncRouter isPut
 
 
+{-|
+-}
 delete 
     : URL 
     -> PathHandler value (Task.Task error1 (AnswerValue value model error1)) 
@@ -100,6 +148,8 @@ delete
 delete = asyncRouter isDelete
 
 
+{-|
+-}
 useSyncState 
     : URL 
     -> PathHandler value (ModelToState value model error)
@@ -109,6 +159,8 @@ useSyncState
 useSyncState = syncStateRouter anyMethod
 
 
+{-|
+-}
 getSyncState 
     : URL 
     -> PathHandler value (ModelToState value model error)
@@ -118,6 +170,8 @@ getSyncState
 getSyncState = syncStateRouter isGet
 
 
+{-|
+-}
 postSyncState     
     : URL 
     -> PathHandler value (ModelToState value model error)
@@ -127,6 +181,8 @@ postSyncState
 postSyncState = syncStateRouter isPost
 
 
+{-|
+-}
 putSyncState
     : URL 
     -> PathHandler value (ModelToState value model error)
@@ -136,6 +192,8 @@ putSyncState
 putSyncState = syncStateRouter isPut
 
 
+{-|
+-}
 deleteSyncState
     : URL 
     -> PathHandler value (ModelToState value model error)
@@ -145,6 +203,8 @@ deleteSyncState
 deleteSyncState = syncStateRouter isDelete
 
 
+{-|
+-}
 useState
     : URL 
     -> PathHandler value (TaskModelToState value model error1 )
@@ -154,6 +214,8 @@ useState
 useState = asyncStateRouter anyMethod
 
 
+{-|
+-}
 getState
     : URL 
     -> PathHandler value (TaskModelToState value model error1 )
@@ -163,6 +225,8 @@ getState
 getState = asyncStateRouter isGet
 
 
+{-|
+-}
 postState 
     : URL 
     -> PathHandler value (TaskModelToState value model error1 )
@@ -172,6 +236,8 @@ postState
 postState = asyncStateRouter isPost
 
 
+{-|
+-}
 putState 
     : URL 
     -> PathHandler value (TaskModelToState value model error1 )
@@ -181,6 +247,8 @@ putState
 putState = asyncStateRouter isPut
 
 
+{-|
+-}
 deleteState 
     : URL 
     -> PathHandler value (TaskModelToState value model error1 )
@@ -190,11 +258,15 @@ deleteState
 deleteState = asyncStateRouter isDelete
 
 
+{-|
+-}
 empty : Request value -> Mode error1 (Answer value model error)
 empty req =
     nextStateLessSync req
 
 
+{-|
+-}
 logger : String -> Request value -> Mode error1 (Answer value model error)
 logger tag req =
     req
@@ -202,12 +274,16 @@ logger tag req =
         |> nextStateLessSync
 
 
+{-|
+-}
 logUrl: String -> Request a -> Request a
 logUrl tag req =
     Debug.log tag (reqToMsg req)
         => req
 
 
+{-|
+-}
 reqToMsg: Request a -> String
 reqToMsg req =
     case req.method of 
@@ -224,6 +300,8 @@ reqToMsg req =
             "DELETE " ++ req.url ++ " ip" ++ req.ip ++ " " ++ (fromatDate req)
 
 
+{-|
+-}
 fromatDate : { a | time : Int } -> String
 fromatDate req =    
     req.time

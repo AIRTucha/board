@@ -1,4 +1,4 @@
-module App exposing (..)
+port module App exposing (..)
 
 import Task
 import Board.File exposing(read)
@@ -28,7 +28,10 @@ config =
     }
     
 
-main = board router config
+port suggestions : (String -> msg) -> Sub msg
+
+
+main = board router config suggestions
 
 
 router =
