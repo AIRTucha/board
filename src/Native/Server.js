@@ -49,7 +49,7 @@ const maybeToString = ( prefix, maybe ) =>
  * @param {*} predicate 
  */
 const stringIfTrue = (string, predicate) => 
-    predicate = true ? string : ""
+    predicate == true ? string : ""
 /**
  * 
  * @param {*} lifetime 
@@ -57,7 +57,7 @@ const stringIfTrue = (string, predicate) =>
 const getDate = lifetime => {
     if(lifetime.ctor == "Just") {
         const date = ( new Date ).getTime() + lifetime._0
-        return `Expires=${ new Date( date ).toUTCString() }`
+        return `expires=${ new Date( date ).toUTCString() }`
     } else 
         return ""
 }
@@ -66,15 +66,27 @@ const getDate = lifetime => {
  * @param {*} name 
  * @param {*} value 
  */
-const createCookie = ( name, value ) => 
-    [
-        `${ name }=${ value.value}`,
+const createCookie = ( name, value ) => {
+    const cookie = [
         getDate( value.lifetime ),
-        maybeToString( "Path=", value.path ),
-        maybeToString( "Domain=", value.domain ),
-        stringIfTrue( "HttpOnly", value.httpOnly ),
-        stringIfTrue( "Secure", value.secure )
-    ].join("; ")
+        `${ name }=${ value.value }`,
+    ]
+    const path = maybeToString( "path=", value.path )
+    const domain = maybeToString( "domain=", value.domain )
+    const httpOnly = stringIfTrue( "HttpOnly", value.httpOnly )
+    const secure = stringIfTrue( "Secure", value.secure )
+    if( path )
+        cookie.unshift(path)
+    if( domain )
+        cookie.unshift(domain)
+    if( httpOnly )
+        cookie.unshift(httpOnly)
+    if( secure )
+        cookie.unshift(secure)
+    return cookie
+        .reverse()
+        .join("; ")
+}
 /**
  * 
  * @param {*} dict 
