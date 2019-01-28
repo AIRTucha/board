@@ -1,12 +1,13 @@
 module Board.File exposing 
     ( Buffer
     , File
-    , Encoding
+    , Encoding(..)
     , read
     , write
     , fromString
     , string
     , getContentType
+    , dict
     )
 
 {-| File handling library
@@ -19,12 +20,14 @@ module Board.File exposing
     , fromString
     , string
     , getContentType
+    , dict
 -}
 
 import Native.File
 import Task exposing (Task)
 import Dict exposing(..)
 import String exposing(split)
+import Json.Decode exposing (Decoder, decodeString)
 
 
 {-|
@@ -74,6 +77,15 @@ fromString =
 string: Encoding -> Buffer -> String 
 string =
     Native.File.string
+
+
+{-|
+-}
+dict: Buffer -> Decoder a -> Result String (Dict String a)
+dict buffer decoder =
+    buffer
+        |> Native.File.string UTF8 
+        |> decodeString (Json.Decode.dict decoder)
 
 
 {-|
