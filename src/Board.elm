@@ -14,12 +14,17 @@ import Server exposing (..)
 import Debug exposing (..)
 import Board.Shared exposing (..)
 import Board.Internals exposing (..)
-import Json.Decode exposing (..)
 
 
 {-|
 -}
-board : (Request value -> Mode String (Answer value a String)) -> { b | errorPrefix : Maybe String , options : { https : HTTPSOptions, portNumber : Int, timeout : Int } , state : a } -> ((String -> Msg value1 model error) -> Sub (Msg value a String)) -> Program Never a (Msg value a String)
+board 
+    : (Request value 
+    -> Mode String (Answer value a String)) 
+    -> Configurations a 
+    -> ((String -> Msg value1 model error) 
+    -> Sub (Msg value a String)) 
+    -> Program Never a (Msg value a String)
 board router conf sub =
     Platform.program
         { init = ( conf.state, Cmd.none )
@@ -28,11 +33,12 @@ board router conf sub =
         }
 
 
-
-
 {-|
 -}
-subscriptions : { a | options : { https : HTTPSOptions, portNumber : Int, timeout : Int } } -> ((String -> Msg value model error) -> Sub msg) -> b -> Sub msg
+subscriptions 
+    : Configurations a 
+    -> ((String -> Msg value model error) -> Sub msg) 
+    -> b -> Sub msg
 subscriptions conf sub _ =
     Sub.batch
         [ Server.listen conf.options
@@ -42,7 +48,12 @@ subscriptions conf sub _ =
 
 {-|
 -}
-update : { a | errorPrefix : Maybe String } -> (Request value -> Mode String (Answer value b String)) -> Msg value b String -> b -> ( b, Cmd (Msg value b String) )
+update 
+    : Configurations a 
+    -> (Request value -> Mode String (Answer value b String)) 
+    -> Msg value b String 
+    -> b 
+    -> ( b, Cmd (Msg value b String) )
 update conf router message model =
     case message of
         Input request ->
@@ -88,7 +99,7 @@ update conf router message model =
 
 {-|
 -}
-resultToOutput : { cargo : Object , content : Content value , cookies : Object , host : String , id : String , ip : String , method : Method , protocol : Protocol , time : Int , url : String } -> Result String (Answer value model error) -> Msg value model error
+resultToOutput : Request value -> Result String (Answer value model error) -> Msg value model error
 resultToOutput request result =
     case result of
         Ok answer ->
@@ -100,7 +111,7 @@ resultToOutput request result =
 
 {-|
 -}
-toOutput : { cargo : Object , content : Content value , cookies : Object , host : String , id : String , ip : String , method : Method , protocol : Protocol , time : Int , url : String } -> Answer value model error -> Msg value model error
+toOutput : Request value -> Answer value model error -> Msg value model error
 toOutput request state =
     case state of
         StateLess answer ->

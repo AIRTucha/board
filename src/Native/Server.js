@@ -179,7 +179,7 @@ const _AIRTucha$board$Native_Server = function(){
          * 
          */
         open: port => option => settings => {
-            const maybeOptions = option.https
+            const maybeOptions = option
             const intervalId = setInterval(
                 () => {
                     const currentTime = (new Date).getTime()
@@ -228,8 +228,8 @@ const _AIRTucha$board$Native_Server = function(){
             if( maybeOptions.ctor == "Nothing" )
                 return createServer( port, http, reqHandler, closeHandler )
             else {
-                const options = Object.keys( maybeOptions._0 ).reduce( ( obj, key ) => {
-                    const maybeValue = maybeOptions._0[key]
+                const options = Object.keys( maybeOptions ).reduce( ( obj, key ) => {
+                    const maybeValue = maybeOptions[key]
                     obj[key] = maybeValue.ctor == "Nothing" ? undefined : maybeValue._0
                     return obj
                 }, {})

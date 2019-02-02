@@ -8,6 +8,7 @@ module Board.File exposing
     , string
     , getContentType
     , dict
+    , fromDict
     )
 
 {-| File handling library
@@ -21,6 +22,7 @@ module Board.File exposing
     , string
     , getContentType
     , dict
+    , fromDict
 -}
 
 import Native.File
@@ -28,6 +30,8 @@ import Task exposing (Task)
 import Dict exposing(..)
 import String exposing(split)
 import Json.Decode exposing (Decoder, decodeString)
+import Result
+import String
 
 
 {-|
@@ -74,6 +78,28 @@ fromString =
 
 {-|
 -}
+fromDict: Dict comparable b -> File a
+fromDict dict =
+    let 
+        values = dict
+            |> foldl dictToString [] 
+            |> String.join ",\n"
+    in 
+        "{\n" ++ values ++ "\n}"
+            |> fromString
+
+
+{-|
+-}
+dictToString: a -> b -> List String -> List String
+dictToString k v p =
+    (
+        "\t" ++ (Basics.toString k) ++ ":" ++ (Basics.toString v)
+    ) :: p
+    
+
+{-|
+-}
 string: Encoding -> Buffer -> String 
 string =
     Native.File.string
@@ -81,11 +107,12 @@ string =
 
 {-|
 -}
-dict: Buffer -> Decoder a -> Result String (Dict String a)
-dict buffer decoder =
+dict:  Decoder a -> Buffer -> Dict String a
+dict decoder buffer  =
     buffer
         |> Native.File.string UTF8 
         |> decodeString (Json.Decode.dict decoder)
+        |> Result.withDefault Dict.empty
 
 
 {-|

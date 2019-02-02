@@ -1,5 +1,10 @@
 const scheduler = _elm_lang$core$Native_Scheduler
 const fs = require('fs');
+const normalizePath = (path) =>
+    path.startsWith('./') ?
+        path.slice(2) 
+        :
+        path
 /**
  * 
  */
@@ -21,7 +26,7 @@ const _AIRTucha$board$Native_File = function() {
         write: path => file => scheduler.nativeBinding( 
             callback =>
                 file( buffer => 
-                    fs.writeBoard.File( path, buffer, error =>
+                    fs.writeFile( normalizePath(path), buffer, error =>
                         error ?
                             callback( scheduler.fail( error ) )
                         :

@@ -18,6 +18,7 @@ module Board.Shared exposing
     , getURL
     , getResponse
     , MethodChecker
+    , Configurations
     )
 
 {-| 
@@ -40,11 +41,21 @@ module Board.Shared exposing
     , getURL
     , getResponse
     , MethodChecker
+    , Configurations
 -}
 
 import Dict exposing (Dict)
 import Board.File exposing (File, Encoding)
 import Board.Status exposing (..)
+
+
+{-|
+-}
+type alias Configurations a =
+    { state: a    
+    , errorPrefix: Maybe String  
+    , options: Options
+    }
 
 
 {-|
