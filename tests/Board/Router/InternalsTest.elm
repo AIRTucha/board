@@ -1,5 +1,8 @@
 module Board.Router.InternalsTest exposing (..)
 
+{-| Test different combinations of routing functions
+-}
+
 import Ordeal exposing (Test, success, test, describe, shouldEqual, andTest, failure, all, and)
 import Board.Router.Internals exposing(..)
 import Board.Shared exposing (..)
@@ -9,15 +12,21 @@ import List exposing (concat, map)
 import Task exposing (succeed, andThen)
 
 
+{-| Hardcoded url
+-}
 url : String
 url = "test"
 
 
+{-| Hardcoded state
+-}
 model : String
 model =
     "model"
 
 
+{-| Produce text response for specifed Request
+-}
 response : Request a -> String -> AnswerValue a1 model error
 response req str = 
     let 
@@ -26,28 +35,22 @@ response req str =
         Reply { res | content = Text "text/plain" str }
 
 
+{-| Produce next response for specifed Request
+-}
 next : Request a -> String -> AnswerValue a model error
 next req str =
     Next { req | content = Text "text/plain" str }
 
 
+{-| Produce redirect response for any Request
+-}
 redirect : Request a -> String -> AnswerValue value model error
 redirect _ str =
     Redirect str
 
 
-result : (a -> b -> String -> c) -> (b -> d) -> (c -> d) -> b -> (b -> Bool) -> a -> d
-result mode mismatchHandler matchMode req checker =
-    let 
-        getResult matchHandler =
-            if checker req then 
-                matchMode <| matchHandler req url
-            else 
-                mismatchHandler req
-    in
-        mode >> getResult
-
-
+{-| Test equality for one of internal types of router return value
+-}
 eqaulValues : Answer value String String -> Answer value String String -> Ordeal.Expectation
 eqaulValues sync1 sync2 =
      case sync1 of
@@ -74,6 +77,8 @@ eqaulValues sync1 sync2 =
                         and areModelsEqual areAnswersEqual
 
 
+{-| Test equality for router return type
+-}
 equal : Mode String (Answer value String String) -> Mode String (Answer value String String) -> Ordeal.Expectation
 equal v1 v2 =
     case v1 of
@@ -103,50 +108,8 @@ equal v1 v2 =
                         )
 
 
-toStateFullHanlder handler args model =
-    (model, handler args)
-    
-
-toStatelessAsync =
-    succeed >> stateLessAsync
-
-
-toStateFulRouter mode reqToValue req str model =
-    (model, mode <| reqToValue req str )
-
-
-toSyncStateHandler =
-    toStateFulRouter stateLessSync
-
-
-stateFullSyncRouter reqToValue req = 
-    stateFullSync <| toSyncStateHandler reqToValue req req.url
-
-
-stateLessAsyncNext = 
-    Next >> toStatelessAsync
-
-
-stateFullSyncNext =
-    stateFullSyncRouter next
-
-
-stateFullAsyncRouter reqToValue req = 
-    stateFullAsync <| toSyncStateHandler reqToValue req req.url
-
-
-stateFullAsyncNext =
-    stateFullAsyncRouter next
-
-
-toAsyncStateHandler =
-    toStateFulRouter (toStatelessAsync)
-
-
-toAsyncStateHandlerStateFull mode handler = 
-    toStateFulRouter mode (\ a s m -> (m, stateLessSync <| handler a s))
-
-
+{-| Turns brief test descript into detailed one to run tests
+-}
 createTestDesciption description =
     let 
         reply = getResponse >> Reply
@@ -187,14 +150,20 @@ createTestDesciption description =
         }
 
 
+{-| Partially applied function which verifies correctness of router result for synchronous stateless hanlder
+-}
 idResult = 
     result identity
 
 
+{-| Partially applied function which verifies correctness of router result for synchronous stateful hanlder
+-}
 syncStateHandlerResult =
     result toSyncStateHandler
 
 
+{-| Test description for synchronous stateless path handler
+-}
 testsSyncStatelessHandler = 
     createTestDesciption
         { router = syncRouter
@@ -211,6 +180,8 @@ testsSyncStatelessHandler =
         }
 
 
+{-| Test description for asynchronous stateless path handler
+-}
 testsAsyncStatelessHandler =
     let 
         asyncStateHandlerResult =
@@ -219,7 +190,7 @@ testsAsyncStatelessHandler =
         createTestDesciption
             { router = asyncRouter
             , name = "Async StateLess Handler" 
-            , handlersMode = \ f -> f >> succeed
+            , handlersMode = (<<) succeed
             , syncRouterResultHandler =
                 idResult nextStateLessSync toStatelessAsync 
             , asyncRouterResultHandler =
@@ -231,6 +202,8 @@ testsAsyncStatelessHandler =
             }
 
 
+{-| Test description for synchronous stateful path handler
+-}
 testsSyncStatefullHandler =
     createTestDesciption
         { router = syncStateRouter
@@ -247,6 +220,8 @@ testsSyncStatefullHandler =
         }
 
 
+{-| Test description for asynchronous stateful path handler
+-}
 testsAsyncStatefullHandler =
     let
         asyncStateHandlerAsyncStateFullResult = 
@@ -267,7 +242,9 @@ testsAsyncStatefullHandler =
             }
 
 
-testCheckerAndMethod {router, name, handlersMode, tests } (chekcer, method, confName) =
+{-| Test routing over estiblished list of cases
+-}
+testCheckerAndMethod { router, name, handlersMode, tests } (chekcer, method, confName) =
   let 
     req = getRequest method
     runTests req cases =
@@ -315,8 +292,7 @@ testCheckerAndMethod {router, name, handlersMode, tests } (chekcer, method, conf
     describe ( name ++ ": " ++ confName ) <| map ( runTests { req | url = url } ) tests
     
         
-
-{-
+{- Test router for different HTTP method combinations
 -}
 routerInternals : Test
 routerInternals =
@@ -345,3 +321,63 @@ routerInternals =
             (map (testCheckerAndMethod testsAsyncStatelessHandler) methodTestCases) ++
             (map (testCheckerAndMethod testsSyncStatefullHandler) methodTestCases) ++ 
             (map (testCheckerAndMethod testsAsyncStatefullHandler) methodTestCases)
+
+
+-- Varios small functions which are used at test descriptions
+
+{-| Combine several functions, it is utilized for verification of routing
+-}
+result : (a -> b -> String -> c) -> (b -> d) -> (c -> d) -> b -> (b -> Bool) -> a -> d
+result mode mismatchHandler matchMode req checker =
+    let 
+        getResult matchHandler =
+            if checker req then 
+                matchMode <| matchHandler req url
+            else 
+                mismatchHandler req
+    in
+        mode >> getResult
+
+
+toStateFullHanlder handler args model =
+    (model, handler args)
+    
+
+toStatelessAsync =
+    succeed >> stateLessAsync
+
+
+toStateFulRouter mode reqToValue req str model =
+    (model, mode <| reqToValue req str )
+
+
+toSyncStateHandler =
+    toStateFulRouter stateLessSync
+
+
+stateFullSyncRouter reqToValue req = 
+    stateFullSync <| toSyncStateHandler reqToValue req req.url
+
+
+stateLessAsyncNext = 
+    Next >> toStatelessAsync
+
+
+stateFullSyncNext =
+    stateFullSyncRouter next
+
+
+stateFullAsyncRouter reqToValue req = 
+    stateFullAsync <| toSyncStateHandler reqToValue req req.url
+
+
+stateFullAsyncNext =
+    stateFullAsyncRouter next
+
+
+toAsyncStateHandler =
+    toStateFulRouter (toStatelessAsync)
+
+
+toAsyncStateHandlerStateFull mode handler = 
+    toStateFulRouter mode (\ a s m -> (m, stateLessSync <| handler a s))

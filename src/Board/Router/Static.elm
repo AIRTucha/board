@@ -67,7 +67,7 @@ makeResponse
     : String 
     -> Request a 
     -> Board.File.File a1 
-    -> { cookeis : Dict.Dict String Cookie , header : Object , id : String , content : Content a1 , status : Status }
+    -> Response a1
 makeResponse path req file = 
     let 
         res = getResponse req
