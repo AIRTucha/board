@@ -1,6 +1,6 @@
 module Board.Router.InternalsTest exposing (..)
 
-{-| Test different combinations of routing functions
+{-| Test different combinations of routing functions and HTTP Methods
 -}
 
 import Ordeal exposing (Test, success, test, describe, shouldEqual, andTest, failure, all, and)

@@ -22,7 +22,7 @@ import Task exposing (Task)
 -}
 (=>) : a -> b -> b
 (=>) t1 t2 =
-    (\_ -> t2) t1
+    t2
 
 
 {-|

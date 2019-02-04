@@ -7,6 +7,7 @@ module Board.Shared exposing
     , Content(..)
     , Response
     , Protocol
+    , ProtoRequest
     , Request
     , getRequest
     , Method(..)
@@ -30,6 +31,7 @@ module Board.Shared exposing
     , Content
     , Response
     , Protocol
+    , ProtoRequest
     , Request
     , getRequest
     , Method
@@ -135,18 +137,23 @@ type Protocol
 
 {-|
 -}
-type alias Request a =
+type alias ProtoRequest a b = 
     { url : String
     , id : String
     , time : Int
-    , content : Content a
-    , cookies : Object
+    , content : Content b
+    , cookies : a
     , cargo : Object
     , ip : String
     , host : String
     , protocol : Protocol
     , method: Method
     }
+
+{-|
+-}
+type alias Request a =
+    ProtoRequest Object a
 
 
 {-|

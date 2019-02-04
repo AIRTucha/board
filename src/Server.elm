@@ -3,24 +3,27 @@ effect module Server
     exposing
         ( send
         , listen
-        , Message
         , RawContent(..)
         )
+
 {-| It is not correct implementation of effect module, but it is done in this way due to perfomance reasons. 
 It is tightly coupled with Router and it is not going to be exposed as public API.
 
 @docs respond, listen, Request
 -}
+
 import Dict
 import Task exposing (Task)
 import Native.Server
 import Dict exposing (Dict, insert)
 import String exposing (split)
-import List exposing (foldl)
+import List exposing (foldl, map)
 import Board.Shared exposing (..)
 import Board.Internals exposing (..)
 import Dict.Extra exposing (fromListDedupe)
 
+{-| Types of unprocessed Req/Res body
+-}
 type RawContent
     = Raw String String
     | UTF8 String String
@@ -28,21 +31,13 @@ type RawContent
     | NoData
 
 
-sendText str =
-    { cookeis = Dict.empty
-    , content = Raw str
-    , status = 200
-    , header = Dict.empty
-    }
-
-
-type alias Message = (Request Content)
-
-
+{-| Ref to native server object
+-}
 type Server
     = Server
 
-{-| Respond to a given request
+
+{-| Send Response to a given request
 -}
 send : Response a -> ()
 send res =
@@ -60,123 +55,162 @@ send res =
             Native.Server.sendEmpty res ()
 
 
--- SUBSCRIPTIONS
-
+{-| Format of subscription
+-}
 type MySub msg
     = Listener (Int, Options)
 
 
 {-| Subscribe to a port
 -}
+listen : { https : HTTPSOptions, timeout : Int, portNumber : Int } -> Sub msg
 listen options =
     subscription <| Listener (options.portNumber, options)
 
 
+{-| Map over subscriptions
+-}
+subMap : (a -> b) -> a -> b
 subMap func subs =
     func subs
 
 
--- MANAGER
-
-
-type alias State = 
-    Servers
-
-
+{-| Collection of native servers grouped by port number
+-}
 type alias Servers =
     Dict.Dict Int Server
 
 
+{-| State of sub. manager
+-}
+type alias State = 
+    Servers
+
+
+{-| Collection of subs
+-}
 type alias Subs =
     Dict.Dict Int Options
 
 
+{-| Initialy collection of subs is empty
+-}
+init : Task x (Dict k v)
 init =
     Task.succeed Dict.empty
 
 
--- HANDLE APP MESSAGES
+{-| Update subs collection and manage servers accordingly
+-}
+onEffects : Platform.Router a Msg -> List (MySub msg) -> Dict Int Server -> Task x (Dict Int Server)
 onEffects router subs servers =
-    subs
-        |> List.map (\ (Listener v)-> v)
-        |> fromListDedupe (\ first second -> first) 
-        |> updateSubs router servers 
-        |> Task.succeed
+    let 
+        takeValue (Listener value) =
+            value
+        fstArg arg _ =
+            arg
+    in
+        subs
+            |> map takeValue
+            |> fromListDedupe fstArg
+            |> updateSubs router servers 
+            |> Task.succeed
     
-
+    
+{-| Update subs collection
+-}
+updateSubs : Platform.Router a Msg -> Dict comparable Server -> Dict comparable a1 -> Dict comparable Server
 updateSubs router servers subs =
     Dict.merge (addNew router) keepAll removeOld subs servers Dict.empty
 
 
+{-| Add new sub and open server for it
+-} 
+addNew : Platform.Router a Msg -> comparable -> b -> Dict comparable c -> Dict comparable c
 addNew router portNumber httpOptions servers =
     serve router portNumber httpOptions servers
 
 
+{-| Keep all subs and servers
+-}
+keepAll : comparable -> a -> b -> Dict comparable b -> Dict comparable b
 keepAll portNumber _ server servers =
     Dict.insert portNumber server servers
 
 
+{-| Remove servers for missing subs
+-}
+removeOld : comparable -> Server -> Dict comparable v -> Dict comparable v
 removeOld portNumber server servers =
     close server 
         => Dict.remove portNumber servers
 
 
+{-| Open and add server to collection of servers
+-}
+serve : Platform.Router a Msg -> comparable -> b -> Dict comparable c -> Dict comparable c
 serve router portNumber httpOptions servers =
     Dict.insert portNumber (open router portNumber httpOptions) servers
 
 
 {-| Open server which listens to a particular port.
 -}
+open : Platform.Router a Msg -> b -> c -> d
 open router portNumber option =
-    Native.Server.open portNumber option (setting router)
-   
+    let 
+        onRequest request portNumber = 
+            { request | cookies = parseCookies request} 
+                |> OnRequest portNumber
+                |> Platform.sendToSelf router
+        onClose portNumber httpOptions =
+            Platform.sendToSelf router <| Close portNumber httpOptions
+    in
+        { onRequest = onRequest
+        , onClose = onClose
+        }
+            |> Native.Server.open portNumber option
 
-{-|
+
+{-| Parse cookies from string to Dict
 -}
-setting router =
-    { onRequest = \request portNumber-> 
-        request 
-            |> processRequest
-            |> OnRequest portNumber
-            |> Platform.sendToSelf router
-    , onClose = \portNumber httpOptions-> Platform.sendToSelf router (Close portNumber httpOptions)
-    }
-
-
-processRequest raw = 
-    { raw | cookies = parseCookies raw} 
-
- 
+parseCookies : { a | cookies : String } -> Dict String String
 parseCookies req =
-    req.cookies
-        |> split "; "
-        |> foldl parseSinglCookie Dict.empty
-
-
-parseSinglCookie string dict =
-    case split "=" string of 
-        key :: value :: _ ->
-            dict 
-                |> insert key value
-        
-        _ ->
-            dict
+    let 
+        parseSingleEntry string dict =
+            case split "=" string of 
+                key :: value :: _ ->
+                    dict 
+                        |> insert key value
+                
+                _ ->
+                    dict
+    in
+        req.cookies
+            |> split "; "
+            |> foldl parseSingleEntry Dict.empty
 
 
 {-| Close a server's connection
 -}
+close : Server -> ()
 close =
     Native.Server.close
 
 
--- HANDLE SELF MESSAGES
-
-
+{-| Event emitted by native server
+-}
 type Msg
     = OnRequest Int (Request Content)
     | Close Int Options
 
 
+{-| Handler native server events
+-}
+onSelfMsg 
+    : Platform.Router (Board.Internals.Msg Content model error) Msg 
+    -> Msg 
+    -> Dict Int c 
+    -> Task x (Dict Int c)
 onSelfMsg router selfMsg servers =
     case selfMsg of
         OnRequest portNumber request ->
