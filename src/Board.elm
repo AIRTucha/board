@@ -1,31 +1,26 @@
-module Board exposing (..)
+module Board exposing (program)
 
 {-| 
-@docs board
-    , subscriptions
-    , update
-    , resultToOutput
-    , toOutput
+@docs program
 -}
 
 import Result
-import Task
+import Task exposing (attempt, perform, succeed)
 import Server exposing (..)
 import Debug exposing (..)
 import Board.Shared exposing (..)
 import Board.Internals exposing (..)
 
 
-{-|
+{-| Starting point of Board program
 -}
-board 
-    : (Request value 
-    -> Mode String (Answer value a String)) 
+program 
+    : (Request value -> Mode String (Answer value a String)) 
     -> Configurations a 
     -> ((String -> Msg value1 model error) 
     -> Sub (Msg value a String)) 
     -> Program Never a (Msg value a String)
-board router conf sub =
+program router conf sub =
     Platform.program
         { init = ( conf.state, Cmd.none )
         , update = update conf router 
@@ -33,7 +28,7 @@ board router conf sub =
         }
 
 
-{-|
+{-| Subscription to server by configuration
 -}
 subscriptions 
     : Configurations a 
@@ -46,7 +41,7 @@ subscriptions conf sub _ =
         ]
     
 
-{-|
+{-| Handles different phases of server lifecircle
 -}
 update 
     : Configurations a 
@@ -55,76 +50,68 @@ update
     -> b 
     -> ( b, Cmd (Msg value b String) )
 update conf router message model =
-    case message of
-        Input request ->
-            ( model
-            , case router request of 
-                Async taskAnswer ->
-                    taskAnswer 
-                        |> Task.attempt (resultToOutput request)
-        
-                Sync answer ->
-                    answer
-                        |> Task.succeed  
-                        |> Task.perform (toOutput request)
-            )
+    let 
+        resultToOutput request result =
+            case result of
+                Ok answer ->
+                    toOutput request answer
 
-        Output response ->
-            Server.send response
-                => ( model, Cmd.none)
-        
-        Model stateHandler request ->
-            let 
-                (newModel, answer) = stateHandler model
-            in
-                ( newModel
-                , answer 
-                    |> liftToAsync
-                    |> Task.attempt (resultToOutput request)
+                Err msg ->
+                    Error msg
+        toOutput request state =
+            case state of
+                StateLess answer ->
+                    case answer of
+                        Next newReq ->
+                            Output <| getResponse newReq 
+                            
+                        Reply res ->
+                            Output res
+
+                        Redirect path ->
+                            { request | url = path }
+                                |> Input
+                
+                StateFull stateHandler ->
+                    Model stateHandler request
+    in
+        case message of
+            Input request ->
+                ( model
+                , case router request of 
+                    Async taskAnswer ->
+                        taskAnswer 
+                            |> attempt (resultToOutput request)
+            
+                    Sync answer ->
+                        answer
+                            |> succeed  
+                            |> perform (toOutput request)
                 )
 
-        Error msg ->
-            case conf.errorPrefix of
-                Just prefix ->
-                    Debug.log prefix msg
-                        => (model, Cmd.none)
-                
-                Nothing ->
-                    (model, Cmd.none)
+            Output response ->
+                send response
+                    => ( model, Cmd.none)
+            
+            Model stateHandler request ->
+                let 
+                    (newModel, answer) = stateHandler model
+                in
+                    ( newModel
+                    , answer 
+                        |> liftToAsync
+                        |> attempt (resultToOutput request)
+                    )
 
-        Test str ->
-            Debug.log "ok" str 
-                |> \_ -> (model, Cmd.none)
-
-
-{-|
--}
-resultToOutput : Request value -> Result String (Answer value model error) -> Msg value model error
-resultToOutput request result =
-    case result of
-        Ok answer ->
-            toOutput request answer
-
-        Err msg ->
-            Error msg
-
-
-{-|
--}
-toOutput : Request value -> Answer value model error -> Msg value model error
-toOutput request state =
-    case state of
-        StateLess answer ->
-            case answer of
-                Next newReq ->
-                    Output <| getResponse newReq 
+            Error msg ->
+                case conf.errorPrefix of
+                    Just prefix ->
+                        Debug.log prefix msg
+                            => (model, Cmd.none)
                     
-                Reply res ->
-                    Output res
+                    Nothing ->
+                        (model, Cmd.none)
 
-                Redirect path ->
-                    { request | url = path }
-                        |> Input
-        
-        StateFull stateHandler ->
-             Model stateHandler request
+            Test str ->
+                Debug.log "ok" str 
+                    |> \_ -> (model, Cmd.none)
