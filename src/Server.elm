@@ -63,7 +63,7 @@ type MySub msg
 
 {-| Subscribe to a port
 -}
-listen : { https : HTTPSOptions, timeout : Int, portNumber : Int } -> Sub msg
+listen : Options -> Sub msg 
 listen options =
     subscription <| Listener (options.portNumber, options)
 
@@ -119,14 +119,14 @@ onEffects router subs servers =
     
 {-| Update subs collection
 -}
-updateSubs : Platform.Router a Msg -> Dict comparable Server -> Dict comparable a1 -> Dict comparable Server
+updateSubs : Platform.Router a Msg -> Dict Int Server -> Dict Int Options -> Dict Int Server
 updateSubs router servers subs =
     Dict.merge (addNew router) keepAll removeOld subs servers Dict.empty
 
 
 {-| Add new sub and open server for it
 -} 
-addNew : Platform.Router a Msg -> comparable -> b -> Dict comparable c -> Dict comparable c
+addNew : Platform.Router a Msg -> Int -> Options -> Dict Int Server -> Dict Int Server
 addNew router portNumber httpOptions servers =
     serve router portNumber httpOptions servers
 
@@ -148,14 +148,19 @@ removeOld portNumber server servers =
 
 {-| Open and add server to collection of servers
 -}
-serve : Platform.Router a Msg -> comparable -> b -> Dict comparable c -> Dict comparable c
+serve 
+    : Platform.Router a Msg 
+    -> Int 
+    -> Options 
+    -> Dict Int Server 
+    -> Dict Int Server
 serve router portNumber httpOptions servers =
     Dict.insert portNumber (open router portNumber httpOptions) servers
 
 
 {-| Open server which listens to a particular port.
 -}
-open : Platform.Router a Msg -> b -> c -> d
+open : Platform.Router a Msg -> Int -> Options -> Server
 open router portNumber option =
     let 
         onRequest request portNumber = 
@@ -209,8 +214,8 @@ type Msg
 onSelfMsg 
     : Platform.Router (Board.Internals.Msg Content model error) Msg 
     -> Msg 
-    -> Dict Int c 
-    -> Task x (Dict Int c)
+    -> Dict Int Server 
+    -> Task x (Dict Int Server)
 onSelfMsg router selfMsg servers =
     case selfMsg of
         OnRequest portNumber request ->
