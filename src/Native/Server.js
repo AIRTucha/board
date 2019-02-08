@@ -42,21 +42,21 @@ const setHeaders = ( dict, res ) => {
         return res
 }
 /**
- * @param {JS String} prefix String prefix prepended to the value inclosed in the Maybe
+ * @param {string} prefix String prefix prepended to the value inclosed in the Maybe
  * @param {Elm Maybe String} maybe Maybe object which keeps string
  * @returns String inclosed inside Maybe with prepended prefix or empty string
  */
 const maybeToString = ( prefix, maybe ) =>
     maybe.ctor == "Just" ? prefix + maybe._0 : ""
 /**
- * @param {JS String} string String value
- * @param {JS Boolean} predicate Value which identifies outcome
+ * @param {string} string String value
+ * @param {boolean} predicate Value which identifies outcome
  * @returns Based on predicate state outputs value or empty string
  */
 const stringIfTrue = (string, predicate) => 
     predicate == true ? string : ""
 /**
- * @param {JS number} lifetime Desired lifetime of cookie in ms
+ * @param {number} lifetime Desired lifetime of cookie in ms
  * @returns Expiration indicator string for cookie
  */
 const getDate = lifetime => {
@@ -67,8 +67,8 @@ const getDate = lifetime => {
         return ""
 }
 /**
- * @param {JS string} name Cookie name
- * @param {JS object} value Cookie description object
+ * @param {string} name Cookie name
+ * @param {Elm Cookie} value Cookie description object
  * @returns Formatted cookie string
  */
 const createCookie = ( name, value ) => {
@@ -107,7 +107,7 @@ const dictHeadersArray = ( dict, array ) => {
 /**
  * Output function that send certain type of content
  * @param {JS function} setContent Specify the way content is handled
- * @param {JS string} contentType MEMS string content type
+ * @param {string} contentType MEMS string content type
  * @param {JS Response} response Node.js response object 
  * @param {Elm Data} value Data which has to be send as Response body
  * @return Elm Unit
@@ -130,8 +130,8 @@ const sendContent = setContent => contentType => response => {
 }
 /**
  * Covert Request body to Content type according to content type
- * @param {JS string} content Request body
- * @param {JS string} contentType MEMS string content type of the Request
+ * @param {string} content Request body
+ * @param {string} contentType MEMS string content type of the Request
  * @returns Elm Content value
  */
 const getData = ( content, contentType ) => {
@@ -160,16 +160,16 @@ const getData = ( content, contentType ) => {
         }
 }
 /**
- * @param {JS string} str HTTP Protocol in string representation
+ * @param {string} str HTTP Protocol in string representation
  * @returns Elm Protocol value
  */
 const getProtocol = str => { ctor : str === "https" ? "HTTPS" : "HTTP" }
 /**
- * @param {JS number} port Port number to listen
+ * @param {number} port Port number to listen
  * @param {JS http_s} http_s Server library
  * @param {JS function} reqHandler Request event handler
  * @param {JS function} closeHandler Server close handler
- * @param {JS object} options HTTPS configuration object
+ * @param {Elm Options} options HTTPS configuration object
  * @returns Server object
  */
 const createServer = ( port, http_s, reqHandler, closeHandler, options ) => 
@@ -187,9 +187,9 @@ const createServer = ( port, http_s, reqHandler, closeHandler, options ) =>
 const _AIRTucha$board$Native_Server = function(){
     return {
         /**
-         * @param {JS number} port Port of HTTP server
-         * @param {JS object} option HTTP server options
-         * @param {JS object} handlers Collection of server event handlers
+         * @param {number} port Port of HTTP server
+         * @param {Elm Options} option HTTP server options
+         * @param {Elm Record} handlers Collection of server event handlers
          * @return Server object
          */
         open: port => option => handlers => {
@@ -275,7 +275,8 @@ const _AIRTucha$board$Native_Server = function(){
             ( value, res ) => value
         )(undefined),
         /**
-         * Close server
+         * @param {JS Server} server Server to close
+         * @return Elm unit
          */
         close: server => {
             server.close()
