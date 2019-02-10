@@ -1,7 +1,9 @@
 module Board exposing (program)
 
 {-| 
-@docs program
+Entry point for back-end application running with Board micro-framework
+
+@docs program 
 -}
 
 import Result
