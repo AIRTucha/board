@@ -10,7 +10,7 @@ import Pathfinder exposing (any, str, int)
 import Board.Internals exposing(..)
 import List exposing (concat, map)
 import Task exposing (succeed, andThen)
-
+import Dict exposing (empty)
 
 {-| Create fake HTTP Request
 -}

@@ -6,7 +6,7 @@ module Board.Shared exposing
     , Object
     , Content(..)
     , Response
-    , Protocol
+    , Protocol(..)
     , ProtoRequest
     , Request
     , Method(..)

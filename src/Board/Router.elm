@@ -1,4 +1,27 @@
-module Board.Router exposing (..)
+module Board.Router exposing 
+    ( useSync
+    , getSync
+    , postSync
+    , putSync
+    , deleteSync
+    , use
+    , get
+    , post
+    , put
+    , delete
+    , useSyncState
+    , getSyncState
+    , postSyncState
+    , putSyncState
+    , deleteSyncState
+    , useState
+    , getState
+    , postState
+    , putState
+    , deleteState
+    , empty
+    , logger
+    )
 
 {-|
 @docs useSync
@@ -23,9 +46,6 @@ module Board.Router exposing (..)
     , deleteState
     , empty
     , logger
-    , logUrl
-    , reqToMsg
-    , fromatDate
 -}
 
 import Debug exposing (log)
