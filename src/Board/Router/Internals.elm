@@ -22,8 +22,8 @@ type alias RoutHandler a b c =
 
 {-|
 -}
-type alias Router error request value model = 
-    request -> Mode error (Answer value model error)
+type alias Router error value model = 
+    Request value -> Mode error (Answer value model error)
 
 
 {-|
@@ -101,9 +101,8 @@ router
     -> RequestChecker value
     -> URL 
     -> PathHandler value answer 
-    -> Router error request value model 
-    -> request 
-    -> Mode error (Answer value model error)
+    -> Router error value model 
+    -> Router error value model 
 router mode checkMethod url handler router request =
     request
         |> router 

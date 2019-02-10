@@ -14,17 +14,17 @@ import Board.File exposing(read, getContentType)
 import Board.Status exposing (..)
 import Board.Router exposing (..)
 import Board.Internals exposing (..)
+import Board.Router.Internals exposing (Router)
 import Dict exposing (Dict)
 
 
 {-|
 -}
-static 
-    : URL 
-    -> String 
-    -> (b -> Mode error (Answer value model error)) 
-    -> b 
-    -> Mode error (Answer value model error)
+static
+    : URL
+    -> String
+    -> Router error value model
+    -> Router error value model
 static basePath prefix router =
     router
         |> get (basePath </> str) (getFile prefix)
