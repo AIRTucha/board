@@ -12,6 +12,22 @@ import List exposing (concat, map)
 import Task exposing (succeed, andThen)
 
 
+{-| Create fake HTTP Request
+-}
+getRequest : Method -> Request a
+getRequest method =
+    { url = "example.com"
+    , id = "0"
+    , time = 0
+    , content = Empty
+    , cookies = Dict.empty
+    , cargo = Dict.empty
+    , ip = "0"
+    , host = "example"
+    , protocol = HTTP
+    , method = method
+    }
+
 {-| Hardcoded url
 -}
 url : String

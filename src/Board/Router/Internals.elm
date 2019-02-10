@@ -98,7 +98,7 @@ stateLessAsync =
 -}
 router 
     : ModePacker answer value model error
-    -> MethodChecker value
+    -> RequestChecker value
     -> URL 
     -> PathHandler value answer 
     -> Router error request value model 
@@ -114,7 +114,7 @@ router mode checkMethod url handler router request =
 -}
 processModeAnswer 
     : ModePacker answer value model error 
-    -> MethodChecker value
+    -> RequestChecker value
     -> URL 
     -> PathHandler value answer 
     -> Mode error (Answer value model error) 
@@ -146,7 +146,7 @@ processModeAnswer mode checkMethod url handler modeAnswer =
 -}
 toStateHandler 
     : ModePacker answer value model error
-    -> MethodChecker value 
+    -> RequestChecker value 
     -> PathHandler value answer
     -> URL 
     -> (model -> ( model, Mode error (Answer value model error) )) 
@@ -165,7 +165,7 @@ toStateHandler mode checkMethod handler url stateHandler model =
 -}
 processAsyncAnswer 
     :  ModePacker answer value model error
-    -> MethodChecker value 
+    -> RequestChecker value 
     -> PathHandler value answer
     -> URL 
     -> Answer value model error
@@ -193,7 +193,7 @@ processAsyncAnswer mode checkMethod handler url answer =
 -}
 tryToProcessRequest 
     : ModePacker answer value model error 
-    -> MethodChecker value
+    -> RequestChecker value
     -> PathHandler value answer 
     -> URL 
     -> Request value
