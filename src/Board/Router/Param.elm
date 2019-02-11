@@ -1,13 +1,12 @@
 module Board.Router.Param exposing (parsingResult2params)
 
- {- Convert Pathfinder parsing values to Result Params which are used for routing.
- -}
- 
+{-| @docs parsingResult2params
+-}
 import Pathfinder exposing (..)
 import List exposing (map, reverse)
 import Board.Shared exposing (Params(..))
 
-{-|
+{-| Convert Pathfinder parsing values to Result Params which are used for routing.
 -}
 parsingResult2params: ParsingResult -> Result String Params
 parsingResult2params result =
@@ -34,7 +33,7 @@ parsingResult2params result =
          Ok EmptyParam
 
 
-{-|
+{-| Specially handler conversion for MultiValue case
 -}
 multiValue2Param: List ParsingResult -> List Params -> Result String Params
 multiValue2Param list params =

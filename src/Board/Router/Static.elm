@@ -1,13 +1,10 @@
-module Board.Router.Static exposing (..)
+module Board.Router.Static exposing (static)
 
 {-|
 @docs static
-    , getFile
-    , onGetFileError
-    , makeResponse
 -}
 import Pathfinder exposing (..)
-import Task
+import Task exposing (Task, map, onError, succeed)
 import Board.Shared exposing (..)
 import Basics exposing (..)
 import Board.File exposing(read, getContentType)
@@ -15,10 +12,9 @@ import Board.Status exposing (..)
 import Board.Router exposing (..)
 import Board.Internals exposing (..)
 import Board.Router.Internals exposing (Router)
-import Dict exposing (Dict)
 
 
-{-|
+{-| Staticly serve files from specified directory for specified prefix URL
 -}
 static
     : URL
@@ -26,53 +22,36 @@ static
     -> Router error value model
     -> Router error value model
 static basePath prefix router =
-    router
-        |> get (basePath </> str) (getFile prefix)
-
-
-{-|
--}
-getFile 
-    : String 
-    -> ( Params, Request value ) 
-    -> Task.Task x (AnswerValue value model error)
-getFile prefix (param, req) =
     let 
-        next = req
-            |> Next
-            |> Task.succeed
+        getFile (param, req) =
+            let 
+                next = 
+                    req
+                        |> Next
+                        |> succeed
+                onGetFileError _ = 
+                    next
+                res = 
+                    getResponse req
+                makeResponse path file = 
+                    { res
+                    | content = Data (getContentType path) file
+                    , status = custom 200
+                    }
+            in
+                case param of 
+                    StrParam path ->
+                        prefix ++ path
+                            |> read
+                            |> map (makeResponse path)
+                            |> map Reply
+                            |> onError onGetFileError
+                    
+                    _ ->
+                        next
     in
-        case param of 
-            StrParam path ->
-                prefix ++ path
-                    |> read
-                    |> Task.map (makeResponse path req)
-                    |> Task.map Reply
-                    |> Task.onError (onGetFileError next)
-            
-            _ ->
-                next
+        router
+            |> get (basePath </> str) getFile
 
 
-{-|
--}
-onGetFileError : a -> b -> a
-onGetFileError value _ =
-    value
 
-
-{-|
--}
-makeResponse 
-    : String 
-    -> Request a 
-    -> Board.File.File a1 
-    -> Response a1
-makeResponse path req file = 
-    let 
-        res = getResponse req
-    in
-        { res
-        | content = Data (getContentType path) file
-        , status = custom 200
-        }
