@@ -1,6 +1,6 @@
 module Board.Internals exposing (..)
 
-{-| 
+{-| Collection of utility functions and types used internaly
 @docs (=>)
     , (&>)
     , Mode
@@ -15,49 +15,51 @@ module Board.Internals exposing (..)
 -}
 
 import Board.Shared exposing (..)
-import Task exposing (Task)
+import Task exposing (Task, map)
 
 
-{-|
+{-| Ignor the first argument and pass the second futher
 -}
 (=>) : a -> b -> b
 (=>) t1 t2 =
     t2
 
 
-{-|
+{-| Replace Task content with the second argument
 -}
 (&>) : Task x a -> b -> Task x b
 (&>) task v =
-    Task.map (\_ -> v) task
+    task
+        |> map (\_ -> v) 
 
 
-{-|
+{-| Type for indication Sync or Async value
+Async value is inclosed inside Task
 -}
 type Mode error value
     = Async (Task.Task error value)
     | Sync value
 
 
-{-|
+{-| Function which turn value to router intermidiat reply type
 -}
 type alias ModePacker answer value model error = 
     answer -> Mode error (Answer value model error)
 
 
-{-|
+{-| Function which process model an output internal reply type of router
 -}
 type alias ModelToState value model error =
     (model -> ( model, AnswerValue value model error ))
 
 
-{-|
+{-| Task which cantains function for processing of model an output internal reply type of router
 -}
 type alias TaskModelToState value model error =
-    Task error (model -> ( model, AnswerValue value model error ))
+    Task error ( ModelToState value model error )
 
 
-{-|
+{-| Turn Sync value to Async one
 -}
 liftToAsync : Mode error a -> Task.Task error a
 liftToAsync value =
@@ -69,7 +71,7 @@ liftToAsync value =
             task
 
 
-{-|
+{-| Raw types of server response
 -}
 type AnswerValue value model error
     = Redirect String
@@ -77,20 +79,20 @@ type AnswerValue value model error
     | Next (Request value)
 
 
-{-|
+{-| Types of server response according to server state
 -}
 type Answer value model error
     = StateFull (StateHandler value model error) 
     | StateLess (AnswerValue value model error)
 
 
-{-|
+{-| Server response which modify or access server state
 -}
 type alias StateHandler value model error =
     (model -> (model, Mode error (Answer value model error)) )
 
 
-{-|
+{-| Internal msgs of server lifecircle
 -}
 type Msg value model error
     = Input (Request value)
