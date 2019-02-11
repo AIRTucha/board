@@ -11,12 +11,17 @@ module Board.File exposing
     , fromDict
     )
 
-{-| File handling library
- TODO: Has to be moved to port API
+{-| Minimal file handling library
+
+# Types
+
 @docs Buffer
     , File
     , Encoding
-    , read
+
+# Functions
+
+@docs read
     , write
     , fromString
     , string
@@ -27,24 +32,26 @@ module Board.File exposing
 
 import Native.File
 import Task exposing (Task)
-import Dict exposing(..)
+import Dict exposing(fromList, get, Dict, foldl)
 import String exposing(split)
 import Json.Decode exposing (Decoder, decodeString)
 import Result
 import String
+import Maybe exposing (withDefault)
 
 
-{-|
+{-| JS Byte buffer, unaccesable from Elm side
 -}
 type Buffer = Buffer
 
 
-{-|
+{-| Function which inclose JS Buffer. 
+Buffer can be turned into Elm data type by passing of handler function which will perfom such a transformation
 -}
 type alias File a = (Buffer -> a) -> a
 
 
-{-|
+{-| Types of Byte buffer encodincs at JS
 -}
 type Encoding
     = ASCII
@@ -55,57 +62,57 @@ type Encoding
     | Hex
 
 
-{-|
+{-| Read file from disk
 -}
 read : String -> Task String (File a)
 read path = 
     Native.File.read path
 
 
-{-|
+{-| Write file to disk and return it back in case of succes
 -}
 write: String -> File a -> Task String (File a)
 write path data = 
     Native.File.write path data
 
 
-{-|
+{-| Turn arbitrary string to File
 -}
 fromString: String -> File a
 fromString =
     Native.File.fromString
 
 
-{-|
+{-| Turn Dict to JSON File
 -}
 fromDict: Dict comparable b -> File a
 fromDict dict =
     let 
         values = dict
-            |> foldl dictToString [] 
+            |> foldl dictEntryToString [] 
             |> String.join ",\n"
     in 
         "{\n" ++ values ++ "\n}"
             |> fromString
 
 
-{-|
+{-| Turn single entry of Dict to JSON String
 -}
-dictToString: a -> b -> List String -> List String
-dictToString k v p =
+dictEntryToString: a -> b -> List String -> List String
+dictEntryToString k v p =
     (
         "\t" ++ (Basics.toString k) ++ ":" ++ (Basics.toString v)
     ) :: p
     
 
-{-|
+{-| Function for parsing of Buffer with specified Encoding 
 -}
 string: Encoding -> Buffer -> String 
 string =
     Native.File.string
 
 
-{-|
+{-| Function for parsing of Buffer which encodes Dict
 -}
 dict:  Decoder a -> Buffer -> Dict String a
 dict decoder buffer  =
@@ -115,7 +122,9 @@ dict decoder buffer  =
         |> Result.withDefault Dict.empty
 
 
-{-|
+{-| Identifies Content-Type for provided path
+
+TODO: Optimize with Array
 -}
 getContentType : String -> String
 getContentType path =
@@ -125,7 +134,7 @@ getContentType path =
         |> extensionToContentType
 
 
-{-|
+{-| Finds the last element of list
 -}
 getLast : a -> List a -> a
 getLast last strList =
@@ -137,19 +146,16 @@ getLast last strList =
             last
 
 
-{-|
+{-| Convert file extension to correcpondent Content-type
 -}
 extensionToContentType : String -> String
 extensionToContentType str =
-    case get str contentTypes of
-        Just contentType ->
-            contentType
-        
-        Nothing ->
-            "application/octet-stream"
+    contentTypes
+        |> get str 
+        |> withDefault "application/octet-stream"
    
 
-{-|
+{-| Dict of Content-types by extensions
 -}
 contentTypes : Dict String String
 contentTypes = 
@@ -310,6 +316,7 @@ contentTypes =
         , ( "jpg"       , "image/jpeg" )
         , ( "jps"       , "image/x-jps" )
         , ( "js"        , "application/javascript" )
+        , ( "json"      , "application/json" )
         , ( "jut"       , "image/jutvision" )
         , ( "kar"       , "audio/midi" )
         , ( "kar"       , "music/x-karaoke" )
