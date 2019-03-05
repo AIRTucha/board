@@ -10,6 +10,7 @@ module Board.Internals exposing (..)
     , liftToAsync
     , AnswerValue
     , Answer
+    , IncompliteStateHandler
     , StateHandler
     , Msg
 -}
@@ -86,10 +87,16 @@ type Answer value model error
     | StateLess (AnswerValue value model error)
 
 
+{-| Server response which modify or access server state with incomplite Answer type
+-}
+type alias IncompliteStateHandler value model error =
+    model -> ( model, AnswerValue value model error )
+
+
 {-| Server response which modify or access server state
 -}
 type alias StateHandler value model error =
-    (model -> (model, Mode error (Answer value model error)) )
+    model -> (model, Mode error (Answer value model error)) 
 
 
 {-| Internal msgs of server lifecircle

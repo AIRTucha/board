@@ -6,6 +6,7 @@ import Pathfinder exposing (..)
 import List exposing (map, reverse)
 import Board.Shared exposing (Params(..))
 
+
 {-| Convert Pathfinder parsing values to Result Params which are used for routing.
 -}
 parsingResult2params: ParsingResult -> Result String Params

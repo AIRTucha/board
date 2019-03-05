@@ -1,5 +1,7 @@
 module Board.Shared exposing 
-    ( HTTPSOptions
+    ( PathHandler
+    , Router
+    , HTTPSOptions
     , Options
     , Cookie
     , Params(..)
@@ -22,7 +24,9 @@ module Board.Shared exposing
 
 {-| Types and associated functions used acrross entier system.
 
-@docs HTTPSOptions
+@docs PathHandler
+    , Router
+    , HTTPSOptions
     , Options
     , Cookie
     , Params
@@ -46,6 +50,18 @@ module Board.Shared exposing
 import Dict exposing (Dict)
 import Board.File exposing (File, Encoding)
 import Board.Status exposing (..)
+
+
+{-| Function which handles specific route
+-}
+type alias PathHandler value answer = 
+    ( Params , Request value ) -> answer 
+
+
+{-| Router defines the way request handled
+-}
+type alias Router error value model = 
+    Request value -> Mode error (Answer value model error)
 
 
 {-| Record with configuration options for application

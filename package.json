@@ -4,7 +4,7 @@
   "description": "Elm Back-end framework",
   "main": "app.elm",
   "scripts": {
-    "boot": "nodemon --exec \"elm make tests/App.elm --output dist/app.js && node tests/local.js\"",
+    "start": "nodemon --exec \"elm make tests/App.elm --output dist/app.js && node tests/local.js\"",
     "install": "elm-install install",
     "elm": "elm",
     "test": "nodemon --exec \"elm-ordeal tests/Main.elm\"",
