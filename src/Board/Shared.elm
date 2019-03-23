@@ -12,6 +12,10 @@ module Board.Shared exposing
     , ProtoRequest
     , Request
     , Method(..)
+    , Mode(..)
+    , AnswerValue(..)
+    , Answer(..)
+    , StateHandler
     , isGet
     , isPost
     , isPut
@@ -22,7 +26,7 @@ module Board.Shared exposing
     , Configurations
     )
 
-{-| Types and associated functions used acrross entier system.
+{-| Types and associated to them functions used acrross entier system.
 
 @docs PathHandler
     , Router
@@ -36,6 +40,10 @@ module Board.Shared exposing
     , Protocol
     , ProtoRequest
     , Request
+    , Mode
+    , AnswerValue
+    , Answer
+    , StateHandler
     , Method
     , isGet
     , isPost
@@ -50,6 +58,7 @@ module Board.Shared exposing
 import Dict exposing (Dict)
 import Board.File exposing (File, Encoding)
 import Board.Status exposing (..)
+import Task exposing (Task)
 
 
 {-| Function which handles specific route
@@ -63,6 +72,33 @@ type alias PathHandler value answer =
 type alias Router error value model = 
     Request value -> Mode error (Answer value model error)
 
+{-| Raw types of server response
+-}
+type AnswerValue value model error
+    = Redirect String
+    | Reply (Response value)
+    | Next (Request value)
+
+
+{-| Types of server response according to server state
+-}
+type Answer value model error
+    = StateFull (StateHandler value model error) 
+    | StateLess (AnswerValue value model error)
+
+
+{-| Server response which modify or access server state
+-}
+type alias StateHandler value model error =
+    model -> (model, Mode error (Answer value model error)) 
+
+
+{-| Type for indication Sync or Async value
+Async value is inclosed inside Task
+-}
+type Mode error value
+    = Async (Task error value)
+    | Sync value
 
 {-| Record with configuration options for application
 -}

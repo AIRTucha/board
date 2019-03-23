@@ -1,6 +1,6 @@
 module Board.Router.Internals exposing (..)
 
-{-| Utility functionsandtypes for 
+{-| Utility functionsandtypes for implementation of routing
 @docs applyState
     , toStateFullAsync
     , stateLessSync

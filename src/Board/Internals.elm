@@ -3,15 +3,11 @@ module Board.Internals exposing (..)
 {-| Collection of utility functions and types used internaly
 @docs (=>)
     , (&>)
-    , Mode
     , ModePacker
     , ModelToState
     , TaskModelToState
     , liftToAsync
-    , AnswerValue
-    , Answer
     , IncompliteStateHandler
-    , StateHandler
     , Msg
 -}
 
@@ -32,14 +28,6 @@ import Task exposing (Task, map)
 (&>) task v =
     task
         |> map (\_ -> v) 
-
-
-{-| Type for indication Sync or Async value
-Async value is inclosed inside Task
--}
-type Mode error value
-    = Async (Task.Task error value)
-    | Sync value
 
 
 {-| Function which turn value to router intermidiat reply type
@@ -72,31 +60,10 @@ liftToAsync value =
             task
 
 
-{-| Raw types of server response
--}
-type AnswerValue value model error
-    = Redirect String
-    | Reply (Response value)
-    | Next (Request value)
-
-
-{-| Types of server response according to server state
--}
-type Answer value model error
-    = StateFull (StateHandler value model error) 
-    | StateLess (AnswerValue value model error)
-
-
 {-| Server response which modify or access server state with incomplite Answer type
 -}
 type alias IncompliteStateHandler value model error =
     model -> ( model, AnswerValue value model error )
-
-
-{-| Server response which modify or access server state
--}
-type alias StateHandler value model error =
-    model -> (model, Mode error (Answer value model error)) 
 
 
 {-| Internal msgs of server lifecircle

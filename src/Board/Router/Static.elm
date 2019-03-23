@@ -10,8 +10,6 @@ import Basics exposing (..)
 import Board.File exposing(read, getContentType)
 import Board.Status exposing (..)
 import Board.Router exposing (..)
-import Board.Internals exposing (..)
-import Board.Router.Internals exposing (Router)
 
 
 {-| Staticly serve files from specified directory for specified prefix URL

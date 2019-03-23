@@ -14,7 +14,6 @@ Union type which defines avaible status codes
 
 Documented functions for simplified status code selection
 
-TODO: Document functions
 @docs accepted
     , badGetway 
     , badRequest 
