@@ -158,6 +158,13 @@ type alias Object =
 
 
 {-| Type which represents Request or Response body
+
+It might carry:
+
+* a JSON string, 
+* a general purpose file with specified content type 
+* a general purpose text with specified content type
+
 -}
 type Content a
     = JSON String
