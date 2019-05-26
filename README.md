@@ -65,7 +65,51 @@ Beside id Response contains:
 
 #### Routing combinators
 
+A router function is composed out of several custom request handling functions and by the routing combinators. The combinators are represented by function which takes a path description as a first argument and handler for the specified address as the second one. [Pathfinder eDSL](https://github.com/AIRTucha/pathfinder) is utilized to describe URL which is triggers the path handler. The handling function is simply responsible for turning request record and params extracted by the url parsers into one of free possible results:
+
+* Redirection to a new path
+* Replying with an appropriate response record
+* Passing the request further, possible with attached cargo
+
+```elm
+type AnswerValue value model error
+    = Redirect String
+    | Reply (Response value)
+    | Next (Request value)
+```
+
+*use* routing combinators are capable of handling any types of HTTPS request while *get*, *post*, *put* and *delete* are only working with correspondent HTTP methods.
+
 ##### Stateless and State full
+
+A state management is not trivial task for a purely function application. Board utilizes Elm's architecture to create a handling tooling for accessing and modifying an application state. 
+
+There is especial type of routing handling capable of handling to access and modify the state of the application. The access is grated by transactions. Instead of retuning the *AnswerValue* object itself such a route handler attached by such a routing combinator will return a transaction from a current state to tuple which composes state and *AnswerValue*.
+
+```elm
+{-| Path handler, query value session from local state based on cookei
+-}
+getSessionLocal : ( b , Request a) -> State -> ( State, AnswerValue value state error )
+getSessionLocal (param, req) state =
+    ( state                       # pass unmodified state forward 
+    , getSession param req state  # pass param, req and state to a function which would return a reply
+    )
+```
+
+The category of routing combinators includes: *useSyncState*, *getSyncState*, *postSyncState*, *putSyncState*, *deleteSyncState*, *useState*, *getState*, *postState*, *putState* and *deleteState*.
+
+State less combinators are not capable to access current state.
+
+```elm
+{-| Path handler, query value session from db state based on cookei
+-}
+getSessionDB : ( b , Request a) -> Task x (AnswerValue value state error)
+getSessionDB (param, req) = 
+    readDict
+        |> map (getSession param req)
+```
+
+Following routing combinators are included into the category: useSync, getSync, postSync, putSync, deleteSync, use, get, post, put and delete.
 
 ##### Sync and Async 
 
