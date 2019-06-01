@@ -1,7 +1,7 @@
 # WIP: Board
 [![Build Status](https://travis-ci.org/AIRTucha/board.svg?branch=master)](https://travis-ci.org/AIRTucha/board)
 
-Elm Back-end framework
+An experimental typesafe back-end micro-framework for Elm.
 
 # Get Started 
 
@@ -113,7 +113,46 @@ Following routing combinators are included into the category: useSync, getSync, 
 
 ##### Sync and Async 
 
+On another hand route handler can be represented by an atomic as well as an asynchronous operation. Atomic operations are usually related with some processing of request's data, parsing or local state modifications. Async ones are usually related with file handling, database manipulations or communication with third party services. An asynchronous nature of the actions is handled by Task.
+
+Synchronous processing usually sequentiality handles the request an immediately return a correspondent response.
+
+```elm
+{-| Path handler, exclude string from path and reply that it does not exist
+-}
+getInvalid : ( Params, Request a ) -> AnswerValue a state error
+getInvalid (param, req) =
+    case param of 
+        StrParam url ->
+            url ++ " does not exist"
+                |> makeStringResponse req 
+                |> Reply
+        
+        _ ->
+            Next req
+```
+
+Following routing combinators are included into the category: useSync, getSync, postSync, putSync, deleteSync, useSyncState, getSyncState, postSyncState, putSyncState and deleteSyncState.
+
+Async processing is usually caused by awaiting of an asynchronous action performed based on a handled request.
+
+
+```elm
+{-| Path handler, update value for session at db state based on cookei
+-}
+postSessionDB : ( b , Request String ) -> Task String (AnswerValue a state error)
+postSessionDB (param, req)  =
+    readDict
+        |> map (postSession param req)
+        |> andThen saveSessions
+
+```
+
+Following routing combinators are included into the category: useState, getState, postState, putState, deleteState, use, get, post, put and delete.
+
 #### Initial router
+
+
 
 ##### URL parsing
 
@@ -126,8 +165,6 @@ Following routing combinators are included into the category: useSync, getSync, 
 ### Subscription port
 
 ## File handling
-
-## Router 
 
 # Known limitations
 
