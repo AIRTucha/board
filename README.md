@@ -82,7 +82,7 @@ type AnswerValue value model error
 
 ##### Stateless and State full
 
-A state management is not trivial task for a purely function application. Board utilizes Elm's architecture to create a handling tooling for accessing and modifying an application state. 
+A state management is not trivial task for a purely function application. Board utilizes Elm's architecture to create a handling tooling for accessing and modifying an application state.
 
 There is especial type of routing handling capable of handling to access and modify the state of the application. The access is grated by transactions. Instead of retuning the *AnswerValue* object itself such a route handler attached by such a routing combinator will return a transaction from a current state to tuple which composes state and *AnswerValue*.
 
@@ -271,10 +271,13 @@ type alias Options =
 
 ### Node.js server
 
-### Subscription port
+Board uses calls to native Node.js API to establish the HTTP/HTTPS connection. An incoming *Request* object is processed and converted into *Request* record exposed to Elm code. An *Response* object is placed to a *Map*. The object is popped up from the *Map* based on *Response* record created as output of Elm code. From time to time the *Map* is cleaned out of *Responses* which are older that the *timeout*.
 
 ## File handling
 
+File handling is implemented via a very simple library based on Node.js *fs*. Practically it contains functions to read, write and parse files. Files are represented by a higher-order function which takes a function from Node.js *Buffer* to arbitrary Elm type. The data itself is inclosed inside of closure, so that it is not directly accessible at Elm side without an appropriate handling. There are two standard parsing: *string* and *dict*. Also there are functions specialized on encoding of Elm types to File: *fromString* and *fromDict*. The last but not least is *getContentType* function which returns *content-type* based on file name. The function powers *static*.
+
 # Known limitations
+
 
 # Future plans

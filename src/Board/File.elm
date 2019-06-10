@@ -24,10 +24,10 @@ module Board.File exposing
 @docs read
     , write
     , fromString
-    , string
-    , getContentType
-    , dict
     , fromDict
+    , string
+    , dict
+    , getContentType
 -}
 
 import Native.File
