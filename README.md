@@ -279,5 +279,18 @@ File handling is implemented via a very simple library based on Node.js *fs*. Pr
 
 # Known limitations
 
+It was an experimental project which was mainly done to investigate the possibility of adapting Elm architecture for a back-end development at the same time as improve my personal knowledge of Node.js APIs. 
+
+Duo to the nature of Elm architecture and underlining Node.js the system in a current condition is not capable of handling multi-threaded application. Implementation of such a functionality is way beyond scope of the project right now.
+
+The project was started right before Elm 0.19 was released. The version of Elm dramatically changed the way native code is handled. Native code is entirely forbidden for third party libraries since the release. Therefore the project didn't get any support from the main stream Elm community and it will never be available at the package manager. Also, due to dramatic changes in the infrastructure of Elm, the 0.18 and older version might be eventually discontinued.
+
+Since it is essentially a single person pet project, there is significant lack of testing, especially production one. I will personally be happy to see project based on the library, but you have to be aware of risks.
+
+Only HTTP and HTTPS are currently supported by the micro-framework. Sockets are out of scope. 
+
+Some future development is required at following directions: authentications, cookies and file handling.
 
 # Future plans
+
+
