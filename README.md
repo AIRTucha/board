@@ -161,6 +161,37 @@ There are two build-in initial routers:
 
 ##### URL parsing
 
+[Pathfinder](https://github.com/AIRTucha/pathfinder) is used for URL parsing. The library provides a eDSL for URL parsing which describes expected content of URL. It has several output types which represents successful parsing of certain primitive types, multiple primitive types or failure. Failure indicates that the string does not match parsing specification. The types are used internally. A route handler function receives a limited version of the output with filtered out *Failure*, since it prevents a router handler from execution.
+
+```elm
+{-| Type which describe parsing result of URI params
+-}
+type Params
+    = IntParam Int
+    | FloatParam Float
+    | StrParam String
+    | MultiParam (List Params)
+    | QueryParam (Dict String String)
+    | EmptyParam
+```
+
+The *Params* is the first element of tuple supplied to a router handler.
+
+```elm
+{-| Path handler, exclude string from path and reply that it does not exist
+-}
+getInvalid : ( Params, Request a ) -> AnswerValue a state error
+getInvalid (param, req) =
+    case param of 
+        StrParam url ->
+            url ++ " does not exist"
+                |> makeStringResponse req 
+                |> Reply
+        
+        _ ->
+            Next req
+```
+
 #### Static server
 
 ### Config
