@@ -194,7 +194,80 @@ getInvalid (param, req) =
 
 #### Static server
 
+Static content can easily be served with a *static* router combinator. As other ones it receives should the path description as the first argument, but in this particular case the URL is simply specified by a *string* prefix to the file storage. The second argument represents the prefix to the files' directory on a drive.
+
+
+```elm
+{-| Router describes relationships between paths and request handlers
+-}
+router : Request String -> Mode String (Answer String State String)
+router =
+    -- Default router prints requests with specified prefix as default actions
+    logger "Request"
+        -- statically serve files from "./public/"
+        |> static "" "./public/"
+```
+
+*Content-type* header is automatically generated out of a file's extension.
+
 ### Config
+
+Configuration specifies setup of an underling Node.js HTTP/HTTPS server and initial conditions of the application.
+
+Example of the config is presented in following listening:
+
+```elm
+{-| Server configuration
+-}
+config : Configurations State
+config = 
+    { state = Dict.empty
+    , errorPrefix = Just "Warning"
+    , options = 
+        { portNumber = 8085
+        , timeout = 1000
+        , https = Nothing
+        }
+    }
+```
+
+Entire configuration descriptions is constructed out of three following types: 
+
+```elm
+{-|
+-}
+type alias Configurations a =
+    { state: a    
+    , errorPrefix: Maybe String  
+    , options: Options
+    }
+
+
+{-|
+-}
+type alias HTTPSOptions = Maybe
+    { key: Maybe String
+    , cert: Maybe String
+    , pfx: Maybe String
+    , passphrase: Maybe String 
+    }
+
+
+{-|
+-}
+type alias Options =
+    { portNumber: Int
+    , timeout: Int
+    , https: HTTPSOptions
+    }
+```
+
+ - *state* represents an initial state of the applications.
+ - *errorPrefix* is used for tagging of logged errors.
+ - *options* contains the low level properties of the server
+    * *portNumber* is an integer which represent the *HTTP* port used for hosting.
+    * *timeout* is an integer number which specifies an amount of milliseconds before incoming request is automatically rejected.
+    * *https* is a *Maybe* monad which *Just* value contains configuration required to establish an *HTTPS* connection.
 
 ### Node.js server
 
