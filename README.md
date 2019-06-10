@@ -109,7 +109,7 @@ getSessionDB (param, req) =
         |> map (getSession param req)
 ```
 
-Following routing combinators are included into the category: useSync, getSync, postSync, putSync, deleteSync, use, get, post, put and delete.
+Following routing combinators are included into the category: *useSync*, *getSync**, *postSync*, *putSync*, *deleteSync*, *use*, *get*, *post*, *put* and *delete*.
 
 ##### Sync and Async 
 
@@ -132,7 +132,7 @@ getInvalid (param, req) =
             Next req
 ```
 
-Following routing combinators are included into the category: useSync, getSync, postSync, putSync, deleteSync, useSyncState, getSyncState, postSyncState, putSyncState and deleteSyncState.
+Following routing combinators are included into the category: *useSync*, *getSync*, *postSync*, *putSync*, *deleteSync*, *useSyncState*, *getSyncState*, *postSyncState*, *putSyncState* and *deleteSyncState*.
 
 Async processing is usually caused by awaiting of an asynchronous action performed based on a handled request.
 
@@ -148,11 +148,16 @@ postSessionDB (param, req)  =
 
 ```
 
-Following routing combinators are included into the category: useState, getState, postState, putState, deleteState, use, get, post, put and delete.
+Following routing combinators are included into the category: *useState*, *getState*, *postState*, *putState*, *deleteState*, *use*, *get*, *post*, *put* and *delete*.
 
 #### Initial router
 
+Routing combinators are responsible for combining of an existing router with new path handler. So, therefore an initial router is needed. It is represented by any function which satisfies following signature *Request String -> Mode String (Answer String State String)*. The function is going to be called once for every request. It might perfume some parsing or authentication actions. Result of the actions can be propagated by *Cargo*.
 
+There are two build-in initial routers: 
+
+* *logger* prints a log message for every incoming request. The message is tagged by a prefix provided to the function as the first argument.
+* *empty* just does nothing and lets the request go future.
 
 ##### URL parsing
 
