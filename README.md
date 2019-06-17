@@ -1,4 +1,4 @@
-# WIP: Board
+# Board
 [![Build Status](https://travis-ci.org/AIRTucha/board.svg?branch=master)](https://travis-ci.org/AIRTucha/board)
 
 An experimental typesafe back-end micro-framework for Elm.
