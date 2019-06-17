@@ -176,7 +176,7 @@ type Content a
 {-| Type which represents HTTP Response 
 -}
 type alias Response a =
-    { cookeis : Dict String Cookie
+    { cookies : Dict String Cookie
     , id: String
     , content : Content a
     , status : Status
@@ -266,7 +266,7 @@ anyMethod req =
 -}
 getResponse: Request a -> Response a
 getResponse request =
-    { cookeis = Dict.empty
+    { cookies = Dict.empty
     , id = request.id
     , content = Empty 
     , status = notFound

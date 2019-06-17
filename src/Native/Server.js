@@ -119,7 +119,7 @@ const sendContent = setContent => contentType => response => {
         if( res ) {
             if( contentType )
                 res.setHeader( 'Content-Type', contentType )
-            res.setHeader( 'Set-Cookie',  dictHeadersArray( response.cookeis, [] ) )
+            res.setHeader( 'Set-Cookie',  dictHeadersArray( response.cookies, [] ) )
             setHeaders( response.header, res )
             res.statusCode = getStatus( response.status )
             setContent( value, res );
