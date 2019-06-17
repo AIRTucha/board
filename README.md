@@ -293,4 +293,8 @@ Some future development is required at following directions: authentications, co
 
 # Future plans
 
+Due to recent changes in a platform, the project ended up to be just a proof of concept. Since it is not possible to update it for newer version of Elm. It is also not possible to publish it in Elm package manager, because of policy regarding native modules which are are an essential part of the system.
 
+PureScript seems to be the best option for migration of the project, but lack of Elm Architecture would require reconsideration of the state management system. At the same time it will open a opportunity to utilize and advantages of PureScript type system like Type Classes and High-kind types. It might be especially useful for implementation of the URL parsing eDSL.
+
+Other viable option of GHCJS, but in my point of view it is overkill, since there are many brilliant back-end frameworks for Haskell and there is no need to mess around with such a complication as translation to JS and utilization of Node.js infrastructure.
