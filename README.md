@@ -1,7 +1,7 @@
 # Board
 [![Build Status](https://travis-ci.org/AIRTucha/board.svg?branch=master)](https://travis-ci.org/AIRTucha/board)
 
-It is an experimental typesafe back-end micro-framework for Elm.
+This is an experimental typesafe back-end micro-framework for Elm.
 
 # Get Started 
 
@@ -9,17 +9,17 @@ There are three primary resources which help to develop your first application b
  
  * The article explains motivation and main principles of the framework
  * [Seed application](https://github.com/AIRTucha/board-seed) is a project which contains a minimal possible Board Server setup with all required boilerplate and deployment instructions
- * [Demo application](https://github.com/AIRTucha/board-demo)is a project which showcases the main features of Board framework
+ * [Demo application](https://github.com/AIRTucha/board-demo) is a project which showcases the main features of Board framework
 
 ## Development instructions
 
 The project is based on *npm* eco-system. Therefore development process is automated via *npm scripts*.
 
-For installation of dependencies run:
+For installation of dependencies run
 
     npm install 
 
-Runs minimal server to check that it kicks off.
+Runs minimal server to check that it kicks off
 
     npm start
 
@@ -27,13 +27,13 @@ Unit tests in a watching mode are performed by
 
     npm test
 
-A single run of test suit is dedicated to continuous integration.
+A single run of test suit is dedicated to continuous integration
 
     npm run ci
 
 # Motivation
 
-Now days almost every cloud platform offers possibilities for seamless deployment of Node.js applications. The goal of the project is to combine deployment capabilities of Node.js and safety of statically typed purely functional languages for rapid development of a small micro-service application. 
+Nowadays almost every cloud platform offers possibilities for seamless deployment of Node.js applications. The goal of the project is to combine deployment capabilities of Node.js and safety of statically typed purely functional languages for rapid development of a small micro-service application. 
 
 The main reasons Elm was chosen over GHCJS or PureScript are a steeper learning curve, excellent documentation, active community and build-in state management system. It also has no way to be used on a back-end, so it was rather cool to be first.
 
@@ -60,10 +60,10 @@ main = board router config subPort
 
 ### Router
 
-It is the fundamental part of an application, simple it is just a function which defines the process of turning *Request* object into *Response* one. *Request* object describes essential information about incoming inquiry like: 
+It is the fundamental part of an application, basically it is just a function which defines the process of turning *Request* object into *Response* one. *Request* object describes essential information about incoming inquiry like: 
 
 * url - a value taken from an original Node.js Request object
-* id - a unique identifier which is created as a hash of crucial parameters of the Request
+* id - a unique identifier which is created as a hash of the Request's crucial parameters
 * time - a timestamp when the Request was initially registered in a system
 * content - a representation of a body for POST and PUT Requests.
 * cookies - a string to string dictionary which contains all cookie values associated with the request
@@ -79,12 +79,12 @@ Beside id *Response* contains:
 
 * content - essentially, the body of reply, 
 * status - an HTTP status code, 
-* header - string to string dictionary which for response header values
-* cookies - string to Cookie record dictionary. The record specifies the cookie's properties.
+* header - a string to string dictionary for response header values
+* cookies - a string to Cookie record dictionary. The record specifies the cookie's properties.
 
 #### Routing combinators
 
-A router function is composed out of several custom request handling functions and by the routing combinators. The combinators are represented by a function which takes a path description as a first argument and handler for the specified address as the second one. [Pathfinder](https://github.com/AIRTucha/pathfinder) is utilized to describe the URL, which is triggers the path handler. The handling function is merely responsible for turning the request record and params extracted by the url parsers into one of the free possible results:
+A router function is composed out of several custom request handling functions and by the routing combinators. The combinators are represented by a function which takes a path description as a first argument and handler for the specified address as the second one. [Pathfinder](https://github.com/AIRTucha/pathfinder) is utilized to describe the URL, which triggers the path handler. The handling function is responsible for turning the request record and params extracted by the URL parsers into one of the free possible results:
 
 * Redirection to a new path
 * Replying with an appropriate response record
@@ -101,9 +101,9 @@ type AnswerValue value model error
 
 ##### Stateless and State full
 
-State management is not a trivial task for a pure function application. Board utilizes Elm's architecture to provide handy tooling for accessing and modifying an application state.
+State management is not a trivial task for a purely functional application. Board utilizes Elm's architecture to provide handy tooling for accessing and modifying an application state.
 
-There is a special type of rout handlers capable of providing access to the state of the application. The access is granted by transactions. Instead of returning the *AnswerValue* object itself a route handler attached by such a routing combinator returns a transaction from a current state to tuple which composes state and *AnswerValue*.
+There is a special type of rout handlers capable of providing access to the state of the application. The access is granted by transactions. Instead of returning the *AnswerValue* record itself a route handler attached by such a routing combinator returns a transaction from a current state to tuple which composes state and *AnswerValue*.
 
 ```elm
 {-| Path handler, query value session from local state based on cookie
@@ -180,7 +180,7 @@ There are two built-in initial routers:
 
 ##### URL parsing
 
-[Pathfinder](https://github.com/AIRTucha/pathfinder) is used for URL parsing. The library provides an eDSL for URL parsing which describes the expected content of URL. It has several output types which represent successful parsing of certain primitive types, multiple primitive types or failure. *Failure* indicates that the string does not match parsing specification. The types are used internally. A route handler function receives a limited version of the output with filtered out *Failure* since it prevents the particular router handler from execution.
+[Pathfinder](https://github.com/AIRTucha/pathfinder) is used for URL parsing. The library provides an eDSL for URL parsing which describes the expected content of a URL. It has several output types which represent successful parsing of certain primitive types, multiple primitive types or failure. *Failure* indicates that the string does not match parsing specification. The types are used internally. A route handler function receives a limited version of the output with filtered out *Failure* since it prevents the particular router handler from execution.
 
 ```elm
 {-| Type which describes parsing the result of URI params
@@ -292,7 +292,7 @@ Board uses calls to native Node.js API to establish the HTTP/HTTPS connection. A
 
 ## File handling
 
-File handling is implemented via a very simple library based on Node.js *fs*. Practically it contains functions to read, write and parse files. Files are represented by a higher-order function which takes a function from Node.js *Buffer* to arbitrary Elm type. The data itself is enclosed inside of closure so that it is not directly accessible at Elm side without proper handling. There are two standard parsers: *string* and *dict*. Also, there are functions specialized on the encoding of Elm types to File: *fromString* and *fromDict*. The last but not least there is *getContentType* function which returns *content-type* based on file name. The function powers *static*.
+File handling is implemented via a very simple library based on Node.js *fs*. Practically it contains functions to read, write and parse files. Files are represented by a higher-order function which takes a function from Node.js *Buffer* to arbitrary Elm type. The data itself is enclosed inside of a closure so that it is not directly accessible at Elm side without proper handling. There are two standard parsers: *string* and *dict*. Also, there are functions specialized on the encoding of Elm types to File: *fromString* and *fromDict*. The last but not least there is *getContentType* function which returns *content-type* based on file name. The function powers *static*.
 
 # Known limitations
 
@@ -300,13 +300,13 @@ It was an experimental project which was mainly done to investigate the possibil
 
 Due to the nature of Elm architecture and underlining Node.js the system in a current condition is not capable of handling multi-threaded application. Implementation of such a functionality is way beyond the scope of the project right now.
 
-The project was started right before Elm 0.19 was released. The version of Elm dramatically changed the way native code is handled. Native code is entirely forbidden for third-party libraries since the release. Therefore the project didn't get any support from the leading stream Elm community, and it will never be available at the package manager. Also, due to dramatic changes in the infrastructure of Elm, the 0.18 and older version might be eventually discontinued.
+The project was started right before Elm 0.19 was released. The version of Elm dramatically changed the way native code is handled. Native code is entirely forbidden for third-party libraries since the release. Therefore the project didn't get any support from the main stream Elm community, and it will never be available at the package manager. Also, due to dramatic changes in the infrastructure of Elm, the 0.18 and older version might be eventually discontinued.
 
 Since it is essentially a single person pet project, there is a significant lack of testing, especially the production one. I will personally be happy to see the project based on the library, but you have to be aware of risks.
 
 The micro-framework currently supports only HTTP and HTTPS. Sockets are out of scope. 
 
-Some future development is required at following directions: authentications, cookies and file handling.
+Some future development is required at following directions: an authentication, a cookies and a file handling.
 
 # Future plans
 
