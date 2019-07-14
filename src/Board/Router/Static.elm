@@ -15,7 +15,7 @@ import Board.Router exposing (..)
 {-| Staticly serve files from specified directory for specified prefix URL
 -}
 static
-    : URL
+    : String
     -> String
     -> Router error value model
     -> Router error value model
@@ -49,7 +49,7 @@ static basePath prefix router =
                         next
     in
         router
-            |> get (basePath </> str) getFile
+            |> get (p basePath </> str) getFile
 
 
 

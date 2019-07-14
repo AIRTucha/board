@@ -1,6 +1,6 @@
 {
   "name": "board",
-  "version": "2.0.1",
+  "version": "3.0.1",
   "description": "Elm Back-end framework",
   "main": "app.elm",
   "scripts": {

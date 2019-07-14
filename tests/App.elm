@@ -43,4 +43,4 @@ router =
     -- Default router prints requests with specified prefix as default actions
     logger "Request"
         -- statically serve files from "./"
-        |> static any "./"
+        |> static "" "./"
